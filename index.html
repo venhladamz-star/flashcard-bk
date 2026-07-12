@@ -683,6 +683,105 @@
     padding: 14px; border-radius: var(--radius); margin-bottom: 20px;
     transition: background 0.3s;
   }
+
+  /* ---------- Grammar tab ---------- */
+  .chapter-card{
+    background:var(--bg-elev);
+    border:1px solid var(--line-solid);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    cursor:pointer;
+    transition: background 0.2s, border-color 0.3s;
+    margin-bottom:10px;
+  }
+  .chapter-card:hover{ background:var(--bg-elev-2); }
+  .chapter-card .emoji{
+    width:44px;height:44px;
+    border-radius:12px;
+    background:var(--good-soft);
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;
+    flex-shrink:0;
+  }
+  .chapter-card .meta{ flex:1; min-width:0; }
+  .chapter-card .meta h3{ margin:0 0 4px; font-size:15px; font-weight:700; }
+  .chapter-card .meta p{ margin:0; font-size:12.5px; color:var(--ink-dim); }
+
+  .lesson-card{
+    background:var(--bg-elev);
+    border:1px solid var(--line-solid);
+    border-radius:12px;
+    padding:14px 16px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    cursor:pointer;
+    transition: background 0.2s;
+    margin-bottom:8px;
+  }
+  .lesson-card:hover{ background:var(--bg-elev-2); }
+  .lesson-card .ic{ font-size:18px; flex-shrink:0; }
+  .lesson-card .meta{ flex:1; min-width:0; }
+  .lesson-card .meta h4{ margin:0; font-size:14px; font-weight:700; }
+  .lesson-card .chev{ color:var(--ink-faint); font-size:16px; flex-shrink:0; }
+  .lesson-card .del, .chapter-card .del{
+    color:var(--ink-faint); font-size:14px; padding:6px; flex-shrink:0;
+  }
+  .lesson-card .del:hover, .chapter-card .del:hover{ color:var(--bad); }
+
+  .gr-fab-row{ display:flex; gap:10px; margin-bottom:18px; }
+
+  /* Markdown-rendered lesson content */
+  .md-content{ font-size:14.5px; line-height:1.7; }
+  .md-content h1, .md-content h2, .md-content h3{
+    margin:20px 0 10px; font-weight:800; letter-spacing:-0.01em;
+  }
+  .md-content h1{ font-size:20px; }
+  .md-content h2{ font-size:17px; color:var(--accent); }
+  .md-content h3{ font-size:15px; }
+  .md-content p{ margin:0 0 12px; color:var(--ink); }
+  .md-content ul, .md-content ol{ margin:0 0 12px; padding-left:22px; }
+  .md-content li{ margin-bottom:4px; }
+  .md-content strong{ color:var(--ink); font-weight:700; }
+  .md-content em{ color:var(--ink-dim); }
+  .md-content code{
+    font-family:var(--mono); font-size:13px;
+    background:var(--bg-elev-2); padding:2px 6px; border-radius:5px;
+  }
+  .md-content pre{
+    background:var(--bg-elev-2); border:1px solid var(--line-solid);
+    border-radius:10px; padding:14px; overflow-x:auto; margin:0 0 14px;
+  }
+  .md-content pre code{ background:none; padding:0; }
+  .md-content blockquote{
+    margin:0 0 14px; padding:10px 14px;
+    border-left:3px solid var(--accent);
+    background:var(--accent-soft); border-radius:0 8px 8px 0;
+    color:var(--ink-dim); font-size:13.5px;
+  }
+  .md-content table{
+    width:100%; border-collapse:collapse; margin:0 0 14px; font-size:13px;
+  }
+  .md-content th, .md-content td{
+    border:1px solid var(--line-solid); padding:8px 10px; text-align:left;
+  }
+  .md-content th{ background:var(--bg-elev-2); font-weight:700; }
+  .md-content hr{ border:none; border-top:1px solid var(--line-solid); margin:18px 0; }
+
+  .md-editor-tabs{ display:flex; gap:8px; margin-bottom:12px; }
+  .md-editor-tab{
+    padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600;
+    background:var(--bg-elev-2); color:var(--ink-dim); cursor:pointer;
+    border:1px solid var(--line-solid);
+  }
+  .md-editor-tab.active{ background:var(--accent-soft); color:var(--accent); border-color:var(--accent); }
+  .md-preview-box{
+    background:var(--bg-elev); border:1px solid var(--line-solid);
+    border-radius:12px; padding:16px; min-height:200px;
+  }
 </style>
 </head>
 <body>
@@ -731,6 +830,78 @@
     </div>
     <div id="folderListWrap">
       <div class="folder-list" id="folderList"></div>
+    </div>
+  </div>
+
+  <!-- ============ TAB: NGỮ PHÁP ============ -->
+  <div class="view" id="view-grammar">
+    <div class="row-actions">
+      <button class="btn primary full" id="btnOpenAddChapter" style="display:none;">＋ Thêm chương mới</button>
+    </div>
+    <div class="section-title">📐 Ngữ pháp (đăng bởi Admin)</div>
+    <div id="chapterListWrap">
+      <div id="chapterList"><div class="empty-state"><p>Đang tải nội dung ngữ pháp...</p></div></div>
+    </div>
+    <p style="text-align:center; color:var(--ink-faint); font-size:11.5px; margin-top:18px;">Là Admin? Xác thực ở tab "Tham khảo" để đăng/sửa nội dung ngữ pháp tại đây.</p>
+  </div>
+
+  <!-- ============ GRAMMAR: LESSON LIST (INSIDE A CHAPTER) ============ -->
+  <div class="view" id="view-grammar-chapter">
+    <div class="study-header">
+      <div class="back-btn" id="btnBackToGrammar">‹ Ngữ pháp</div>
+    </div>
+    <h2 id="chapterViewTitle" style="margin:0 0 16px; font-size:19px;">—</h2>
+    <div class="row-actions">
+      <button class="btn ghost full" id="btnOpenAddLesson" style="display:none;">＋ Thêm bài mới</button>
+    </div>
+    <div id="lessonList"></div>
+  </div>
+
+  <!-- ============ GRAMMAR: LESSON READER ============ -->
+  <div class="view" id="view-grammar-lesson">
+    <div class="study-header">
+      <div class="back-btn" id="btnBackToChapter">‹ Quay lại</div>
+      <div class="icon-btn" id="btnEditLesson" title="Sửa bài" style="width:34px;height:34px;font-size:14px;display:none;">✏️</div>
+    </div>
+    <h2 id="lessonViewTitle" style="margin:0 0 16px; font-size:20px;">—</h2>
+    <div class="md-content" id="lessonContent"></div>
+  </div>
+
+  <!-- ============ GRAMMAR: EDITOR (chapter+lesson create/edit) ============ -->
+  <div class="view" id="view-grammar-edit">
+    <div class="study-header">
+      <div class="back-btn" id="btnCancelGrammarEdit">‹ Hủy</div>
+    </div>
+    <div class="panel">
+      <div class="field-label" id="gEditChapterLabel">Chương</div>
+      <select class="name-input" id="gEditChapterSelect" style="margin-bottom:14px;"></select>
+
+      <div class="field-label">Tiêu đề bài</div>
+      <input type="text" class="name-input" id="gEditTitleInput" placeholder="VD: Thì hiện tại đơn">
+
+      <div class="field-label">Nội dung (Markdown)</div>
+      <div class="md-editor-tabs">
+        <div class="md-editor-tab active" id="gEditTabWrite">Soạn</div>
+        <div class="md-editor-tab" id="gEditTabPreview">Xem trước</div>
+      </div>
+      <textarea class="paste-box" id="gEditMarkdown" style="min-height:260px; font-family:var(--mono); font-size:13px;" placeholder="# Tiêu đề
+Đoạn giải thích...
+
+**Công thức:** S + V(s/es)
+
+| Thì | Cấu trúc |
+|---|---|
+| HTD | S + V |
+
+- Ví dụ 1
+- Ví dụ 2"></textarea>
+      <div class="md-preview-box md-content" id="gEditPreviewBox" style="display:none;"></div>
+
+      <div class="err" id="gEditErr" style="margin-top:10px;"></div>
+    </div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn bad" id="btnDeleteLessonInEdit" style="display:none;">Xóa bài</button>
+      <button class="btn primary full" id="btnSaveLesson">Lưu bài</button>
     </div>
   </div>
 
@@ -879,6 +1050,9 @@ procrastinate	trì hoãn			verb"></textarea>
     <div class="tab-item" data-tab="created">
       <div class="ic">📁</div><div>Đã tạo</div>
     </div>
+    <div class="tab-item" data-tab="grammar">
+      <div class="ic">📐</div><div>Ngữ pháp</div>
+    </div>
     <div class="tab-item" data-tab="reference">
       <div class="ic">🌐</div><div>Tham khảo</div>
     </div>
@@ -900,6 +1074,18 @@ procrastinate	trì hoãn			verb"></textarea>
       <div class="txt"><h4>Kiểm tra</h4><p>Trắc nghiệm hoặc tự luận, chấm điểm ngay.</p></div>
     </div>
     <button class="btn ghost full" id="btnCancelMode">Hủy</button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="chapterModal">
+  <div class="modal-sheet">
+    <h3 id="chapterModalTitle">Chương mới</h3>
+    <input type="text" class="name-input" id="chapterNameInput" placeholder="VD: Thì, Cấu trúc câu, Mệnh đề quan hệ...">
+    <div class="err" id="chapterModalErr"></div>
+    <div class="modal-actions">
+      <button class="btn ghost full" id="btnCancelChapter">Huỷ</button>
+      <button class="btn primary full" id="btnSaveChapter">Lưu</button>
+    </div>
   </div>
 </div>
 
@@ -977,7 +1163,7 @@ procrastinate	trì hoãn			verb"></textarea>
 
   // 2. State App Variable
   const STORAGE_KEY = 'flashcard_data_v2';
-  const VIEWS = ['home', 'created', 'create', 'study', 'quiz', 'done', 'reference'];
+  const VIEWS = ['home', 'created', 'create', 'study', 'quiz', 'done', 'grammar', 'grammar-chapter', 'grammar-lesson', 'grammar-edit', 'reference'];
   
   let DATA = loadLocalData();
   let currentUser = null;
@@ -1004,9 +1190,17 @@ procrastinate	trì hoãn			verb"></textarea>
   let quizStats = { good: 0, bad: 0 };
   let lastSessionMode = 'study'; // 'study' | 'quiz'
   let currentQ = null; // current quiz question object
+
+  // Grammar state
+  let activeChapter = null;
+  let activeLesson = null;
+  let pendingDeleteChapterId = null;
+  let editingChapterId = null; // set when chapterModal is editing an existing chapter
+  let editingLessonId = null;  // set when grammar editor is editing an existing lesson
   
   // Admin logic state
   let globalRefData = { folders: [] };
+  let globalGrammarData = { chapters: [] };
   let isAdminLogged = false;
   let editingRefId = null;
 
@@ -1080,7 +1274,39 @@ procrastinate	trì hoãn			verb"></textarea>
     quizInput: document.getElementById('quizInput'),
     quizAnswerReveal: document.getElementById('quizAnswerReveal'),
     btnQuizSubmit: document.getElementById('btnQuizSubmit'),
-    btnQuizNext: document.getElementById('btnQuizNext')
+    btnQuizNext: document.getElementById('btnQuizNext'),
+
+    // Grammar tab
+    chapterList: document.getElementById('chapterList'),
+    btnOpenAddChapter: document.getElementById('btnOpenAddChapter'),
+    chapterModal: document.getElementById('chapterModal'),
+    chapterModalTitle: document.getElementById('chapterModalTitle'),
+    chapterNameInput: document.getElementById('chapterNameInput'),
+    chapterModalErr: document.getElementById('chapterModalErr'),
+    btnCancelChapter: document.getElementById('btnCancelChapter'),
+    btnSaveChapter: document.getElementById('btnSaveChapter'),
+
+    btnBackToGrammar: document.getElementById('btnBackToGrammar'),
+    chapterViewTitle: document.getElementById('chapterViewTitle'),
+    btnOpenAddLesson: document.getElementById('btnOpenAddLesson'),
+    lessonList: document.getElementById('lessonList'),
+
+    btnBackToChapter: document.getElementById('btnBackToChapter'),
+    btnEditLesson: document.getElementById('btnEditLesson'),
+    lessonViewTitle: document.getElementById('lessonViewTitle'),
+    lessonContent: document.getElementById('lessonContent'),
+
+    btnCancelGrammarEdit: document.getElementById('btnCancelGrammarEdit'),
+    gEditChapterLabel: document.getElementById('gEditChapterLabel'),
+    gEditChapterSelect: document.getElementById('gEditChapterSelect'),
+    gEditTitleInput: document.getElementById('gEditTitleInput'),
+    gEditTabWrite: document.getElementById('gEditTabWrite'),
+    gEditTabPreview: document.getElementById('gEditTabPreview'),
+    gEditMarkdown: document.getElementById('gEditMarkdown'),
+    gEditPreviewBox: document.getElementById('gEditPreviewBox'),
+    gEditErr: document.getElementById('gEditErr'),
+    btnDeleteLessonInEdit: document.getElementById('btnDeleteLessonInEdit'),
+    btnSaveLesson: document.getElementById('btnSaveLesson')
   };
 
   // 4. Storage Helpers
@@ -1125,6 +1351,16 @@ procrastinate	trì hoãn			verb"></textarea>
       globalRefData = snap.exists() ? snap.data() : { folders: [] };
       if (DOM.views.reference.classList.contains('active')) renderRefFolderList();
     });
+    onSnapshot(doc(db, 'shared', 'grammar_pool'), (snap) => {
+      globalGrammarData = snap.exists() ? snap.data() : { chapters: [] };
+      if (!globalGrammarData.chapters) globalGrammarData.chapters = [];
+      const active = VIEWS.find(v => DOM.views[v].classList.contains('active'));
+      if (active === 'grammar') renderChapterList();
+      else if (active === 'grammar-chapter' && activeChapter) {
+        const fresh = globalGrammarData.chapters.find(c => c.id === activeChapter.id);
+        if (fresh) { activeChapter = fresh; renderLessonList(); }
+      }
+    });
   }
 
   function refreshCurrentView() {
@@ -1132,6 +1368,8 @@ procrastinate	trì hoãn			verb"></textarea>
     if (active === 'home') renderHome();
     else if (active === 'created') renderFolderList();
     else if (active === 'reference') renderRefFolderList();
+    else if (active === 'grammar') renderChapterList();
+    else if (active === 'grammar-chapter' && activeChapter) renderLessonList();
   }
 
   function generateUid() { return 'f_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
@@ -1150,6 +1388,312 @@ procrastinate	trì hoãn			verb"></textarea>
   async function pushRefFolders(updatedFolders) {
     return setDoc(doc(db, 'shared', 'reference_pool'), { folders: updatedFolders });
   }
+
+  async function pushGrammarChapters(updatedChapters) {
+    return setDoc(doc(db, 'shared', 'grammar_pool'), { chapters: updatedChapters });
+  }
+
+  // ---- Lightweight Markdown -> HTML renderer (no external deps) ----
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+  function renderInlineMd(s) {
+    let out = escapeHtml(s);
+    out = out.replace(/`([^`]+)`/g, '<code>$1</code>');
+    out = out.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    out = out.replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>');
+    return out;
+  }
+  function renderMarkdown(md) {
+    if (!md) return '';
+    const lines = md.replace(/\r\n/g, '\n').split('\n');
+    let html = '';
+    let i = 0;
+    let listBuffer = null; // 'ul' | 'ol' | null
+
+    function flushList() {
+      if (listBuffer) { html += `</${listBuffer}>`; listBuffer = null; }
+    }
+
+    while (i < lines.length) {
+      const line = lines[i];
+
+      // Code block ```
+      if (/^```/.test(line)) {
+        flushList();
+        const codeLines = [];
+        i++;
+        while (i < lines.length && !/^```/.test(lines[i])) { codeLines.push(lines[i]); i++; }
+        html += `<pre><code>${escapeHtml(codeLines.join('\n'))}</code></pre>`;
+        i++; continue;
+      }
+
+      // Table (line with | ... | followed by a separator row)
+      if (/^\|.*\|\s*$/.test(line) && i + 1 < lines.length && /^\|[\s:|-]+\|\s*$/.test(lines[i + 1])) {
+        flushList();
+        const headerCells = line.split('|').slice(1, -1).map(c => c.trim());
+        html += '<table><thead><tr>' + headerCells.map(c => `<th>${renderInlineMd(c)}</th>`).join('') + '</tr></thead><tbody>';
+        i += 2;
+        while (i < lines.length && /^\|.*\|\s*$/.test(lines[i])) {
+          const cells = lines[i].split('|').slice(1, -1).map(c => c.trim());
+          html += '<tr>' + cells.map(c => `<td>${renderInlineMd(c)}</td>`).join('') + '</tr>';
+          i++;
+        }
+        html += '</tbody></table>';
+        continue;
+      }
+
+      // Headings
+      const hMatch = line.match(/^(#{1,3})\s+(.*)$/);
+      if (hMatch) {
+        flushList();
+        const level = hMatch[1].length;
+        html += `<h${level}>${renderInlineMd(hMatch[2])}</h${level}>`;
+        i++; continue;
+      }
+
+      // Blockquote
+      if (/^>\s?/.test(line)) {
+        flushList();
+        const quoteLines = [];
+        while (i < lines.length && /^>\s?/.test(lines[i])) { quoteLines.push(lines[i].replace(/^>\s?/, '')); i++; }
+        html += `<blockquote>${renderInlineMd(quoteLines.join(' '))}</blockquote>`;
+        continue;
+      }
+
+      // Horizontal rule
+      if (/^(-{3,}|\*{3,})\s*$/.test(line)) {
+        flushList(); html += '<hr>'; i++; continue;
+      }
+
+      // Unordered list
+      if (/^[-*]\s+/.test(line)) {
+        if (listBuffer !== 'ul') { flushList(); html += '<ul>'; listBuffer = 'ul'; }
+        html += `<li>${renderInlineMd(line.replace(/^[-*]\s+/, ''))}</li>`;
+        i++; continue;
+      }
+
+      // Ordered list
+      if (/^\d+\.\s+/.test(line)) {
+        if (listBuffer !== 'ol') { flushList(); html += '<ol>'; listBuffer = 'ol'; }
+        html += `<li>${renderInlineMd(line.replace(/^\d+\.\s+/, ''))}</li>`;
+        i++; continue;
+      }
+
+      // Blank line
+      if (line.trim() === '') { flushList(); i++; continue; }
+
+      // Paragraph
+      flushList();
+      html += `<p>${renderInlineMd(line)}</p>`;
+      i++;
+    }
+    flushList();
+    return html;
+  }
+
+  // ---- Grammar: Chapters & Lessons (Admin-managed, shared cloud content) ----
+  function renderChapterList() {
+    const chapters = globalGrammarData.chapters || [];
+    DOM.chapterList.replaceChildren();
+
+    if (chapters.length === 0) {
+      DOM.chapterList.innerHTML = `<div class="empty-state"><p>${isAdminLogged ? 'Chưa có chương ngữ pháp nào. Bấm "Thêm chương mới" để bắt đầu.' : 'Chưa có nội dung ngữ pháp nào được đăng.'}</p></div>`;
+    } else {
+      chapters.forEach(ch => {
+        const card = createElement('div', 'chapter-card');
+        const lessonCount = (ch.lessons || []).length;
+        card.innerHTML = `
+          <div class="emoji">📐</div>
+          <div class="meta"><h3></h3><p></p></div>
+          ${isAdminLogged ? '<div class="del">✕</div>' : ''}`;
+        card.querySelector('h3').textContent = ch.name;
+        card.querySelector('p').textContent = `${lessonCount} bài`;
+        if (isAdminLogged) {
+          card.querySelector('.del').addEventListener('click', async (e) => {
+            e.stopPropagation();
+            if (confirm(`Xoá chương "${ch.name}" cùng toàn bộ bài bên trong khỏi Ngữ pháp công khai?`)) {
+              const updated = chapters.filter(c => c.id !== ch.id);
+              try { await pushGrammarChapters(updated); } catch (err) { alert('Lỗi xoá: ' + err.message); }
+            }
+          });
+        }
+        card.addEventListener('click', () => openChapterView(ch));
+        DOM.chapterList.appendChild(card);
+      });
+    }
+
+    DOM.btnOpenAddChapter.style.display = isAdminLogged ? 'block' : 'none';
+  }
+
+  function openChapterView(ch) {
+    activeChapter = ch;
+    DOM.chapterViewTitle.textContent = ch.name;
+    DOM.btnOpenAddLesson.style.display = isAdminLogged ? 'block' : 'none';
+    goTo('grammar-chapter');
+  }
+
+  function renderLessonList() {
+    if (!activeChapter) return;
+    const lessons = activeChapter.lessons || [];
+    DOM.lessonList.replaceChildren();
+    if (lessons.length === 0) {
+      DOM.lessonList.innerHTML = '<div class="empty-state"><p>Chương này chưa có bài nào.</p></div>';
+      return;
+    }
+    lessons.forEach(ls => {
+      const card = createElement('div', 'lesson-card');
+      card.innerHTML = `<div class="ic">📄</div><div class="meta"><h4></h4></div>${isAdminLogged ? '<div class="del">✕</div>' : ''}<div class="chev">›</div>`;
+      card.querySelector('h4').textContent = ls.title;
+      if (isAdminLogged) {
+        card.querySelector('.del').addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (confirm(`Xoá bài "${ls.title}"?`)) {
+            const updated = globalGrammarData.chapters.map(c =>
+              c.id === activeChapter.id ? { ...c, lessons: c.lessons.filter(l => l.id !== ls.id) } : c
+            );
+            try { await pushGrammarChapters(updated); } catch (err) { alert('Lỗi xoá: ' + err.message); }
+          }
+        });
+      }
+      card.addEventListener('click', () => openLessonView(ls));
+      DOM.lessonList.appendChild(card);
+    });
+  }
+
+  function openLessonView(ls) {
+    activeLesson = ls;
+    DOM.lessonViewTitle.textContent = ls.title;
+    DOM.lessonContent.innerHTML = renderMarkdown(ls.markdown);
+    DOM.btnEditLesson.style.display = isAdminLogged ? 'flex' : 'none';
+    goTo('grammar-lesson');
+  }
+
+  // ---- Grammar: Chapter create/edit modal (Admin only) ----
+  function openChapterModal(existingChapter) {
+    if (!isAdminLogged) return;
+    editingChapterId = existingChapter ? existingChapter.id : null;
+    DOM.chapterModalTitle.textContent = existingChapter ? 'Sửa tên chương' : 'Chương mới';
+    DOM.chapterNameInput.value = existingChapter ? existingChapter.name : '';
+    DOM.chapterModalErr.textContent = '';
+    openModal(DOM.chapterModal);
+    setTimeout(() => DOM.chapterNameInput.focus(), 50);
+  }
+
+  DOM.btnOpenAddChapter.addEventListener('click', () => openChapterModal(null));
+  DOM.btnCancelChapter.addEventListener('click', () => closeModal(DOM.chapterModal));
+
+  DOM.btnSaveChapter.addEventListener('click', async () => {
+    const name = DOM.chapterNameInput.value.trim();
+    if (!name) { DOM.chapterModalErr.textContent = 'Vui lòng nhập tên chương.'; return; }
+    const chapters = globalGrammarData.chapters || [];
+    let updated;
+    if (editingChapterId) {
+      updated = chapters.map(c => c.id === editingChapterId ? { ...c, name } : c);
+    } else {
+      updated = [...chapters, { id: generateUid(), name, lessons: [] }];
+    }
+    try {
+      await pushGrammarChapters(updated);
+      closeModal(DOM.chapterModal);
+    } catch (err) { DOM.chapterModalErr.textContent = 'Lỗi Cloud: ' + err.message; }
+  });
+
+  // ---- Grammar: Lesson editor (create/edit, Admin only) ----
+  function openLessonEditor(chapter, lesson) {
+    if (!isAdminLogged) return;
+    editingLessonId = lesson ? lesson.id : null;
+    const chapters = globalGrammarData.chapters || [];
+    DOM.gEditChapterSelect.replaceChildren();
+    chapters.forEach(ch => {
+      const opt = document.createElement('option');
+      opt.value = ch.id; opt.textContent = ch.name;
+      DOM.gEditChapterSelect.appendChild(opt);
+    });
+    DOM.gEditChapterSelect.value = chapter ? chapter.id : (chapters[0] ? chapters[0].id : '');
+    DOM.gEditTitleInput.value = lesson ? lesson.title : '';
+    DOM.gEditMarkdown.value = lesson ? lesson.markdown : '';
+    DOM.gEditErr.textContent = '';
+    DOM.btnDeleteLessonInEdit.style.display = lesson ? 'block' : 'none';
+    setGrammarEditorTab('write');
+    goTo('grammar-edit');
+  }
+
+  function setGrammarEditorTab(tab) {
+    const isPreview = tab === 'preview';
+    DOM.gEditTabWrite.classList.toggle('active', !isPreview);
+    DOM.gEditTabPreview.classList.toggle('active', isPreview);
+    DOM.gEditMarkdown.style.display = isPreview ? 'none' : 'block';
+    DOM.gEditPreviewBox.style.display = isPreview ? 'block' : 'none';
+    if (isPreview) DOM.gEditPreviewBox.innerHTML = renderMarkdown(DOM.gEditMarkdown.value) || '<p style="color:var(--ink-faint)">(Chưa có nội dung)</p>';
+  }
+  DOM.gEditTabWrite.addEventListener('click', () => setGrammarEditorTab('write'));
+  DOM.gEditTabPreview.addEventListener('click', () => setGrammarEditorTab('preview'));
+
+  DOM.btnOpenAddLesson.addEventListener('click', () => openLessonEditor(activeChapter, null));
+  DOM.btnEditLesson.addEventListener('click', () => openLessonEditor(activeChapter, activeLesson));
+  DOM.btnCancelGrammarEdit.addEventListener('click', () => goTo(activeChapter ? 'grammar-chapter' : 'grammar'));
+
+  DOM.btnSaveLesson.addEventListener('click', async () => {
+    const chapterId = DOM.gEditChapterSelect.value;
+    const title = DOM.gEditTitleInput.value.trim();
+    const markdown = DOM.gEditMarkdown.value;
+    if (!chapterId) { DOM.gEditErr.textContent = 'Vui lòng tạo một chương trước.'; return; }
+    if (!title) { DOM.gEditErr.textContent = 'Vui lòng nhập tiêu đề bài.'; return; }
+
+    const chapters = globalGrammarData.chapters || [];
+    let newLessonRef = null;
+    let updated;
+
+    if (editingLessonId) {
+      updated = chapters.map(c => {
+        const hasLesson = (c.lessons || []).some(l => l.id === editingLessonId);
+        if (!hasLesson) return c;
+        const lesson = c.lessons.find(l => l.id === editingLessonId);
+        const updatedLesson = { ...lesson, title, markdown };
+        if (c.id === chapterId) {
+          newLessonRef = updatedLesson;
+          return { ...c, lessons: c.lessons.map(l => l.id === editingLessonId ? updatedLesson : l) };
+        }
+        // moved to a different chapter: remove from here
+        newLessonRef = updatedLesson;
+        return { ...c, lessons: c.lessons.filter(l => l.id !== editingLessonId) };
+      });
+      // if moved, add into the target chapter
+      if (!updated.find(c => c.id === chapterId).lessons.some(l => l.id === editingLessonId)) {
+        updated = updated.map(c => c.id === chapterId ? { ...c, lessons: [...(c.lessons || []), newLessonRef] } : c);
+      }
+    } else {
+      newLessonRef = { id: generateUid(), title, markdown };
+      updated = chapters.map(c => c.id === chapterId ? { ...c, lessons: [...(c.lessons || []), newLessonRef] } : c);
+    }
+
+    try {
+      await pushGrammarChapters(updated);
+      activeChapter = updated.find(c => c.id === chapterId);
+      activeLesson = newLessonRef;
+      DOM.chapterViewTitle.textContent = activeChapter.name;
+      DOM.lessonViewTitle.textContent = activeLesson.title;
+      DOM.lessonContent.innerHTML = renderMarkdown(activeLesson.markdown);
+      DOM.btnEditLesson.style.display = isAdminLogged ? 'flex' : 'none';
+      goTo('grammar-lesson');
+    } catch (err) { DOM.gEditErr.textContent = 'Lỗi Cloud: ' + err.message; }
+  });
+
+  DOM.btnDeleteLessonInEdit.addEventListener('click', async () => {
+    if (!editingLessonId || !activeChapter) return;
+    if (!confirm('Xoá bài này?')) return;
+    const updated = globalGrammarData.chapters.map(c =>
+      c.id === activeChapter.id ? { ...c, lessons: c.lessons.filter(l => l.id !== editingLessonId) } : c
+    );
+    try {
+      await pushGrammarChapters(updated);
+      goTo('grammar-chapter');
+    } catch (err) { alert('Lỗi xoá: ' + err.message); }
+  });
+
+  DOM.btnBackToGrammar.addEventListener('click', () => goTo('grammar'));
+  DOM.btnBackToChapter.addEventListener('click', () => goTo('grammar-chapter'));
 
   // 5. Router Engine
   function goTo(name) {
@@ -1593,6 +2137,7 @@ procrastinate	trì hoãn			verb"></textarea>
       DOM.adminPanelBox.style.display = 'block'; 
       DOM.adminAuthRow.style.display = 'none';
       renderRefFolderList(); // Tải lại danh sách để hiện nút Sửa/Xóa
+      renderChapterList(); // Hiện nút quản lý Ngữ pháp
     } else { 
       alert('Mã Admin không đúng.'); 
     }
