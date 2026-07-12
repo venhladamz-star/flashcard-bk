@@ -3,12 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Flashcard — IELTS & Automation</title>
-<!-- PWA Tags -->
-<meta name="theme-color" content="#0b0f17">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<link rel="manifest" href="manifest.json"> <!-- Create manifest.json for full PWA install -->
+<title>Flashcard — Học từ vựng</title>
 <style>
   :root{
     --bg:#0b0f17;
@@ -26,12 +21,12 @@
     --bad:#e2603a;
     --bad-soft:#e2603a22;
     --gold:#e8b544;
-    --gold-soft:#e8b54422;
     --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
     --sans: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
     --radius: 14px;
   }
   
+  /* Light Mode Variables */
   body.light-mode {
     --bg:#f8f9fa;
     --bg-elev:#ffffff;
@@ -70,14 +65,37 @@
   }
 
   /* ---------- Top bar ---------- */
-  .topbar{ padding:20px 20px 14px; display:flex; align-items:center; justify-content:space-between; }
-  .topbar h1{ font-size:20px; font-weight:700; margin:0; letter-spacing:-0.01em; }
-  .topbar .sub{ font-size:12px; color:var(--ink-dim); margin-top:2px; }
-  .topbar-actions { display: flex; gap: 10px; }
+  .topbar{
+    padding:20px 20px 14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .topbar h1{
+    font-size:20px;
+    font-weight:700;
+    margin:0;
+    letter-spacing:-0.01em;
+  }
+  .topbar .sub{
+    font-size:12px;
+    color:var(--ink-dim);
+    margin-top:2px;
+  }
+  .topbar-actions {
+    display: flex;
+    gap: 10px;
+  }
   .icon-btn{
-    width:38px;height:38px; border-radius:50%; background:var(--bg-elev-2); border:1px solid var(--line-solid);
-    display:flex;align-items:center;justify-content:center; color:var(--ink-dim); font-size:16px;
-    cursor:pointer; transition: background 0.2s, border-color 0.2s;
+    width:38px;height:38px;
+    border-radius:50%;
+    background:var(--bg-elev-2);
+    border:1px solid var(--line-solid);
+    display:flex;align-items:center;justify-content:center;
+    color:var(--ink-dim);
+    font-size:16px;
+    cursor:pointer;
+    transition: background 0.2s, border-color 0.2s;
   }
   .icon-btn:hover { background: var(--line); }
 
@@ -87,130 +105,481 @@
   @keyframes fadeIn{ from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:translateY(0)} }
 
   /* ---------- Home ---------- */
-  .stat-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:22px; }
-  .stat-card{ background:var(--bg-elev); border:1px solid var(--line-solid); border-radius:var(--radius); padding:16px 12px; text-align:center; transition: background 0.3s, border-color 0.3s; }
-  .stat-card .num{ font-size:24px; font-weight:800; letter-spacing:-0.02em; }
-  .stat-card .label{ font-size:11px; color:var(--ink-dim); margin-top:4px; }
+  .stat-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .stat-card{
+    background:var(--bg-elev);
+    border:1px solid var(--line-solid);
+    border-radius:var(--radius);
+    padding:16px 12px;
+    text-align:center;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .stat-card .num{
+    font-size:24px;
+    font-weight:800;
+    letter-spacing:-0.02em;
+  }
+  .stat-card .label{
+    font-size:11px;
+    color:var(--ink-dim);
+    margin-top:4px;
+  }
   .stat-card.good .num{ color:var(--good) }
   .stat-card.accent .num{ color:var(--accent) }
 
-  .section-title{ font-size:13px; font-weight:700; color:var(--ink-dim); text-transform:uppercase; letter-spacing:0.06em; margin:24px 0 12px; }
-  
+  .section-title{
+    font-size:13px;
+    font-weight:700;
+    color:var(--ink-dim);
+    text-transform:uppercase;
+    letter-spacing:0.06em;
+    margin:24px 0 12px;
+  }
+
   .continue-card{
     background:linear-gradient(135deg, var(--bg-elev-2), var(--bg-elev));
-    border:1px solid var(--line-solid); border-radius:var(--radius); padding:20px;
-    display:flex; align-items:center; justify-content:space-between; gap:14px; cursor:pointer; transition: filter 0.2s;
+    border:1px solid var(--line-solid);
+    border-radius:var(--radius);
+    padding:20px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    cursor:pointer;
+    transition: background 0.2s, border-color 0.3s;
   }
   .continue-card:hover { filter: brightness(1.1); }
-  .continue-card .info h3{ margin:0 0 6px; font-size:17px; font-weight:700; }
-  .continue-card .info p{ margin:0; font-size:12px; color:var(--ink-dim); }
-  .continue-card .go{ width:44px;height:44px; border-radius:50%; background:var(--accent); color:#fff; display:flex;align-items:center;justify-content:center; font-size:18px; flex-shrink:0; }
-  
-  .empty-state{ text-align:center; padding:40px 20px; color:var(--ink-dim); background:var(--bg-elev); border:1px dashed var(--line-solid); border-radius:var(--radius); }
+  .continue-card .info h3{
+    margin:0 0 6px;
+    font-size:17px;
+    font-weight:700;
+  }
+  .continue-card .info p{
+    margin:0;
+    font-size:12px;
+    color:var(--ink-dim);
+  }
+  .continue-card .go{
+    width:44px;height:44px;
+    border-radius:50%;
+    background:var(--accent);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:18px;
+    flex-shrink:0;
+  }
+  .empty-state{
+    text-align:center;
+    padding:40px 20px;
+    color:var(--ink-dim);
+    background:var(--bg-elev);
+    border:1px dashed var(--line-solid);
+    border-radius:var(--radius);
+    transition: background 0.3s, border-color 0.3s;
+  }
   .empty-state .icon{ font-size:30px; margin-bottom:10px; opacity:.6 }
   .empty-state p{ font-size:13px; margin:0 0 14px; }
 
   /* ---------- Buttons ---------- */
-  .btn{ display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:12px 18px; border-radius:10px; border:none; font-family:var(--sans); font-size:14px; font-weight:600; cursor:pointer; transition:transform .1s, opacity .15s, background 0.3s, color 0.3s, border-color 0.3s; }
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    padding:12px 18px;
+    border-radius:10px;
+    border:none;
+    font-family:var(--sans);
+    font-size:14px;
+    font-weight:600;
+    cursor:pointer;
+    transition:transform .1s, opacity .15s, background 0.3s, color 0.3s, border-color 0.3s;
+  }
   .btn:active{ transform:scale(.97) }
   .btn.primary{ background:var(--accent); color:#fff; }
   .btn.ghost{ background:var(--bg-elev-2); color:var(--ink); border:1px solid var(--line-solid); }
   .btn.good{ background:var(--good); color:#fff; }
   .btn.bad{ background:var(--bad); color:#fff; }
-  .btn.gold{ background:var(--gold); color:#111; }
   .btn.full{ width:100%; }
-  .btn:disabled{ opacity:.6; cursor:wait; pointer-events: none; }
+  .btn:disabled{ opacity:.4; cursor:default; pointer-events: none; }
 
-  /* ---------- Folder Cards ---------- */
-  .row-actions{ display:flex; gap:10px; margin-bottom:18px; }
+  /* ---------- Tab 2: Đã tạo ---------- */
+  .row-actions{
+    display:flex;
+    gap:10px;
+    margin-bottom:18px;
+  }
   .folder-list{ display:flex; flex-direction:column; gap:10px; }
-  .folder-card{ background:var(--bg-elev); border:1px solid var(--line-solid); border-radius:var(--radius); padding:16px 18px; display:flex; align-items:center; gap:14px; cursor:pointer; transition: background 0.2s, border-color 0.3s; }
+  .folder-card{
+    background:var(--bg-elev);
+    border:1px solid var(--line-solid);
+    border-radius:var(--radius);
+    padding:16px 18px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+    cursor:pointer;
+    transition: background 0.2s, border-color 0.3s;
+  }
   .folder-card:hover { background: var(--bg-elev-2); }
-  .folder-card .emoji{ width:44px;height:44px; border-radius:12px; background:var(--accent-soft); display:flex;align-items:center;justify-content:center; font-size:20px; flex-shrink:0; }
+  .folder-card .emoji{
+    width:44px;height:44px;
+    border-radius:12px;
+    background:var(--accent-soft);
+    display:flex;align-items:center;justify-content:center;
+    font-size:20px;
+    flex-shrink:0;
+  }
   .folder-card .meta{ flex:1; min-width:0; }
-  .folder-card .meta h3{ margin:0 0 4px; font-size:15px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .folder-card .meta p{ margin:0; font-size:12px; color:var(--ink-dim); }
+  .folder-card .meta h3{
+    margin:0 0 4px;
+    font-size:15px;
+    font-weight:700;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .folder-card .meta p{
+    margin:0;
+    font-size:12px;
+    color:var(--ink-dim);
+  }
   .folder-card .chev{ color:var(--ink-faint); font-size:18px; }
   
-  .folder-card .action-icon { color:var(--ink-faint); font-size:16px; padding:6px; cursor:pointer; border-radius: 6px; transition: color 0.2s, background 0.2s; }
-  .folder-card .action-icon:hover{ color:var(--accent); background: var(--accent-soft); }
-  .folder-card .action-icon.del:hover{ color:var(--bad); background: var(--bad-soft); }
-  .folder-card .action-icon.test:hover{ color:var(--gold); background: var(--gold-soft); }
+  /* Icon actions for Folder Card */
+  .folder-card .del, .folder-card .edit-btn {
+    color:var(--ink-faint);
+    font-size:16px;
+    padding:6px;
+    cursor:pointer;
+    border-radius: 6px;
+    transition: color 0.2s, background 0.2s;
+  }
+  .folder-card .del:hover{ color:var(--bad); background: var(--bad-soft); }
+  .folder-card .edit-btn:hover{ color:var(--accent); background: var(--accent-soft); }
 
-  /* ---------- Create / Input Panel ---------- */
-  .panel{ background:var(--bg-elev); border:1px solid var(--line-solid); border-radius:var(--radius); padding:18px; margin-bottom:16px; transition: background 0.3s, border-color 0.3s; }
-  .field-label{ font-size:12px; font-weight:600; color:var(--ink-dim); margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;}
-  input.name-input, input.api-input{ width:100%; padding:12px 14px; border-radius:10px; border:1px solid var(--line-solid); background:var(--bg-elev-2); color:var(--ink); font-size:15px; font-family:var(--sans); margin-bottom:16px; outline:none; transition: border-color 0.2s, background 0.3s, color 0.3s; }
-  input.name-input:focus, input.api-input:focus{ border-color:var(--accent); }
-  textarea.paste-box{ width:100%; min-height:160px; border-radius:10px; border:1px solid var(--line-solid); background:var(--bg-elev-2); padding:14px; font-family:var(--mono); font-size:12.5px; line-height:1.7; color:var(--ink); resize:vertical; outline:none; transition: border-color 0.2s, background 0.3s, color 0.3s; }
+  /* ---------- Create panel ---------- */
+  .panel{
+    background:var(--bg-elev);
+    border:1px solid var(--line-solid);
+    border-radius:var(--radius);
+    padding:18px;
+    margin-bottom:16px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .field-label{
+    font-size:12px;
+    font-weight:600;
+    color:var(--ink-dim);
+    margin-bottom:8px;
+  }
+  input.name-input{
+    width:100%;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid var(--line-solid);
+    background:var(--bg-elev-2);
+    color:var(--ink);
+    font-size:15px;
+    font-family:var(--sans);
+    margin-bottom:16px;
+    outline:none;
+    transition: border-color 0.2s, background 0.3s, color 0.3s;
+  }
+  input.name-input:focus{ border-color:var(--accent); }
+  textarea.paste-box{
+    width:100%;
+    min-height:200px;
+    border-radius:10px;
+    border:1px solid var(--line-solid);
+    background:var(--bg-elev-2);
+    padding:14px;
+    font-family:var(--mono);
+    font-size:12.5px;
+    line-height:1.7;
+    color:var(--ink);
+    resize:vertical;
+    outline:none;
+    transition: border-color 0.2s, background 0.3s, color 0.3s;
+  }
   textarea.paste-box:focus{ border-color:var(--accent); }
   textarea.paste-box::placeholder{ color:var(--ink-faint); }
-  .field-order{ display:flex; flex-wrap:wrap; gap:6px; margin-top:12px; }
-  .field-order span{ font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.05em; padding:4px 9px; border-radius:6px; background:var(--bg-elev-2); color:var(--ink-dim); }
+  .field-order{
+    display:flex;
+    flex-wrap:wrap;
+    gap:6px;
+    margin-top:12px;
+  }
+  .field-order span{
+    font-family:var(--mono);
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    padding:4px 9px;
+    border-radius:6px;
+    background:var(--bg-elev-2);
+    color:var(--ink-dim);
+  }
   .field-order span.req{ color:var(--accent); background:var(--accent-soft); }
-  .hint{ font-size:11.5px; color:var(--ink-faint); margin-top:12px; line-height:1.6; }
-  .err{ font-size:12px; color:var(--bad); margin-top:10px; }
+  .hint{
+    font-size:11.5px;
+    color:var(--ink-faint);
+    margin-top:12px;
+    line-height:1.6;
+  }
+  .err{
+    font-size:12px;
+    color:var(--bad);
+    margin-top:10px;
+  }
 
-  /* ---------- Study View ---------- */
-  .study-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-  .back-btn{ display:flex;align-items:center;gap:6px; color:var(--ink-dim); font-size:14px; cursor:pointer; padding: 4px 0; }
-  .progress-track{ height:5px; background:var(--bg-elev-2); border-radius:99px; overflow:hidden; margin-bottom:26px; }
-  .progress-fill{ height:100%; background:var(--accent); border-radius:99px; transition:width .3s ease; }
-  .flip-stage{ perspective:1400px; margin-bottom:22px; }
-  .flip-card{ position:relative; width:100%; min-height:300px; transform-style:preserve-3d; transition:transform .45s cubic-bezier(.4,.2,.2,1); cursor:pointer; will-change: transform; }
+  /* ---------- Study view ---------- */
+  .study-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .back-btn{
+    display:flex;align-items:center;gap:6px;
+    color:var(--ink-dim);
+    font-size:14px;
+    cursor:pointer;
+    padding: 4px 0;
+  }
+  .progress-track{
+    height:5px;
+    background:var(--bg-elev-2);
+    border-radius:99px;
+    overflow:hidden;
+    margin-bottom:26px;
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--accent);
+    border-radius:99px;
+    transition:width .3s ease;
+  }
+  .flip-stage{
+    perspective:1400px;
+    margin-bottom:22px;
+  }
+  .flip-card{
+    position:relative;
+    width:100%;
+    min-height:280px;
+    transform-style:preserve-3d;
+    transition:transform .45s cubic-bezier(.4,.2,.2,1);
+    cursor:pointer;
+    will-change: transform;
+  }
   .flip-card.is-flipped{ transform:rotateY(180deg); }
-  .face{ position:absolute; inset:0; backface-visibility:hidden; border-radius:18px; border:1px solid var(--line-solid); background:var(--bg-elev); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:32px 24px; transition: background 0.3s, border-color 0.3s; overflow-y:auto; }
-  .face.back{ transform:rotateY(180deg); background:var(--bg-elev-2); justify-content: flex-start; padding-top:40px;}
-  .face .tag{ position:absolute; top:16px; left:18px; font-family:var(--mono); font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--accent); background:var(--accent-soft); padding:4px 10px; border-radius:6px; }
-  .speak-btn{ position:absolute; top:14px; right:14px; width:38px;height:38px; border-radius:50%; background:var(--bg-elev-2); border:1px solid var(--line-solid); display:flex;align-items:center;justify-content:center; font-size:16px; cursor:pointer; z-index:2; transition: background 0.2s, border-color 0.3s; }
+  .face{
+    position:absolute;
+    inset:0;
+    backface-visibility:hidden;
+    border-radius:18px;
+    border:1px solid var(--line-solid);
+    background:var(--bg-elev);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:32px 24px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .face.back{ transform:rotateY(180deg); background:var(--bg-elev-2); }
+  .face .tag{
+    position:absolute;
+    top:16px; left:18px;
+    font-family:var(--mono);
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--accent);
+    background:var(--accent-soft);
+    padding:4px 10px;
+    border-radius:6px;
+  }
+  .speak-btn{
+    position:absolute;
+    top:14px; right:14px;
+    width:38px;height:38px;
+    border-radius:50%;
+    background:var(--bg-elev-2);
+    border:1px solid var(--line-solid);
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;
+    cursor:pointer;
+    z-index:2;
+    transition: background 0.2s, border-color 0.3s;
+  }
   .speak-btn:hover { background: var(--line-solid); }
   .face.back .speak-btn{ background:var(--bg-elev); }
-  
-  .face .term{ font-size:30px; font-weight:800; letter-spacing:-0.01em; margin-bottom:8px; }
-  .face .ipa{ font-family:var(--mono); font-size:13px; color:var(--ink-dim); margin-bottom:8px;}
-  .face .meaning{ font-size:22px; font-weight:600; line-height:1.4; margin-bottom:16px; color:var(--accent); }
-  
-  /* AI Example Box */
-  .ai-ex-box { width:100%; text-align:left; background:var(--bg); border-radius:10px; padding:12px; border:1px solid var(--line); font-size:13px; margin-top:10px; display:none; }
-  .ai-ex-box.active { display:block; animation:fadeIn .2s ease; }
-  .ai-ex-en { font-style:italic; font-weight:600; margin-bottom:6px; color:var(--ink); line-height: 1.5; }
-  .ai-ex-vi { color:var(--ink-dim); line-height: 1.4;}
-  
-  .face .flip-hint{ font-family:var(--mono); font-size:10px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.08em; margin-top:auto;}
+  .face .term{
+    font-size:30px;
+    font-weight:800;
+    letter-spacing:-0.01em;
+    margin-bottom:8px;
+  }
+  .face .ipa{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--ink-dim);
+  }
+  .face .meaning{
+    font-size:21px;
+    font-weight:600;
+    line-height:1.4;
+  }
+  .face .flip-hint{
+    position:absolute;
+    bottom:14px;
+    font-family:var(--mono);
+    font-size:10px;
+    color:var(--ink-faint);
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+  }
 
-  .nav-row{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
-  .nav-btn{ width:52px;height:52px; border-radius:14px; background:var(--bg-elev); border:1px solid var(--line-solid); color:var(--ink); font-size:20px; display:flex;align-items:center;justify-content:center; cursor:pointer; flex-shrink:0; transition: background 0.3s, border-color 0.3s; }
+  .nav-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .nav-btn{
+    width:52px;height:52px;
+    border-radius:14px;
+    background:var(--bg-elev);
+    border:1px solid var(--line-solid);
+    color:var(--ink);
+    font-size:20px;
+    display:flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    flex-shrink:0;
+    transition: background 0.3s, border-color 0.3s;
+  }
   .nav-btn:disabled{ opacity:.3; pointer-events: none; }
-  .grade-row{ display:flex; gap:10px; flex:1; }
+  .grade-row{
+    display:flex;
+    gap:10px;
+    flex:1;
+  }
   .grade-row .btn{ flex:1; padding:15px; }
-  .pos-indicator{ text-align:center; font-family:var(--mono); font-size:12px; color:var(--ink-faint); margin-bottom:6px; }
+  .pos-indicator{
+    text-align:center;
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-faint);
+    margin-bottom:6px;
+  }
+  .shuffle-btn{
+    width:38px;height:38px;
+    border-radius:10px;
+    background:var(--bg-elev);
+    border:1px solid var(--line-solid);
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;
+    cursor:pointer;
+    color:var(--ink-dim);
+    flex-shrink:0;
+    transition:background .15s, color .15s, border-color .15s;
+  }
+  .shuffle-btn.on{
+    background:var(--accent-soft);
+    color:var(--accent);
+    border-color:var(--accent);
+  }
 
-  /* ---------- Quiz View ---------- */
-  .quiz-wrap { display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:20px;}
-  .quiz-word { font-size:32px; font-weight:800; margin-bottom:10px; color:var(--accent); }
-  .quiz-ipa { font-family:var(--mono); color:var(--ink-dim); font-size:14px; margin-bottom:30px; }
-  .quiz-options { display:flex; flex-direction:column; gap:12px; width:100%; }
-  .quiz-opt-btn { background:var(--bg-elev); border:1px solid var(--line-solid); border-radius:12px; padding:18px 16px; font-size:15px; font-weight:600; color:var(--ink); cursor:pointer; transition:all .2s; font-family:var(--sans); text-align:left; }
-  .quiz-opt-btn:hover { background:var(--bg-elev-2); }
-  .quiz-opt-btn.correct { background:var(--good) !important; color:#fff !important; border-color:var(--good) !important; }
-  .quiz-opt-btn.wrong { background:var(--bad) !important; color:#fff !important; border-color:var(--bad) !important; opacity:0.7; }
+  .done-wrap{ text-align:center; padding:50px 10px 20px; }
+  .done-wrap .trophy{ font-size:44px; margin-bottom:14px; }
+  .done-wrap h2{ font-size:22px; margin:0 0 8px; }
+  .done-wrap p{ color:var(--ink-dim); font-size:13px; margin:0 0 26px; }
+  .done-stats{
+    display:flex;
+    gap:10px;
+    margin-bottom:26px;
+  }
+  .done-stats > div{
+    flex:1;
+    background:var(--bg-elev);
+    border:1px solid var(--line-solid);
+    border-radius:12px;
+    padding:14px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .done-stats .n{ font-size:20px; font-weight:800; }
+  .done-stats .l{ font-size:11px; color:var(--ink-dim); margin-top:2px; }
+  .done-actions{ display:flex; flex-direction:column; gap:10px; }
 
   /* ---------- Tabbar ---------- */
-  .tabbar{ position:fixed; bottom:0; left:0; right:0; max-width:520px; margin:0 auto; background:var(--bg-elev); border-top:1px solid var(--line-solid); display:flex; padding:10px 6px calc(10px + env(safe-area-inset-bottom)); z-index:50; transition: background 0.3s, border-color 0.3s; }
-  .tab-item{ flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 4px; color:var(--ink-faint); cursor:pointer; font-size:10.5px; font-weight:600; }
+  .tabbar{
+    position:fixed;
+    bottom:0; left:0; right:0;
+    max-width:520px;
+    margin:0 auto;
+    background:var(--bg-elev); /* Sử dụng biến bg-elev thay vì màu trong suốt để hỗ trợ cả 2 theme */
+    border-top:1px solid var(--line-solid);
+    display:flex;
+    padding:10px 6px calc(10px + env(safe-area-inset-bottom));
+    z-index:50;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .tab-item{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    padding:6px 4px;
+    color:var(--ink-faint);
+    cursor:pointer;
+    font-size:10.5px;
+    font-weight:600;
+  }
   .tab-item .ic{ font-size:20px; line-height:1; }
   .tab-item.active{ color:var(--accent); }
 
   /* modal */
-  .modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.6); display:none; align-items:flex-end; justify-content:center; z-index:100; backdrop-filter:blur(2px); }
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(0,0,0,0.6);
+    display:none;
+    align-items:flex-end;
+    justify-content:center;
+    z-index:100;
+  }
   .modal-overlay.active{ display:flex; }
-  .modal-sheet{ background:var(--bg-elev); border-radius:20px 20px 0 0; padding:22px 20px calc(22px + env(safe-area-inset-bottom)); width:100%; max-width:520px; border:1px solid var(--line-solid); border-bottom:none; transition: background 0.3s, border-color 0.3s; max-height:90vh; overflow-y:auto;}
+  .modal-sheet{
+    background:var(--bg-elev);
+    border-radius:20px 20px 0 0;
+    padding:22px 20px calc(22px + env(safe-area-inset-bottom));
+    width:100%;
+    max-width:520px;
+    border:1px solid var(--line-solid);
+    border-bottom:none;
+    transition: background 0.3s, border-color 0.3s;
+  }
   .modal-sheet h3{ margin:0 0 6px; font-size:17px; }
-  .modal-sheet p{ margin:0 0 18px; font-size:13px; color:var(--ink-dim); line-height:1.5;}
-  .modal-actions{ display:flex; gap:10px; margin-top:20px;}
-  
-  .api-key-box { background:var(--bg-elev-2); padding:14px; border-radius:12px; border:1px solid var(--line); margin-bottom:16px;}
-  .api-key-box label { font-size:12px; font-weight:600; color:var(--accent); display:block; margin-bottom:8px;}
+  .modal-sheet p{ margin:0 0 18px; font-size:13px; color:var(--ink-dim); }
+  .modal-actions{ display:flex; gap:10px; }
+
+  /* Custom Admin Section in Reference Tab */
+  .admin-auth-row {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .admin-panel-box {
+    border: 1px dashed var(--accent); background: var(--bg-elev-2);
+    padding: 14px; border-radius: var(--radius); margin-bottom: 20px;
+    transition: background 0.3s;
+  }
 </style>
 </head>
 <body>
@@ -220,23 +589,32 @@
   <div class="topbar">
     <div>
       <h1 id="topTitle">Flashcard</h1>
-      <div class="sub" id="topSub">Học thuật & IELTS 6.5</div>
+      <div class="sub" id="topSub">Học từ vựng của bạn</div>
     </div>
     <div class="topbar-actions">
       <div class="icon-btn" id="themeBtn" title="Giao diện sáng/tối">🌓</div>
-      <div class="icon-btn" id="avatarBtn" title="Tài khoản & API">⚙️</div>
+      <div class="icon-btn" id="avatarBtn" title="Tài khoản">👤</div>
     </div>
   </div>
 
   <!-- ============ TAB: HOME ============ -->
   <div class="view active" id="view-home">
     <div class="stat-grid">
-      <div class="stat-card accent"><div class="num" id="statFolders">0</div><div class="label">Bộ thẻ</div></div>
-      <div class="stat-card"><div class="num" id="statWords">0</div><div class="label">Tổng từ</div></div>
-      <div class="stat-card good"><div class="num" id="statLearned">0</div><div class="label">Đã thuộc</div></div>
+      <div class="stat-card accent">
+        <div class="num" id="statFolders">0</div>
+        <div class="label">Bộ thẻ</div>
+      </div>
+      <div class="stat-card">
+        <div class="num" id="statWords">0</div>
+        <div class="label">Tổng từ</div>
+      </div>
+      <div class="stat-card good">
+        <div class="num" id="statLearned">0</div>
+        <div class="label">Đã thuộc</div>
+      </div>
     </div>
 
-    <div class="section-title">Hôm nay cần ôn (SRS)</div>
+    <div class="section-title">Tiếp tục học</div>
     <div id="continueSlot"></div>
 
     <div class="section-title">Bộ thẻ của bạn</div>
@@ -255,58 +633,56 @@
 
   <!-- ============ TAB: THAM KHẢO ============ -->
   <div class="view" id="view-reference">
-    <div class="api-key-box" id="adminAuthRow">
-      <label>Mã Admin (Đăng bài)</label>
-      <div style="display:flex; gap:8px;">
-        <input type="password" class="api-input" id="adminCodeInput" placeholder="Nhập mã Admin..." style="margin-bottom:0; flex:1;">
-        <button class="btn ghost" id="btnCheckAdmin">Xác thực</button>
-      </div>
+    <!-- Admin Trigger & Status Auth -->
+    <div class="admin-auth-row" id="adminAuthRow">
+      <input type="password" class="name-input" id="adminCodeInput" placeholder="Nhập mã Admin để đăng bài..." style="margin-bottom:0; flex:1;">
+      <button class="btn ghost" id="btnCheckAdmin">Xác thực</button>
     </div>
 
-    <div class="panel" id="adminPanelBox" style="display:none; border-color:var(--accent);">
-      <div class="field-label" style="color:var(--accent);" id="adminPanelTitle">👑 ADMIN (TẠO BỘ TỪ CHUẨN)</div>
+    <!-- Admin Panel Control (Ẩn mặc định) -->
+    <div class="admin-panel-box" id="adminPanelBox" style="display:none;">
+      <div class="field-label" style="color:var(--accent);" id="adminPanelTitle">👑 KHU VỰC ADMIN (ĐĂNG BỘ TỪ VỰNG LÊN CLOUD)</div>
       <input type="text" class="name-input" id="refFolderNameInput" placeholder="Tên bộ từ vựng tham khảo">
-      <textarea class="paste-box" id="refPasteArea" style="min-height:120px;" placeholder="Tiếng Anh [Tab] IPA [Tab] Nghĩa [Tab] Loại từ"></textarea>
+      <textarea class="paste-box" id="refPasteArea" style="min-height:120px;" placeholder="Từ [Tab] Nghĩa [Tab] Phát âm [Tab] Loại từ"></textarea>
       <div class="err" id="refCreateErr" style="margin-bottom:10px;"></div>
+      
       <div style="display:flex; gap:10px;">
-        <button class="btn ghost full" id="btnCancelRefEdit" style="display:none;">Hủy</button>
-        <button class="btn primary full" id="btnPushRefFolder">Đăng lên Cloud</button>
+        <button class="btn ghost full" id="btnCancelRefEdit" style="display:none;">Hủy cập nhật</button>
+        <button class="btn primary full" id="btnPushRefFolder">Đăng bộ từ vựng công khai</button>
       </div>
     </div>
 
-    <div class="section-title">✨ Bộ từ vựng từ Admin</div>
+    <!-- Natural List Slot -->
+    <div class="section-title">✨ Bộ từ vựng từ Admin (Mọi người tham khảo)</div>
     <div class="folder-list" id="refFolderList">
       <div class="empty-state"><p>Đang tải dữ liệu bộ từ vựng tham khảo...</p></div>
     </div>
   </div>
 
-  <!-- ============ CREATE PANEL (AI EXTRACTION) ============ -->
+  <!-- ============ CREATE PANEL ============ -->
   <div class="view" id="view-create">
-    <div class="study-header"><div class="back-btn" id="btnBackToCreated">‹ Quay lại</div></div>
-    
+    <div class="study-header">
+      <div class="back-btn" id="btnBackToCreated">‹ Quay lại</div>
+    </div>
     <div class="panel">
       <div class="field-label">Tên bộ thẻ</div>
-      <input type="text" class="name-input" id="folderNameInput" placeholder="VD: IELTS Writing Task 2 - Môi trường">
-      
-      <!-- Khối AI -->
-      <div class="api-key-box" style="background:var(--accent-soft); border-color:var(--accent);">
-        <label>✨ Dùng AI trích xuất từ vựng (IELTS 6.5)</label>
-        <textarea class="paste-box" id="aiRawInput" style="min-height:80px; margin-bottom:10px; background:var(--bg-elev);" placeholder="Dán văn bản tiếng Anh, báo chí hoặc bài đọc vào đây... AI sẽ tự động phân tích và trích xuất chuẩn định dạng."></textarea>
-        <button class="btn primary full" id="btnExtractAI">🪄 Trích xuất tự động</button>
-        <div class="err" id="aiErr"></div>
-      </div>
+      <input type="text" class="name-input" id="folderNameInput" placeholder="VD: Từ vựng Bài 5 — Op-amp">
+      <div class="field-label">Dán danh sách từ</div>
+      <textarea class="paste-box" id="pasteArea" placeholder="Dán trực tiếp từ Word, Excel, Google Docs...
 
-      <div class="field-label">Dữ liệu từ vựng (Thủ công / Kết quả AI)</div>
-      <textarea class="paste-box" id="pasteArea" placeholder="Dán trực tiếp từ Word, Excel..."></textarea>
-      
-      <!-- Chú ý: Đã đổi thứ tự theo yêu cầu của user -->
+serendipity	tình cờ may mắn tìm thấy điều tốt đẹp	/ˌserənˈdɪpɪti/	noun
+ambiguous	mơ hồ không rõ ràng	/æmˈbɪɡjuəs/	adjective
+procrastinate	trì hoãn			verb"></textarea>
       <div class="field-order">
-        <span class="req">TIẾNG ANH</span>
-        <span class="req">IPA</span>
-        <span class="req">TIẾNG VIỆT</span>
-        <span class="req">LOẠI TỪ</span>
+        <span class="req">từ</span>
+        <span class="req">nghĩa</span>
+        <span>phát âm (nếu có)</span>
+        <span>loại từ (nếu có)</span>
       </div>
-      <div class="hint">Cấu trúc 4 cột chuẩn, phân tách bằng dấu <b>Tab</b>. Có thể dán link .mp3 vào ô IPA để phát âm thanh.</div>
+      <div class="hint">
+        Mỗi dòng 1 từ, các cột cách nhau bằng <b>Tab</b> (copy thẳng từ Excel/Sheets là đúng định dạng).<br>
+        Cột phát âm để trống → app tự đọc bằng giọng máy. Dán link .mp3 vào đó → app phát file đó.
+      </div>
       <div class="err" id="createErr"></div>
     </div>
     <button class="btn primary full" id="btnSaveFolder">Lưu bộ thẻ</button>
@@ -317,8 +693,7 @@
     <div class="study-header">
       <div class="back-btn" id="btnExitStudy">‹ Thoát</div>
       <div class="pos-indicator" id="posText">1 / 1</div>
-      <!-- Placeholder btnShuffle for spacing if needed -->
-      <div></div>
+      <div class="shuffle-btn" id="btnShuffle" title="Trộn từ">🔀</div>
     </div>
     <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
 
@@ -329,19 +704,12 @@
           <button class="speak-btn" id="speakBtnFront" title="Phát âm">🔊</button>
           <div class="term" id="termText">word</div>
           <div class="ipa" id="ipaText">/wɜːrd/</div>
-          <div class="flip-hint">Chạm để lật</div>
+          <div class="flip-hint">chạm để xem nghĩa</div>
         </div>
         <div class="face back">
           <button class="speak-btn" id="speakBtnBack" title="Phát âm">🔊</button>
           <div class="meaning" id="meaningText">nghĩa</div>
-          
-          <button class="btn ghost" id="btnAiExample" style="font-size:12px; padding:6px 12px; margin-bottom:10px;">✨ Ví dụ AI</button>
-          <div class="ai-ex-box" id="aiExBox">
-             <div class="ai-ex-en" id="aiExEn"></div>
-             <div class="ai-ex-vi" id="aiExVi"></div>
-          </div>
-          
-          <div class="flip-hint">Chạm để quay lại</div>
+          <div class="flip-hint">chạm để quay lại</div>
         </div>
       </div>
     </div>
@@ -356,95 +724,115 @@
     </div>
   </div>
 
-  <!-- ============ QUIZ VIEW ============ -->
-  <div class="view" id="view-quiz">
-    <div class="study-header">
-      <div class="back-btn" id="btnExitQuiz">‹ Thoát Test</div>
-      <div class="pos-indicator" id="quizPosText">1 / 10</div>
-    </div>
-    <div class="progress-track"><div class="progress-fill" id="quizProgFill" style="width:0%"></div></div>
-    
-    <div class="quiz-wrap">
-      <div class="quiz-word" id="quizWord">Term</div>
-      <div class="quiz-ipa" id="quizIpa">/ipa/</div>
-      <div class="quiz-options" id="quizOptions"></div>
-    </div>
-  </div>
-
   <!-- ============ DONE VIEW ============ -->
   <div class="view" id="view-done">
     <div class="done-wrap">
       <div class="trophy">🏆</div>
-      <h2>Hoàn thành phiên học</h2>
+      <h2>Hoàn thành bộ thẻ</h2>
       <p id="doneFolderName">—</p>
       <div class="done-stats">
         <div><div class="n" id="doneGood">0</div><div class="l">Đã thuộc</div></div>
         <div><div class="n" id="doneBad">0</div><div class="l">Chưa thuộc</div></div>
       </div>
       <div class="done-actions">
+        <button class="btn primary full" id="btnRestartFolder">Học lại từ đầu</button>
         <button class="btn ghost full" id="btnRedoBad" style="display:none">Ôn lại từ chưa thuộc</button>
-        <button class="btn primary full" id="btnDoneToCreated">Về danh sách bộ thẻ</button>
+        <button class="btn ghost full" id="btnDoneToCreated">Về danh sách bộ thẻ</button>
       </div>
     </div>
   </div>
 
   <!-- ============ TABBAR ============ -->
   <div class="tabbar" id="mainTabbar">
-    <div class="tab-item active" data-tab="home"><div class="ic">🏠</div><div>Trang chủ</div></div>
-    <div class="tab-item" data-tab="created"><div class="ic">📁</div><div>Đã tạo</div></div>
-    <div class="tab-item" data-tab="reference"><div class="ic">🌐</div><div>Tham khảo</div></div>
+    <div class="tab-item active" data-tab="home">
+      <div class="ic">🏠</div><div>Trang chủ</div>
+    </div>
+    <div class="tab-item" data-tab="created">
+      <div class="ic">📁</div><div>Đã tạo</div>
+    </div>
+    <div class="tab-item" data-tab="reference">
+      <div class="ic">🌐</div><div>Tham khảo</div>
+    </div>
   </div>
 
 </div>
 
-<!-- Settings & Auth Modal -->
+<!-- Delete confirm modal -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal-sheet">
+    <h3>Xoá bộ thẻ này?</h3>
+    <p id="deleteModalText">Hành động này không thể hoàn tác.</p>
+    <div class="modal-actions">
+      <button class="btn ghost full" id="btnCancelDelete">Huỷ</button>
+      <button class="btn bad full" id="btnConfirmDelete">Xoá</button>
+    </div>
+  </div>
+</div>
+
+<!-- Account modal -->
 <div class="modal-overlay" id="accountModal">
   <div class="modal-sheet">
-    <h3>Cài đặt Hệ thống & AI</h3>
-    
-    <div class="api-key-box" style="margin-top:16px;">
-      <label>OpenRouter API Key (sk-or-v1-...)</label>
-      <input type="password" class="api-input" id="apiKeyInput" placeholder="Nhập mã API để kích hoạt AI" style="margin-bottom:6px;">
-      <p style="font-size:11px; margin:0; color:var(--ink-faint);">API này cho phép ứng dụng tự động trích xuất từ vựng và tạo câu ví dụ ngữ cảnh học thuật.</p>
+    <div id="accountModalSignedOut">
+      <h3>Đăng nhập</h3>
+      <p>Đăng nhập bằng Google để lưu bộ thẻ trên nhiều thiết bị.</p>
+      <div class="modal-actions">
+        <button class="btn ghost full" id="btnCloseAccount">Để sau</button>
+        <button class="btn primary full" id="btnGoogleSignIn">Đăng nhập Google</button>
+      </div>
     </div>
+    <div id="accountModalSignedIn" style="display:none">
+      <h3 id="accountEmail">—</h3>
+      <p>Dữ liệu của bạn đang được đồng bộ trên cloud.</p>
+      <div class="modal-actions">
+        <button class="btn ghost full" id="btnCloseAccount2">Đóng</button>
+        <button class="btn bad full" id="btnSignOut">Đăng xuất</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-    <div id="accountModalSignedOut" style="margin-top:20px; border-top:1px solid var(--line); padding-top:16px;">
-      <p>Đăng nhập bằng Google để đồng bộ Dữ liệu lên Cloud.</p>
-      <button class="btn primary full" id="btnGoogleSignIn">Đăng nhập Google</button>
-    </div>
-    <div id="accountModalSignedIn" style="display:none; margin-top:20px; border-top:1px solid var(--line); padding-top:16px;">
-      <h3 id="accountEmail" style="color:var(--accent);">—</h3>
-      <p>Dữ liệu đang được đồng bộ realtime.</p>
-      <button class="btn bad full" id="btnSignOut">Đăng xuất</button>
-    </div>
-
+<!-- Merge confirm modal -->
+<div class="modal-overlay" id="mergeModal">
+  <div class="modal-sheet">
+    <h3>Gộp dữ liệu?</h3>
+    <p id="mergeModalText">Máy này đang có bộ thẻ chưa lưu trên cloud. Bạn muốn gộp vào tài khoản Google không?</p>
     <div class="modal-actions">
-      <button class="btn ghost full" id="btnCloseAccount">Đóng</button>
+      <button class="btn ghost full" id="btnSkipMerge">Bỏ qua (dùng dữ liệu cloud)</button>
+      <button class="btn primary full" id="btnDoMerge">Gộp vào cloud</button>
     </div>
   </div>
 </div>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-  import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  import {
+    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, 
+    setPersistence, browserLocalPersistence
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-  // 1. Firebase Config
+  // 1. Firebase Config & Init
   const firebaseConfig = {
     apiKey: "AIzaSyCq8ou9D-tJQh8MZw5Fk8qzZ3zB50_KC78",
     authDomain: "flashcard-vu.firebaseapp.com",
     projectId: "flashcard-vu",
-    storageBucket: "flashcard-vu.firebasestorage.app"
+    storageBucket: "flashcard-vu.firebasestorage.app",
+    messagingSenderId: "124097509936",
+    appId: "1:124097509936:web:c01b945658ef57041f4bf5"
   };
+
   const fbApp = initializeApp(firebaseConfig);
   const auth = getAuth(fbApp);
   const db = getFirestore(fbApp);
   const provider = new GoogleAuthProvider();
+
   setPersistence(auth, browserLocalPersistence).catch(console.error);
 
   // 2. State App Variable
   const STORAGE_KEY = 'flashcard_data_v2';
-  const VIEWS = ['home', 'created', 'create', 'study', 'done', 'reference', 'quiz'];
+  const VIEWS = ['home', 'created', 'create', 'study', 'done', 'reference'];
   
   let DATA = loadLocalData();
   let currentUser = null;
@@ -452,38 +840,31 @@
   let suppressNextSnapshot = false;
   let saveDebounceTimer = null;
 
-  // Study State
   let activeFolder = null;
   let queue = [];
+  let baseQueue = [];
   let idx = 0;
   let flipped = false;
   let sessionStats = { good: 0, bad: 0 };
   let badPile = [];
+  let shuffleOn = false;
+  let pendingDeleteId = null;
+  let pendingLocalSnapshot = null;
   
-  // Quiz State
-  let quizQueue = [];
-  let quizIdx = 0;
-
-  // Admin & Settings
+  // Admin logic state
   let globalRefData = { folders: [] };
   let isAdminLogged = false;
   let editingRefId = null;
 
-  // Theme Init
+  // Theme logic init
   const themeBtn = document.getElementById('themeBtn');
   let isLightMode = localStorage.getItem('flashcard_theme') === 'light';
   if (isLightMode) document.body.classList.add('light-mode');
+
   themeBtn.addEventListener('click', () => {
     isLightMode = !isLightMode;
     document.body.classList.toggle('light-mode', isLightMode);
     localStorage.setItem('flashcard_theme', isLightMode ? 'light' : 'dark');
-  });
-
-  // API Key Load
-  const apiKeyInput = document.getElementById('apiKeyInput');
-  apiKeyInput.value = localStorage.getItem('flashcard_api_key') || '';
-  apiKeyInput.addEventListener('change', (e) => {
-    localStorage.setItem('flashcard_api_key', e.target.value.trim());
   });
 
   // 3. Cache DOM Elements
@@ -491,16 +872,18 @@
     views: VIEWS.reduce((acc, v) => ({ ...acc, [v]: document.getElementById(`view-${v}`) }), {}),
     tabItems: document.querySelectorAll('.tab-item'),
     avatarBtn: document.getElementById('avatarBtn'),
-    
-    // Create & AI
+    statFolders: document.getElementById('statFolders'),
+    statWords: document.getElementById('statWords'),
+    statLearned: document.getElementById('statLearned'),
+    continueSlot: document.getElementById('continueSlot'),
+    homeRecentList: document.getElementById('homeRecentList'),
+    folderList: document.getElementById('folderList'),
+    folderNameInput: document.getElementById('folderNameInput'),
     pasteArea: document.getElementById('pasteArea'),
-    aiRawInput: document.getElementById('aiRawInput'),
-    btnExtractAI: document.getElementById('btnExtractAI'),
-    aiErr: document.getElementById('aiErr'),
-    
-    // Study
-    progFill: document.getElementById('progFill'),
+    createErr: document.getElementById('createErr'),
     posText: document.getElementById('posText'),
+    btnShuffle: document.getElementById('btnShuffle'),
+    progFill: document.getElementById('progFill'),
     flipCard: document.getElementById('flipCard'),
     cardTag: document.getElementById('cardTag'),
     termText: document.getElementById('termText'),
@@ -508,49 +891,103 @@
     meaningText: document.getElementById('meaningText'),
     btnPrev: document.getElementById('btnPrev'),
     btnNext: document.getElementById('btnNext'),
-    btnAiExample: document.getElementById('btnAiExample'),
-    aiExBox: document.getElementById('aiExBox'),
-    aiExEn: document.getElementById('aiExEn'),
-    aiExVi: document.getElementById('aiExVi'),
-    
-    // Quiz
-    quizProgFill: document.getElementById('quizProgFill'),
-    quizPosText: document.getElementById('quizPosText'),
-    quizWord: document.getElementById('quizWord'),
-    quizIpa: document.getElementById('quizIpa'),
-    quizOptions: document.getElementById('quizOptions'),
+    doneFolderName: document.getElementById('doneFolderName'),
+    doneGood: document.getElementById('doneGood'),
+    doneBad: document.getElementById('doneBad'),
+    btnRedoBad: document.getElementById('btnRedoBad'),
+    deleteModal: document.getElementById('deleteModal'),
+    deleteModalText: document.getElementById('deleteModalText'),
+    accountModal: document.getElementById('accountModal'),
+    accountModalSignedOut: document.getElementById('accountModalSignedOut'),
+    accountModalSignedIn: document.getElementById('accountModalSignedIn'),
+    accountEmail: document.getElementById('accountEmail'),
+    mergeModal: document.getElementById('mergeModal'),
+    adminAuthRow: document.getElementById('adminAuthRow'),
+    adminCodeInput: document.getElementById('adminCodeInput'),
+    btnCheckAdmin: document.getElementById('btnCheckAdmin'),
+    adminPanelBox: document.getElementById('adminPanelBox'),
+    adminPanelTitle: document.getElementById('adminPanelTitle'),
+    refFolderNameInput: document.getElementById('refFolderNameInput'),
+    refPasteArea: document.getElementById('refPasteArea'),
+    refCreateErr: document.getElementById('refCreateErr'),
+    btnPushRefFolder: document.getElementById('btnPushRefFolder'),
+    btnCancelRefEdit: document.getElementById('btnCancelRefEdit'),
+    refFolderList: document.getElementById('refFolderList')
   };
 
-  // 4. Data Helpers
+  // 4. Storage Helpers
   function loadLocalData() {
-    try { const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : { folders: [], lastStudiedFolderId: null }; } 
-    catch (e) { return { folders: [], lastStudiedFolderId: null }; }
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : { folders: [], lastStudiedFolderId: null };
+    } catch (e) { return { folders: [], lastStudiedFolderId: null }; }
   }
+
   function saveData() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
-    if (currentUser) { clearTimeout(saveDebounceTimer); saveDebounceTimer = setTimeout(() => pushToCloud(), 500); }
+    if (currentUser) {
+      clearTimeout(saveDebounceTimer);
+      saveDebounceTimer = setTimeout(() => pushToCloud(), 500);
+    }
   }
+
   async function pushToCloud() {
-    if (!currentUser) return; suppressNextSnapshot = true;
-    try { await setDoc(doc(db, 'users', currentUser.uid), DATA); } catch (e) { console.error(e); }
+    if (!currentUser) return;
+    suppressNextSnapshot = true;
+    try {
+      await setDoc(doc(db, 'users', currentUser.uid), DATA);
+    } catch (e) { console.error('Cloud save error:', e); }
   }
+
+  function attachCloudListener(uid) {
+    if (cloudUnsub) cloudUnsub(); 
+    cloudUnsub = onSnapshot(doc(db, 'users', uid), (snap) => {
+      if (suppressNextSnapshot) { suppressNextSnapshot = false; return; }
+      if (snap.exists()) {
+        DATA = snap.data();
+        if (!DATA.folders) DATA.folders = [];
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+        refreshCurrentView();
+      }
+    });
+  }
+
+  function attachGlobalReferenceListener() {
+    onSnapshot(doc(db, 'shared', 'reference_pool'), (snap) => {
+      globalRefData = snap.exists() ? snap.data() : { folders: [] };
+      if (DOM.views.reference.classList.contains('active')) renderRefFolderList();
+    });
+  }
+
+  function refreshCurrentView() {
+    const active = VIEWS.find(v => DOM.views[v].classList.contains('active'));
+    if (active === 'home') renderHome();
+    else if (active === 'created') renderFolderList();
+    else if (active === 'reference') renderRefFolderList();
+  }
+
   function generateUid() { return 'f_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+
+  // 5. Router Engine
   function goTo(name) {
     VIEWS.forEach(v => DOM.views[v].classList.toggle('active', v === name));
-    DOM.tabItems.forEach(el => { el.classList.toggle('active', el.dataset.tab === name || (name === 'create' && el.dataset.tab === 'created')); });
-    if (name !== 'study' && name !== 'quiz') window.speechSynthesis?.cancel();
-    if (name === 'home') renderHome(); else if (name === 'created') renderFolderList(); else if (name === 'reference') renderRefFolderList();
+    DOM.tabItems.forEach(el => {
+      el.classList.toggle('active', el.dataset.tab === name || (name === 'create' && el.dataset.tab === 'created'));
+    });
+    if (name !== 'study' && name !== 'done') window.speechSynthesis?.cancel();
+    refreshCurrentView();
+    if (name === 'create') {
+      DOM.folderNameInput.value = ''; DOM.pasteArea.value = ''; DOM.createErr.textContent = '';
+    }
     window.scrollTo(0, 0);
   }
 
-  // 5. Renders
+  // 6. DOM Renders
   function createElement(tag, className, textContent) {
-    const el = document.createElement(tag); if (className) el.className = className; if (textContent) el.textContent = textContent; return el;
-  }
-
-  function getDueWords(folder) {
-    const now = Date.now();
-    return folder.words.filter(w => !w.nextReview || w.nextReview <= now || w.status !== 'good');
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    if (textContent !== undefined) el.textContent = textContent;
+    return el;
   }
 
   function renderHome() {
@@ -558,385 +995,437 @@
     const totalWords = folders.reduce((s, f) => s + f.words.length, 0);
     const learnedWords = folders.reduce((s, f) => s + f.words.filter(w => w.status === 'good').length, 0);
 
-    document.getElementById('statFolders').textContent = folders.length;
-    document.getElementById('statWords').textContent = totalWords;
-    document.getElementById('statLearned').textContent = learnedWords;
+    DOM.statFolders.textContent = folders.length;
+    DOM.statWords.textContent = totalWords;
+    DOM.statLearned.textContent = learnedWords;
 
-    const continueSlot = document.getElementById('continueSlot');
-    continueSlot.replaceChildren();
+    DOM.continueSlot.replaceChildren();
+    DOM.homeRecentList.replaceChildren();
 
-    // Lọc ra folder có từ cần học hôm nay (ưu tiên thẻ cuối cùng học)
-    let dueFolder = folders.find(f => f.id === DATA.lastStudiedFolderId && getDueWords(f).length > 0) 
-                 || folders.find(f => getDueWords(f).length > 0);
+    const last = folders.find(f => f.id === DATA.lastStudiedFolderId) || folders[0];
     
-    if (dueFolder) {
-      const dueList = getDueWords(dueFolder);
+    if (last) {
+      const remaining = last.words.filter(w => w.status !== 'good').length;
       const card = createElement('div', 'continue-card');
       const info = createElement('div', 'info');
-      info.appendChild(createElement('h3', null, dueFolder.name));
-      info.appendChild(createElement('p', null, `Có ${dueList.length} từ cần ôn tập (SRS)`));
-      card.appendChild(info); card.appendChild(createElement('div', 'go', '▶'));
+      info.appendChild(createElement('h3', null, last.name));
+      info.appendChild(createElement('p', null, `${remaining > 0 ? remaining + ' từ chưa thuộc · ' : 'Đã học hết · '}${last.words.length} từ`));
+      card.appendChild(info);
+      card.appendChild(createElement('div', 'go', '▶'));
       
-      card.addEventListener('click', () => { initStudySession(dueFolder, dueList); });
-      continueSlot.appendChild(card);
+      card.addEventListener('click', () => {
+        const list = remaining > 0 ? last.words.filter(w => w.status !== 'good') : last.words;
+        initStudySession(last, list);
+        DATA.lastStudiedFolderId = last.id;
+        saveData();
+      });
+      DOM.continueSlot.appendChild(card);
     } else {
       const empty = createElement('div', 'empty-state');
-      empty.innerHTML = folders.length > 0 ? `<div class="icon">🎉</div><p>Bạn đã học hết các từ đến hạn hôm nay!</p>` : `<div class="icon">📚</div><p>Chưa có bộ thẻ nào.</p>`;
-      continueSlot.appendChild(empty);
+      empty.innerHTML = `<div class="icon">📚</div><p>Chưa có bộ thẻ nào. Tạo bộ đầu tiên để bắt đầu học.</p>`;
+      const btn = createElement('button', 'btn primary', '＋ Tạo bộ thẻ');
+      btn.addEventListener('click', () => goTo('create'));
+      empty.appendChild(btn);
+      DOM.continueSlot.appendChild(empty);
     }
 
-    const recents = document.getElementById('homeRecentList');
-    recents.replaceChildren();
     if (folders.length > 0) {
+      const sorted = [...folders].sort((a, b) => b.createdAt - a.createdAt).slice(0, 4);
       const frag = document.createDocumentFragment();
-      [...folders].sort((a, b) => b.createdAt - a.createdAt).slice(0, 3).forEach(f => frag.appendChild(makeFolderCard(f, false)));
-      const listEl = createElement('div', 'folder-list'); listEl.appendChild(frag); recents.appendChild(listEl);
+      sorted.forEach(f => frag.appendChild(makeFolderCard(f, false)));
+      const listEl = createElement('div', 'folder-list');
+      listEl.appendChild(frag);
+      DOM.homeRecentList.appendChild(listEl);
     }
   }
 
   function renderFolderList() {
-    const list = document.getElementById('folderList'); list.replaceChildren();
-    if (!DATA.folders || DATA.folders.length === 0) { list.innerHTML = '<div class="empty-state"><p>Chưa có bộ thẻ nào.</p></div>'; return; }
+    DOM.folderList.replaceChildren();
+    if (!DATA.folders || DATA.folders.length === 0) {
+      const empty = createElement('div', 'empty-state');
+      empty.innerHTML = '<div class="icon">📁</div><p>Chưa có bộ thẻ nào. Bấm "Tạo bộ thẻ mới" để bắt đầu.</p>';
+      DOM.folderList.appendChild(empty);
+      return;
+    }
     const frag = document.createDocumentFragment();
-    [...DATA.folders].sort((a, b) => b.createdAt - a.createdAt).forEach(f => { frag.appendChild(makeFolderCard(f, true)); });
-    list.appendChild(frag);
+    [...DATA.folders].sort((a, b) => b.createdAt - a.createdAt).forEach(f => {
+      frag.appendChild(makeFolderCard(f, true));
+    });
+    DOM.folderList.appendChild(frag);
   }
 
-  function makeFolderCard(folder, withActions) {
+  function makeFolderCard(folder, withDelete) {
+    const learned = folder.words.filter(w => w.status === 'good').length;
     const card = createElement('div', 'folder-card');
     card.appendChild(createElement('div', 'emoji', '📘'));
     const meta = createElement('div', 'meta');
     meta.appendChild(createElement('h3', null, folder.name));
-    const dueCount = getDueWords(folder).length;
-    meta.appendChild(createElement('p', null, `${folder.words.length} từ · ${dueCount > 0 ? dueCount + ' cần ôn' : 'Đã học hết'}`));
+    meta.appendChild(createElement('p', null, `${folder.words.length} từ · ${learned} đã thuộc`));
     card.appendChild(meta);
 
-    if (withActions) {
-      const acts = createElement('div'); acts.style.display = 'flex'; acts.style.gap = '8px';
-      
-      // Nút Quiz
-      const quizBtn = createElement('div', 'action-icon test', '🎮');
-      quizBtn.addEventListener('click', (e) => { e.stopPropagation(); initQuizSession(folder); });
-      acts.appendChild(quizBtn);
-
-      const delBtn = createElement('div', 'action-icon del', '✕');
+    if (withDelete) {
+      const delBtn = createElement('div', 'del', '✕');
       delBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (confirm(`Xoá bộ thẻ "${folder.name}"?`)) {
-          DATA.folders = DATA.folders.filter(x => x.id !== folder.id); saveData(); renderFolderList();
-        }
+        pendingDeleteId = folder.id;
+        DOM.deleteModalText.textContent = `"${folder.name}" sẽ bị xoá vĩnh viễn cùng toàn bộ từ vựng bên trong.`;
+        DOM.deleteModal.classList.add('active');
       });
-      acts.appendChild(delBtn);
-      card.appendChild(acts);
+      card.appendChild(delBtn);
     } else {
       card.appendChild(createElement('div', 'chev', '›'));
     }
     
-    card.addEventListener('click', () => { initStudySession(folder, getDueWords(folder).length > 0 ? getDueWords(folder) : folder.words); });
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.del')) return;
+      initStudySession(folder, folder.words);
+      DATA.lastStudiedFolderId = folder.id;
+      saveData();
+    });
     return card;
   }
 
-  // 6. Parsing & Core Logic (Đã điều chỉnh chuẩn format user)
+  function renderRefFolderList() {
+    DOM.refFolderList.replaceChildren();
+    const refFolders = globalRefData.folders || [];
+    if (refFolders.length === 0) {
+      const empty = createElement('div', 'empty-state');
+      empty.innerHTML = '<div class="icon">🌐</div><p>Chưa có bộ từ vựng tham khảo nào được đăng.</p>';
+      DOM.refFolderList.appendChild(empty);
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    [...refFolders].sort((a, b) => b.createdAt - a.createdAt).forEach(f => {
+      const card = createElement('div', 'folder-card');
+      card.appendChild(createElement('div', 'emoji', '🌍'));
+      
+      const meta = createElement('div', 'meta');
+      meta.appendChild(createElement('h3', null, f.name));
+      meta.appendChild(createElement('p', null, `${f.words.length} từ vựng chuẩn từ Admin`));
+      card.appendChild(meta);
+
+      // Nếu là Admin, hiện nút Sửa và Xóa, ngược lại hiện nút Mũi tên
+      if (isAdminLogged) {
+        const actionWrap = createElement('div');
+        actionWrap.style.display = 'flex';
+        actionWrap.style.gap = '4px';
+
+        const editBtn = createElement('div', 'edit-btn', '✏️');
+        editBtn.title = 'Chỉnh sửa bộ thẻ';
+        editBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          startEditRefFolder(f);
+        });
+
+        const delBtn = createElement('div', 'del', '🗑️');
+        delBtn.title = 'Xóa bộ thẻ';
+        delBtn.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (confirm(`Bạn có chắc muốn xóa bộ từ vựng "${f.name}" khỏi mục Tham khảo chung?`)) {
+            const updatedFolders = globalRefData.folders.filter(x => x.id !== f.id);
+            try {
+              await setDoc(doc(db, 'shared', 'reference_pool'), { folders: updatedFolders });
+            } catch(err) { alert('Lỗi xóa: ' + err.message); }
+          }
+        });
+
+        actionWrap.appendChild(editBtn);
+        actionWrap.appendChild(delBtn);
+        card.appendChild(actionWrap);
+      } else {
+        card.appendChild(createElement('div', 'chev', '▶'));
+      }
+
+      card.addEventListener('click', (e) => {
+        if (e.target.closest('.del') || e.target.closest('.edit-btn')) return;
+        initStudySession(f, f.words);
+      });
+      frag.appendChild(card);
+    });
+    DOM.refFolderList.appendChild(frag);
+  }
+
+  // 7. Flashcard Engine
   function parseTabbed(text) {
     return text.split(/\r?\n/).filter(l => l.trim().length).map(line => {
         const cols = line.split('\t');
         return {
-          tu: (cols[0] || '').trim(), 
-          phat_am: (cols[1] || '').trim(), // Cột 2 là IPA
-          nghia: (cols[2] || '').trim(),   // Cột 3 là Nghĩa
-          loai_tu: (cols[3] || '').trim(), 
-          status: 'new', interval: 0, ease: 2.5, nextReview: 0
+          tu: (cols[0] || '').trim(), nghia: (cols[1] || '').trim(),
+          phat_am: (cols[2] || '').trim(), loai_tu: (cols[3] || '').trim(), status: 'new'
         };
       }).filter(w => w.tu);
   }
 
-  function speak(textOrUrl) {
-    if (!textOrUrl) return;
-    if (/^https?:\/\/.+\.(mp3|wav|ogg|m4a)(\?.*)?$/i.test(textOrUrl)) { new Audio(textOrUrl).play().catch(() => {}); }
-    else if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel(); 
-      const u = new SpeechSynthesisUtterance(textOrUrl); u.lang = 'en-US'; window.speechSynthesis.speak(u);
+  function speak(entry) {
+    const p = entry.phat_am;
+    if (p && /^https?:\/\/.+\.(mp3|wav|ogg|m4a)(\?.*)?$/i.test(p)) {
+      new Audio(p).play().catch(() => fallbackTTS(entry.tu));
+    } else fallbackTTS(entry.tu);
+  }
+
+  function fallbackTTS(text) {
+    if (!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel(); 
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-US'; u.rate = 0.95;
+    window.speechSynthesis.speak(u);
+  }
+
+  function shuffleArray(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
     }
+    return a;
   }
 
-  // ---------- AI API HELPER ----------
-  async function callOpenRouter(promptStr) {
-    const key = localStorage.getItem('flashcard_api_key');
-    if (!key || !key.startsWith('sk-or-v1-')) throw new Error('Cần nhập API Key hợp lệ (sk-or-v1-...) trong phần Cài đặt.');
-    
-    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-      method: "POST",
-      headers: { "Authorization": `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "openrouter/free",
-        messages: [{ role: "user", content: promptStr }],
-        temperature: 0.1
-      })
-    });
-    if (!res.ok) throw new Error('API Request Failed');
-    const data = await res.json();
-    return data.choices[0].message.content.trim();
-  }
-
-  // 7. Event Listeners - AI & Create
-  DOM.btnExtractAI.addEventListener('click', async () => {
-    const raw = DOM.aiRawInput.value.trim();
-    if (!raw) return DOM.aiErr.textContent = 'Hãy nhập văn bản vào ô trên.';
-    DOM.aiErr.textContent = ''; DOM.btnExtractAI.disabled = true; DOM.btnExtractAI.textContent = '⏳ Đang phân tích...';
-    
-    const prompt = `Trích xuất từ vựng học thuật quan trọng (ưu tiên mức độ IELTS 6.5) từ văn bản sau. 
-BẮT BUỘC TRẢ VỀ THEO FORMAT SAU (4 cột phân cách bởi dấu Tab):
-[Tiếng Anh]	[IPA]	[Tiếng Việt]	[Loại từ]
-Mỗi từ 1 dòng. Tuyệt đối KHÔNG in đậm, KHÔNG tiêu đề, KHÔNG giải thích. Chỉ xuất ra Text.
-Văn bản: "${raw}"`;
-
-    try {
-      const result = await callOpenRouter(prompt);
-      DOM.pasteArea.value = result;
-      DOM.aiRawInput.value = '';
-    } catch (e) { DOM.aiErr.textContent = e.message; }
-    finally { DOM.btnExtractAI.disabled = false; DOM.btnExtractAI.textContent = '🪄 Trích xuất tự động'; }
-  });
-
-  document.getElementById('btnSaveFolder').addEventListener('click', () => {
-    document.getElementById('createErr').textContent = '';
-    const name = document.getElementById('folderNameInput').value.trim(), text = DOM.pasteArea.value;
-    if (!name || !text.trim()) return document.getElementById('createErr').textContent = 'Vui lòng nhập tên và dán từ vựng.';
-    const words = parseTabbed(text);
-    if (!words.length) return document.getElementById('createErr').textContent = 'Dữ liệu không đúng định dạng.';
-    DATA.folders.push({ id: generateUid(), name, createdAt: Date.now(), words });
-    saveData(); goTo('created');
-  });
-
-  // 8. Study Engine (With SRS)
   function initStudySession(folder, wordsList) {
     if (!wordsList || wordsList.length === 0) return;
-    activeFolder = folder; DATA.lastStudiedFolderId = folder.id; saveData();
-    queue = [...wordsList]; idx = 0; sessionStats = { good: 0, bad: 0 }; badPile = [];
+    activeFolder = folder; baseQueue = [...wordsList];
+    queue = shuffleOn ? shuffleArray(baseQueue) : [...baseQueue];
+    idx = 0; sessionStats = { good: 0, bad: 0 }; badPile = [];
+    DOM.btnShuffle.classList.toggle('on', shuffleOn);
     goTo('study'); renderCardAtIndex();
   }
 
   function renderCardAtIndex() {
     if (idx >= queue.length) {
-      document.getElementById('doneFolderName').textContent = activeFolder ? activeFolder.name : '';
-      document.getElementById('doneGood').textContent = sessionStats.good;
-      document.getElementById('doneBad').textContent = sessionStats.bad;
-      document.getElementById('btnRedoBad').style.display = badPile.length ? 'block' : 'none';
+      DOM.doneFolderName.textContent = activeFolder ? activeFolder.name : '';
+      DOM.doneGood.textContent = sessionStats.good;
+      DOM.doneBad.textContent = sessionStats.bad;
+      DOM.btnRedoBad.style.display = badPile.length ? 'block' : 'none';
       goTo('done'); return;
     }
     const entry = queue[idx];
     flipped = false; DOM.flipCard.classList.remove('is-flipped');
-    DOM.aiExBox.classList.remove('active'); // Reset AI Box
-    
     DOM.cardTag.textContent = entry.loai_tu || '—';
     DOM.termText.textContent = entry.tu;
-    const ipa = entry.phat_am && !/^https?:\/\//i.test(entry.phat_am) ? entry.phat_am : '';
+    const isLink = /^https?:\/\//i.test(entry.phat_am);
+    const ipa = entry.phat_am && !isLink ? entry.phat_am : '';
     DOM.ipaText.textContent = ipa; DOM.ipaText.style.display = ipa ? 'block' : 'none';
     DOM.meaningText.textContent = entry.nghia;
-    
     DOM.posText.textContent = `${idx + 1} / ${queue.length}`;
     DOM.progFill.style.width = `${(idx / queue.length) * 100}%`;
     DOM.btnPrev.disabled = idx === 0;
   }
 
-  // SRS Logic Implementation
   function markStatus(status) {
     const entry = queue[idx];
-    if (activeFolder) {
-      const target = activeFolder.words.find(w => w.tu === entry.tu);
-      if (target) {
-        target.status = status;
-        if (status === 'good') {
-          target.ease = target.ease || 2.5;
-          target.interval = target.interval === 0 ? 1 : Math.round(target.interval * target.ease);
-          target.nextReview = Date.now() + (target.interval * 86400000); // Days to ms
-          sessionStats.good++;
-        } else {
-          target.interval = 0;
-          target.ease = Math.max(1.3, (target.ease || 2.5) - 0.2);
-          target.nextReview = Date.now(); // Review immediately
-          sessionStats.bad++; badPile.push(entry);
-        }
-      }
+    if (activeFolder && DATA.folders.some(f => f.id === activeFolder.id)) {
+      const target = activeFolder.words.find(w => w.tu === entry.tu && w.nghia === entry.nghia);
+      if (target) target.status = status;
       saveData();
     }
+    if (status === 'good') sessionStats.good++;
+    else { sessionStats.bad++; badPile.push(entry); }
     idx++; renderCardAtIndex();
   }
 
+  // 8. Event Listeners 
+  DOM.tabItems.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.tab)));
+  document.getElementById('btnOpenCreate').addEventListener('click', () => goTo('create'));
+  document.getElementById('btnBackToCreated').addEventListener('click', () => goTo('created'));
+  document.getElementById('btnExitStudy').addEventListener('click', () => goTo('created'));
+  document.getElementById('btnDoneToCreated').addEventListener('click', () => goTo('created'));
+  document.getElementById('btnCancelDelete').addEventListener('click', () => { pendingDeleteId = null; DOM.deleteModal.classList.remove('active'); });
+  document.getElementById('btnConfirmDelete').addEventListener('click', () => {
+    if (pendingDeleteId) {
+      DATA.folders = DATA.folders.filter(f => f.id !== pendingDeleteId);
+      if (DATA.lastStudiedFolderId === pendingDeleteId) DATA.lastStudiedFolderId = null;
+      saveData(); renderFolderList();
+    }
+    pendingDeleteId = null; DOM.deleteModal.classList.remove('active');
+  });
+
+  document.getElementById('btnSaveFolder').addEventListener('click', () => {
+    DOM.createErr.textContent = '';
+    const name = DOM.folderNameInput.value.trim(), text = DOM.pasteArea.value;
+    if (!name) return DOM.createErr.textContent = 'Hãy đặt tên cho bộ thẻ.';
+    if (!text.trim()) return DOM.createErr.textContent = 'Chưa dán dữ liệu từ vựng nào.';
+    const words = parseTabbed(text);
+    if (!words.length) return DOM.createErr.textContent = 'Sai định dạng (cách nhau bằng Tab).';
+    DATA.folders.push({ id: generateUid(), name, createdAt: Date.now(), words });
+    saveData(); goTo('created');
+  });
+
+  // Admin Panel Action Listeners
+  DOM.btnCheckAdmin.addEventListener('click', () => {
+    if (DOM.adminCodeInput.value.trim() === '220105') { 
+      isAdminLogged = true;
+      DOM.adminPanelBox.style.display = 'block'; 
+      DOM.adminAuthRow.style.display = 'none';
+      renderRefFolderList(); // Tải lại danh sách để hiện nút Sửa/Xóa
+    } else { 
+      alert('Mã Admin không đúng.'); 
+    }
+  });
+
+  function startEditRefFolder(folder) {
+    editingRefId = folder.id;
+    DOM.refFolderNameInput.value = folder.name;
+    // Chuyển array words trở lại dạng text Tab
+    DOM.refPasteArea.value = folder.words.map(w => 
+      [w.tu, w.nghia, w.phat_am || '', w.loai_tu || ''].join('\t')
+    ).join('\n');
+    
+    DOM.adminPanelTitle.textContent = '👑 CẬP NHẬT BỘ TỪ VỰNG';
+    DOM.btnPushRefFolder.textContent = 'Lưu thay đổi';
+    DOM.btnCancelRefEdit.style.display = 'block';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function resetAdminForm() {
+    editingRefId = null;
+    DOM.refFolderNameInput.value = '';
+    DOM.refPasteArea.value = '';
+    DOM.refCreateErr.textContent = '';
+    DOM.adminPanelTitle.textContent = '👑 KHU VỰC ADMIN (ĐĂNG BỘ TỪ VỰNG LÊN CLOUD)';
+    DOM.btnPushRefFolder.textContent = 'Đăng bộ từ vựng công khai';
+    DOM.btnCancelRefEdit.style.display = 'none';
+  }
+
+  DOM.btnCancelRefEdit.addEventListener('click', resetAdminForm);
+
+  DOM.btnPushRefFolder.addEventListener('click', async () => {
+    DOM.refCreateErr.textContent = '';
+    const name = DOM.refFolderNameInput.value.trim(), text = DOM.refPasteArea.value;
+    if (!name || !text.trim()) return DOM.refCreateErr.textContent = 'Thiếu thông tin bộ thẻ.';
+    const words = parseTabbed(text);
+    if (!words.length) return DOM.refCreateErr.textContent = 'Sai định dạng dữ liệu.';
+    
+    const updatedFolders = globalRefData.folders ? [...globalRefData.folders] : [];
+
+    if (editingRefId) {
+      // Logic cập nhật
+      const idx = updatedFolders.findIndex(f => f.id === editingRefId);
+      if (idx !== -1) {
+        updatedFolders[idx].name = name;
+        updatedFolders[idx].words = words;
+      }
+    } else {
+      // Logic tạo mới
+      updatedFolders.push({ id: 'ref_' + Date.now(), name, createdAt: Date.now(), words });
+    }
+
+    try {
+      await setDoc(doc(db, 'shared', 'reference_pool'), { folders: updatedFolders });
+      alert(editingRefId ? 'Cập nhật thành công!' : 'Đăng thành công!');
+      resetAdminForm();
+    } catch(e) { 
+      DOM.refCreateErr.textContent = 'Lỗi Cloud: ' + e.message; 
+    }
+  });
+
   DOM.flipCard.addEventListener('click', (e) => {
-    if (e.target.closest('.speak-btn') || e.target.closest('#btnAiExample')) return;
+    if (e.target.closest('.speak-btn')) return;
     flipped = !flipped; DOM.flipCard.classList.toggle('is-flipped', flipped);
   });
-  
-  const hndSpeak = (e) => { e.stopPropagation(); if (queue[idx]) speak(queue[idx].phat_am || queue[idx].tu); };
-  document.getElementById('speakBtnFront').addEventListener('click', hndSpeak);
-  document.getElementById('speakBtnBack').addEventListener('click', hndSpeak);
-  
+
+  const handleSpeakEvent = (e) => { e.stopPropagation(); if (queue[idx]) speak(queue[idx]); };
+  document.getElementById('speakBtnFront').addEventListener('click', handleSpeakEvent);
+  document.getElementById('speakBtnBack').addEventListener('click', handleSpeakEvent);
   document.getElementById('btnGood').addEventListener('click', () => markStatus('good'));
   document.getElementById('btnAgain').addEventListener('click', () => markStatus('bad'));
   DOM.btnPrev.addEventListener('click', () => { if (idx > 0) { idx--; renderCardAtIndex(); } });
   DOM.btnNext.addEventListener('click', () => { if (idx < queue.length) { idx++; renderCardAtIndex(); } });
-  document.getElementById('btnRedoBad').addEventListener('click', () => { if(activeFolder) initStudySession(activeFolder, [...badPile]); });
-  
-  // AI Example Generation
-  DOM.btnAiExample.addEventListener('click', async (e) => {
-    e.stopPropagation();
-    const entry = queue[idx];
-    if (!entry) return;
-    
-    DOM.btnAiExample.disabled = true; DOM.btnAiExample.textContent = '⏳ Đang tạo...';
-    const prompt = `Viết 1 câu ví dụ tiếng Anh học thuật (IELTS 6.5) sử dụng từ "${entry.tu}" mang nghĩa "${entry.nghia}". Trả về đúng 2 dòng: Dòng 1 tiếng Anh, dòng 2 tiếng Việt dịch sát nghĩa. Không viết thêm chữ nào khác.`;
-    
-    try {
-      const res = await callOpenRouter(prompt);
-      const lines = res.split('\n').filter(l => l.trim().length > 0);
-      DOM.aiExEn.textContent = lines[0] || res;
-      DOM.aiExVi.textContent = lines[1] || '';
-      DOM.aiExBox.classList.add('active');
-    } catch(err) { DOM.aiExEn.textContent = 'Lỗi: ' + err.message; DOM.aiExBox.classList.add('active'); }
-    finally { DOM.btnAiExample.disabled = false; DOM.btnAiExample.textContent = '✨ Đổi ví dụ khác'; }
+  document.getElementById('btnRestartFolder').addEventListener('click', () => { if (activeFolder) initStudySession(activeFolder, activeFolder.words); });
+  DOM.btnRedoBad.addEventListener('click', () => { if (!badPile.length || !activeFolder) return; initStudySession(activeFolder, [...badPile]); });
+  DOM.btnShuffle.addEventListener('click', () => {
+    shuffleOn = !shuffleOn; DOM.btnShuffle.classList.toggle('on', shuffleOn);
+    const seen = queue.slice(0, idx), remaining = queue.slice(idx);
+    queue = seen.concat(shuffleOn ? shuffleArray(remaining) : baseQueue.filter(w => remaining.includes(w)));
   });
 
-  // 9. Quiz / Test Engine
-  function shuffleArr(arr) { const a = [...arr]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+  document.addEventListener('keydown', (e) => {
+    if (!DOM.views.study.classList.contains('active')) return;
+    if (e.code === 'Space') { e.preventDefault(); DOM.flipCard.click(); }
+    if (e.key === 'ArrowRight') DOM.btnNext.click();
+    if (e.key === 'ArrowLeft') DOM.btnPrev.click();
+  });
 
-  function initQuizSession(folder) {
-    if (!folder.words || folder.words.length < 4) { alert('Bộ thẻ cần ít nhất 4 từ để chơi trắc nghiệm.'); return; }
-    quizQueue = shuffleArr(folder.words).slice(0, 10); // Lấy tối đa 10 câu
-    quizIdx = 0; activeFolder = folder;
-    goTo('quiz'); renderQuizCard();
-  }
-
-  function renderQuizCard() {
-    if (quizIdx >= quizQueue.length) { alert(`Hoàn thành xuất sắc ${quizQueue.length} câu hỏi!`); goTo('created'); return; }
-    
-    const curr = quizQueue[quizIdx];
-    DOM.quizWord.textContent = curr.tu;
-    DOM.quizIpa.textContent = curr.phat_am && !/^https?:\/\//i.test(curr.phat_am) ? curr.phat_am : (curr.loai_tu || '');
-    DOM.quizPosText.textContent = `${quizIdx + 1} / ${quizQueue.length}`;
-    DOM.quizProgFill.style.width = `${(quizIdx / quizQueue.length) * 100}%`;
-    
-    // Pick 3 distractors
-    const others = activeFolder.words.filter(w => w.tu !== curr.tu);
-    const distractors = shuffleArr(others).slice(0, 3);
-    const options = shuffleArr([curr, ...distractors]);
-    
-    DOM.quizOptions.replaceChildren();
-    options.forEach(opt => {
-      const btn = createElement('button', 'quiz-opt-btn', opt.nghia);
-      btn.addEventListener('click', () => {
-        // Disable all
-        [...DOM.quizOptions.children].forEach(b => { b.style.pointerEvents = 'none'; });
-        if (opt.tu === curr.tu) {
-          btn.classList.add('correct');
-          setTimeout(() => { quizIdx++; renderQuizCard(); }, 600);
-        } else {
-          btn.classList.add('wrong');
-          // Highlight correct one
-          [...DOM.quizOptions.children].find(b => b.textContent === curr.nghia).classList.add('correct');
-          setTimeout(() => { quizIdx++; renderQuizCard(); }, 1200);
-        }
-      });
-      DOM.quizOptions.appendChild(btn);
-    });
-  }
-  document.getElementById('btnExitQuiz').addEventListener('click', () => goTo('created'));
-
-  // 10. Auth Modal
+  // 9. REBUILT AUTH & CLOUD CORE
   DOM.avatarBtn.addEventListener('click', () => {
-    document.getElementById('accountModal').classList.add('active');
+    DOM.accountModal.classList.add('active');
     const signedIn = !!currentUser;
-    document.getElementById('accountModalSignedIn').style.display = signedIn ? 'block' : 'none';
-    document.getElementById('accountModalSignedOut').style.display = signedIn ? 'none' : 'block';
-    if (signedIn) document.getElementById('accountEmail').textContent = currentUser.email || 'Đã đăng nhập';
+    DOM.accountModalSignedIn.style.display = signedIn ? 'block' : 'none';
+    DOM.accountModalSignedOut.style.display = signedIn ? 'none' : 'block';
+    if (signedIn) DOM.accountEmail.textContent = currentUser.email || currentUser.displayName || 'Đã đăng nhập';
   });
-  
-  const closeModal = () => document.getElementById('accountModal').classList.remove('active');
-  document.getElementById('btnCloseAccount').addEventListener('click', closeModal);
-  
-  document.getElementById('btnGoogleSignIn').addEventListener('click', async () => { try { await signInWithPopup(auth, provider); closeModal(); } catch (e) { alert(e.message); } });
-  document.getElementById('btnSignOut').addEventListener('click', async () => { await signOut(auth); closeModal(); });
+
+  const closeAccountModals = () => DOM.accountModal.classList.remove('active');
+  document.getElementById('btnCloseAccount').addEventListener('click', closeAccountModals);
+  document.getElementById('btnCloseAccount2').addEventListener('click', closeAccountModals);
+
+  document.getElementById('btnGoogleSignIn').addEventListener('click', async () => {
+    try {
+      await signInWithPopup(auth, provider);
+      closeAccountModals();
+    } catch (e) {
+      console.error(e);
+      alert("Lỗi đăng nhập: " + (e.message || e.code));
+    }
+  });
+
+  document.getElementById('btnSignOut').addEventListener('click', async () => {
+    await signOut(auth);
+    closeAccountModals();
+  });
+
+  document.getElementById('btnSkipMerge').addEventListener('click', () => {
+    pendingLocalSnapshot = null; DOM.mergeModal.classList.remove('active');
+  });
+
+  document.getElementById('btnDoMerge').addEventListener('click', async () => {
+    if (pendingLocalSnapshot) {
+      const existingIds = new Set(DATA.folders.map(f => f.id));
+      pendingLocalSnapshot.folders.forEach(f => { if (!existingIds.has(f.id)) DATA.folders.push(f); });
+      saveData(); refreshCurrentView();
+    }
+    pendingLocalSnapshot = null; DOM.mergeModal.classList.remove('active');
+  });
 
   onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
+        DOM.avatarBtn.textContent = '☁️';
+        DOM.avatarBtn.title = `Đã đăng nhập — ${user.email || ''}`;
+
         try {
-            const snap = await getDoc(doc(db, 'users', user.uid));
-            if (snap.exists()) { DATA = snap.data(); localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA)); } 
-            else { await pushToCloud(); }
-            if (cloudUnsub) cloudUnsub();
-            cloudUnsub = onSnapshot(doc(db, 'users', user.uid), (s) => {
-              if (suppressNextSnapshot) { suppressNextSnapshot = false; return; }
-              if (s.exists()) { DATA = s.data(); localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA)); refreshCurrentView(); }
-            });
-        } catch (e) { console.error(e); }
+            const localSnapshot = loadLocalData();
+            const hasLocalData = localSnapshot.folders && localSnapshot.folders.length > 0;
+            const ref = doc(db, 'users', user.uid);
+            const snap = await getDoc(ref);
+
+            if (snap.exists()) {
+                const cloudData = snap.data();
+                if (!cloudData.folders) cloudData.folders = [];
+                DATA = cloudData; 
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+
+                if (hasLocalData) {
+                    pendingLocalSnapshot = localSnapshot;
+                    DOM.mergeModal.classList.add('active');
+                }
+            } else {
+                DATA = localSnapshot;
+                await pushToCloud();
+            }
+            attachCloudListener(user.uid);
+        } catch (e) { console.error("Cloud sync error:", e); }
     } else {
-        currentUser = null; if (cloudUnsub) { cloudUnsub(); cloudUnsub = null; }
+        currentUser = null;
+        DOM.avatarBtn.textContent = '👤';
+        DOM.avatarBtn.title = 'Đăng nhập';
+        if (cloudUnsub) { cloudUnsub(); cloudUnsub = null; }
+        DATA = loadLocalData();
     }
-    const active = VIEWS.find(v => DOM.views[v].classList.contains('active'));
-    if(active === 'home') renderHome(); else if(active==='created') renderFolderList();
+    refreshCurrentView();
   });
 
-  // Admin Module Ref
-  const refFolderList = document.getElementById('refFolderList');
-  onSnapshot(doc(db, 'shared', 'reference_pool'), (snap) => {
-    globalRefData = snap.exists() ? snap.data() : { folders: [] };
-    if (DOM.views.reference.classList.contains('active')) renderRefFolderList();
-  });
-
-  function renderRefFolderList() {
-    refFolderList.replaceChildren();
-    const flist = globalRefData.folders || [];
-    if (flist.length === 0) { refFolderList.innerHTML = '<div class="empty-state"><p>Chưa có dữ liệu.</p></div>'; return; }
-    const frag = document.createDocumentFragment();
-    [...flist].forEach(f => {
-      const card = createElement('div', 'folder-card'); card.appendChild(createElement('div', 'emoji', '🌍'));
-      const meta = createElement('div', 'meta'); meta.appendChild(createElement('h3', null, f.name)); meta.appendChild(createElement('p', null, `${f.words.length} từ vựng chuẩn`)); card.appendChild(meta);
-      
-      if (isAdminLogged) {
-        const wrap = createElement('div'); wrap.style.display='flex';
-        const ed = createElement('div','action-icon','✏️'); ed.addEventListener('click', (e)=>{e.stopPropagation(); startEdit(f);});
-        const de = createElement('div','action-icon del','✕'); de.addEventListener('click', async (e)=>{e.stopPropagation(); if(confirm('Xóa?')) await setDoc(doc(db, 'shared', 'reference_pool'), { folders: flist.filter(x=>x.id!==f.id) }); });
-        wrap.appendChild(ed); wrap.appendChild(de); card.appendChild(wrap);
-      } else card.appendChild(createElement('div', 'chev', '▶'));
-      
-      card.addEventListener('click', (e) => { if(!e.target.closest('.action-icon')) initStudySession(f, f.words); });
-      frag.appendChild(card);
-    });
-    refFolderList.appendChild(frag);
-  }
-
-  document.getElementById('btnCheckAdmin').addEventListener('click', () => {
-    if (document.getElementById('adminCodeInput').value === '220105') { isAdminLogged = true; document.getElementById('adminPanelBox').style.display = 'block'; document.getElementById('adminAuthRow').style.display = 'none'; renderRefFolderList(); }
-    else alert('Mã Admin sai.');
-  });
-
-  function startEdit(f) {
-    editingRefId = f.id; document.getElementById('refFolderNameInput').value = f.name;
-    document.getElementById('refPasteArea').value = f.words.map(w => [w.tu, w.phat_am||'', w.nghia, w.loai_tu||''].join('\t')).join('\n');
-    document.getElementById('adminPanelTitle').textContent = '👑 SỬA BỘ TỪ'; document.getElementById('btnCancelRefEdit').style.display='block'; window.scrollTo(0,0);
-  }
-  
-  document.getElementById('btnCancelRefEdit').addEventListener('click', ()=>{editingRefId=null; document.getElementById('refFolderNameInput').value=''; document.getElementById('refPasteArea').value=''; document.getElementById('adminPanelTitle').textContent='👑 ADMIN (TẠO BỘ TỪ CHUẨN)'; document.getElementById('btnCancelRefEdit').style.display='none';});
-  
-  document.getElementById('btnPushRefFolder').addEventListener('click', async () => {
-    const err = document.getElementById('refCreateErr'); err.textContent = '';
-    const name = document.getElementById('refFolderNameInput').value, txt = document.getElementById('refPasteArea').value;
-    if(!name || !txt) return err.textContent = 'Thiếu thông tin';
-    const words = parseTabbed(txt); if(!words.length) return err.textContent = 'Sai định dạng';
-    let nf = globalRefData.folders ? [...globalRefData.folders] : [];
-    if(editingRefId) { const i = nf.findIndex(x=>x.id===editingRefId); if(i>-1) { nf[i].name=name; nf[i].words=words; } }
-    else nf.push({ id: 'ref_'+Date.now(), name, createdAt: Date.now(), words });
-    try { await setDoc(doc(db, 'shared', 'reference_pool'), { folders: nf }); document.getElementById('btnCancelRefEdit').click(); } catch(e) { err.textContent = e.message; }
-  });
-
-  DOM.tabItems.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.tab)));
-  document.getElementById('btnOpenCreate').addEventListener('click', () => goTo('create'));
-  document.getElementById('btnBackToCreated').addEventListener('click', () => goTo('created'));
-  document.getElementById('btnExitStudy').addEventListener('click', () => goTo('home'));
-  document.getElementById('btnDoneToCreated').addEventListener('click', () => goTo('home'));
-  
+  // Init App
   renderHome();
+  attachGlobalReferenceListener(); 
 </script>
 </body>
 </html>
