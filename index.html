@@ -571,6 +571,109 @@
   .modal-sheet p{ margin:0 0 18px; font-size:13px; color:var(--ink-dim); }
   .modal-actions{ display:flex; gap:10px; }
 
+  /* ---------- Mode select modal ---------- */
+  .mode-option{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    padding:16px;
+    background:var(--bg-elev-2);
+    border:1px solid var(--line-solid);
+    border-radius:14px;
+    cursor:pointer;
+    margin-bottom:10px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .mode-option:hover{ background:var(--line); border-color:var(--accent); }
+  .mode-option .ic{ font-size:24px; flex-shrink:0; }
+  .mode-option .txt h4{ margin:0 0 3px; font-size:15px; font-weight:700; }
+  .mode-option .txt p{ margin:0; font-size:12px; color:var(--ink-dim); }
+
+  /* ---------- Quiz view ---------- */
+  .quiz-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:16px;
+  }
+  .quiz-card{
+    background:var(--bg-elev);
+    border:1px solid var(--line-solid);
+    border-radius:18px;
+    padding:28px 22px;
+    text-align:center;
+    margin-bottom:20px;
+    transition: background 0.3s, border-color 0.3s;
+  }
+  .quiz-card .tag{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:10px;
+    text-transform:uppercase;
+    letter-spacing:0.08em;
+    color:var(--accent);
+    background:var(--accent-soft);
+    padding:4px 10px;
+    border-radius:6px;
+    margin-bottom:14px;
+  }
+  .quiz-card .prompt{
+    font-size:24px;
+    font-weight:800;
+    letter-spacing:-0.01em;
+  }
+  .quiz-options{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-bottom:18px;
+  }
+  .quiz-option{
+    padding:15px 16px;
+    border-radius:12px;
+    border:1px solid var(--line-solid);
+    background:var(--bg-elev);
+    color:var(--ink);
+    font-size:14.5px;
+    font-weight:600;
+    text-align:left;
+    cursor:pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .quiz-option:hover{ background:var(--bg-elev-2); }
+  .quiz-option.correct{ background:var(--good-soft); border-color:var(--good); color:var(--good); }
+  .quiz-option.incorrect{ background:var(--bad-soft); border-color:var(--bad); color:var(--bad); }
+  .quiz-option:disabled{ pointer-events:none; opacity:1; }
+  .quiz-option:disabled:not(.correct):not(.incorrect){ opacity:.5; }
+
+  .quiz-input-wrap{ margin-bottom:18px; }
+  input.quiz-input{
+    width:100%;
+    padding:15px 16px;
+    border-radius:12px;
+    border:2px solid var(--line-solid);
+    background:var(--bg-elev-2);
+    color:var(--ink);
+    font-size:16px;
+    font-family:var(--sans);
+    outline:none;
+    transition: border-color 0.2s, background 0.3s, color 0.3s;
+  }
+  input.quiz-input:focus{ border-color:var(--accent); }
+  input.quiz-input.correct{ border-color:var(--good); background:var(--good-soft); }
+  input.quiz-input.incorrect{ border-color:var(--bad); background:var(--bad-soft); }
+  .quiz-answer-reveal{
+    font-size:13px;
+    color:var(--good);
+    margin-top:10px;
+    font-weight:600;
+  }
+  .quiz-footer{
+    display:flex;
+    gap:10px;
+  }
+  .quiz-footer .btn{ flex:1; }
+
   /* Custom Admin Section in Reference Tab */
   .admin-auth-row {
     display: flex; gap: 8px; margin-bottom: 16px;
@@ -725,6 +828,32 @@ procrastinate	trì hoãn			verb"></textarea>
   </div>
 
   <!-- ============ DONE VIEW ============ -->
+  <div class="view" id="view-quiz">
+    <div class="quiz-header">
+      <div class="back-btn" id="btnExitQuiz">‹ Thoát</div>
+      <div class="pos-indicator" id="quizPosText" style="margin-bottom:0;">1 / 1</div>
+      <div style="width:38px;"></div>
+    </div>
+    <div class="progress-track"><div class="progress-fill" id="quizProgFill" style="width:0%"></div></div>
+
+    <div class="quiz-card">
+      <span class="tag" id="quizTag">Đoán nghĩa</span>
+      <div class="prompt" id="quizPrompt">word</div>
+    </div>
+
+    <div class="quiz-options" id="quizOptions" style="display:none;"></div>
+
+    <div class="quiz-input-wrap" id="quizInputWrap" style="display:none;">
+      <input type="text" class="quiz-input" id="quizInput" placeholder="Nhập câu trả lời...">
+      <div class="quiz-answer-reveal" id="quizAnswerReveal" style="display:none;"></div>
+    </div>
+
+    <div class="quiz-footer">
+      <button class="btn primary full" id="btnQuizSubmit">Kiểm tra</button>
+      <button class="btn primary full" id="btnQuizNext" style="display:none;">Câu tiếp theo</button>
+    </div>
+  </div>
+
   <div class="view" id="view-done">
     <div class="done-wrap">
       <div class="trophy">🏆</div>
@@ -758,6 +887,22 @@ procrastinate	trì hoãn			verb"></textarea>
 </div>
 
 <!-- Delete confirm modal -->
+<div class="modal-overlay" id="modeModal">
+  <div class="modal-sheet">
+    <h3 id="modeModalTitle">Chọn chế độ</h3>
+    <p>Bạn muốn học bộ thẻ này như thế nào?</p>
+    <div class="mode-option" id="modeOptionStudy">
+      <div class="ic">📖</div>
+      <div class="txt"><h4>Học (lật thẻ)</h4><p>Lật thẻ để xem nghĩa, tự đánh giá đã thuộc hay chưa.</p></div>
+    </div>
+    <div class="mode-option" id="modeOptionQuiz">
+      <div class="ic">✏️</div>
+      <div class="txt"><h4>Kiểm tra</h4><p>Trắc nghiệm hoặc tự luận, chấm điểm ngay.</p></div>
+    </div>
+    <button class="btn ghost full" id="btnCancelMode">Hủy</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="deleteModal">
   <div class="modal-sheet">
     <h3>Xoá bộ thẻ này?</h3>
@@ -832,7 +977,7 @@ procrastinate	trì hoãn			verb"></textarea>
 
   // 2. State App Variable
   const STORAGE_KEY = 'flashcard_data_v2';
-  const VIEWS = ['home', 'created', 'create', 'study', 'done', 'reference'];
+  const VIEWS = ['home', 'created', 'create', 'study', 'quiz', 'done', 'reference'];
   
   let DATA = loadLocalData();
   let currentUser = null;
@@ -850,6 +995,16 @@ procrastinate	trì hoãn			verb"></textarea>
   let shuffleOn = false;
   let pendingDeleteId = null;
   let pendingLocalSnapshot = null;
+
+  // Quiz state
+  let pendingModeFolder = null;
+  let pendingModeWords = null;
+  let quizQueue = [];
+  let quizIdx = 0;
+  let quizStats = { good: 0, bad: 0 };
+  let quizAnswered = false;
+  let lastSessionMode = 'study'; // 'study' | 'quiz'
+  let currentQ = null; // current quiz question object
   
   // Admin logic state
   let globalRefData = { folders: [] };
@@ -912,7 +1067,21 @@ procrastinate	trì hoãn			verb"></textarea>
     refCreateErr: document.getElementById('refCreateErr'),
     btnPushRefFolder: document.getElementById('btnPushRefFolder'),
     btnCancelRefEdit: document.getElementById('btnCancelRefEdit'),
-    refFolderList: document.getElementById('refFolderList')
+    refFolderList: document.getElementById('refFolderList'),
+    modeModal: document.getElementById('modeModal'),
+    modeOptionStudy: document.getElementById('modeOptionStudy'),
+    modeOptionQuiz: document.getElementById('modeOptionQuiz'),
+    btnCancelMode: document.getElementById('btnCancelMode'),
+    quizPosText: document.getElementById('quizPosText'),
+    quizProgFill: document.getElementById('quizProgFill'),
+    quizTag: document.getElementById('quizTag'),
+    quizPrompt: document.getElementById('quizPrompt'),
+    quizOptions: document.getElementById('quizOptions'),
+    quizInputWrap: document.getElementById('quizInputWrap'),
+    quizInput: document.getElementById('quizInput'),
+    quizAnswerReveal: document.getElementById('quizAnswerReveal'),
+    btnQuizSubmit: document.getElementById('btnQuizSubmit'),
+    btnQuizNext: document.getElementById('btnQuizNext')
   };
 
   // 4. Storage Helpers
@@ -1015,9 +1184,7 @@ procrastinate	trì hoãn			verb"></textarea>
       
       card.addEventListener('click', () => {
         const list = remaining > 0 ? last.words.filter(w => w.status !== 'good') : last.words;
-        initStudySession(last, list);
-        DATA.lastStudiedFolderId = last.id;
-        saveData();
+        openModeModal(last, list, () => { DATA.lastStudiedFolderId = last.id; saveData(); });
       });
       DOM.continueSlot.appendChild(card);
     } else {
@@ -1078,9 +1245,7 @@ procrastinate	trì hoãn			verb"></textarea>
     
     card.addEventListener('click', (e) => {
       if (e.target.closest('.del')) return;
-      initStudySession(folder, folder.words);
-      DATA.lastStudiedFolderId = folder.id;
-      saveData();
+      openModeModal(folder, folder.words, () => { DATA.lastStudiedFolderId = folder.id; saveData(); });
     });
     return card;
   }
@@ -1138,7 +1303,7 @@ procrastinate	trì hoãn			verb"></textarea>
 
       card.addEventListener('click', (e) => {
         if (e.target.closest('.del') || e.target.closest('.edit-btn')) return;
-        initStudySession(f, f.words);
+        openModeModal(f, f.words, null);
       });
       frag.appendChild(card);
     });
@@ -1185,6 +1350,7 @@ procrastinate	trì hoãn			verb"></textarea>
     activeFolder = folder; baseQueue = [...wordsList];
     queue = shuffleOn ? shuffleArray(baseQueue) : [...baseQueue];
     idx = 0; sessionStats = { good: 0, bad: 0 }; badPile = [];
+    lastSessionMode = 'study';
     DOM.btnShuffle.classList.toggle('on', shuffleOn);
     goTo('study'); renderCardAtIndex();
   }
@@ -1221,6 +1387,180 @@ procrastinate	trì hoãn			verb"></textarea>
     else { sessionStats.bad++; badPile.push(entry); }
     idx++; renderCardAtIndex();
   }
+
+  // 7b. Mode select modal
+  let pendingModeConfirm = null;
+  function openModeModal(folder, wordsList, onConfirm) {
+    if (!wordsList || wordsList.length === 0) return;
+    pendingModeFolder = folder;
+    pendingModeWords = wordsList;
+    pendingModeConfirm = onConfirm;
+    DOM.modeModal.classList.add('active');
+  }
+
+  function closeModeModal() {
+    DOM.modeModal.classList.remove('active');
+    pendingModeFolder = null; pendingModeWords = null; pendingModeConfirm = null;
+  }
+
+  DOM.modeOptionStudy.addEventListener('click', () => {
+    const folder = pendingModeFolder, words = pendingModeWords, confirm = pendingModeConfirm;
+    closeModeModal();
+    if (confirm) confirm();
+    initStudySession(folder, words);
+  });
+
+  DOM.modeOptionQuiz.addEventListener('click', () => {
+    const folder = pendingModeFolder, words = pendingModeWords, confirm = pendingModeConfirm;
+    closeModeModal();
+    if (confirm) confirm();
+    initQuizSession(folder, words);
+  });
+
+  DOM.btnCancelMode.addEventListener('click', closeModeModal);
+
+  // 7c. Quiz Engine
+  function initQuizSession(folder, wordsList) {
+    if (!wordsList || wordsList.length < 1) return;
+    activeFolder = folder;
+    quizQueue = shuffleArray(wordsList);
+    quizIdx = 0; quizStats = { good: 0, bad: 0 };
+    lastSessionMode = 'quiz';
+    goTo('quiz'); renderQuizAtIndex();
+  }
+
+  function pickDistractors(pool, correctEntry, field, count) {
+    const candidates = pool.filter(w => w !== correctEntry && (w[field] || '').trim() && w[field] !== correctEntry[field]);
+    const shuffled = shuffleArray(candidates);
+    const picked = [];
+    const seen = new Set([correctEntry[field]]);
+    for (const c of shuffled) {
+      if (picked.length >= count) break;
+      if (seen.has(c[field])) continue;
+      seen.add(c[field]);
+      picked.push(c[field]);
+    }
+    return picked;
+  }
+
+  function renderQuizAtIndex() {
+    if (quizIdx >= quizQueue.length) {
+      DOM.doneFolderName.textContent = activeFolder ? activeFolder.name : '';
+      DOM.doneGood.textContent = quizStats.good;
+      DOM.doneBad.textContent = quizStats.bad;
+      DOM.btnRedoBad.style.display = 'none';
+      goTo('done'); return;
+    }
+    const entry = quizQueue[quizIdx];
+    const askMeaning = Math.random() < 0.5; // true: show word -> ask meaning
+    const useChoice = Math.random() < 0.5;  // true: multiple choice, false: free text
+
+    const promptField = askMeaning ? 'tu' : 'nghia';
+    const answerField = askMeaning ? 'nghia' : 'tu';
+
+    currentQ = { entry, askMeaning, useChoice, answerField, answered: false };
+
+    DOM.quizTag.textContent = askMeaning ? 'Đoán nghĩa' : 'Đoán từ tiếng Anh';
+    DOM.quizPrompt.textContent = entry[promptField];
+    DOM.quizPosText.textContent = `${quizIdx + 1} / ${quizQueue.length}`;
+    DOM.quizProgFill.style.width = `${(quizIdx / quizQueue.length) * 100}%`;
+
+    DOM.quizAnswerReveal.style.display = 'none';
+    DOM.quizAnswerReveal.textContent = '';
+    DOM.quizInput.value = '';
+    DOM.quizInput.classList.remove('correct', 'incorrect');
+    DOM.quizInput.disabled = false;
+    DOM.btnQuizNext.style.display = 'none';
+    DOM.btnQuizSubmit.style.display = 'inline-flex';
+    DOM.btnQuizSubmit.disabled = false;
+
+    if (useChoice) {
+      DOM.quizOptions.style.display = 'flex';
+      DOM.quizInputWrap.style.display = 'none';
+      DOM.quizOptions.replaceChildren();
+
+      const distractors = pickDistractors(quizQueue, entry, answerField, 3);
+      const options = shuffleArray([entry[answerField], ...distractors]);
+
+      options.forEach(optText => {
+        const btn = document.createElement('button');
+        btn.className = 'quiz-option';
+        btn.textContent = optText;
+        btn.addEventListener('click', () => submitQuizChoice(btn, optText));
+        DOM.quizOptions.appendChild(btn);
+      });
+      DOM.btnQuizSubmit.style.display = 'none';
+    } else {
+      DOM.quizOptions.style.display = 'none';
+      DOM.quizInputWrap.style.display = 'block';
+      setTimeout(() => DOM.quizInput.focus(), 50);
+    }
+  }
+
+  function normalizeAnswer(s) {
+    return (s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+  }
+
+  function recordQuizResult(isCorrect) {
+    const entry = currentQ.entry;
+    if (activeFolder && DATA.folders.some(f => f.id === activeFolder.id)) {
+      const target = activeFolder.words.find(w => w.tu === entry.tu && w.nghia === entry.nghia);
+      if (target) target.status = isCorrect ? 'good' : 'bad';
+      saveData();
+    }
+    if (isCorrect) quizStats.good++; else quizStats.bad++;
+  }
+
+  function submitQuizChoice(btnEl, optText) {
+    if (currentQ.answered) return;
+    currentQ.answered = true;
+    const correctAnswer = currentQ.entry[currentQ.answerField];
+    const isCorrect = optText === correctAnswer;
+    recordQuizResult(isCorrect);
+
+    [...DOM.quizOptions.children].forEach(btn => {
+      btn.disabled = true;
+      if (btn.textContent === correctAnswer) btn.classList.add('correct');
+      else if (btn === btnEl && !isCorrect) btn.classList.add('incorrect');
+    });
+    DOM.btnQuizNext.style.display = 'inline-flex';
+  }
+
+  function submitQuizText() {
+    if (currentQ.answered) return;
+    currentQ.answered = true;
+    const correctAnswer = currentQ.entry[currentQ.answerField];
+    const isCorrect = normalizeAnswer(DOM.quizInput.value) === normalizeAnswer(correctAnswer);
+    recordQuizResult(isCorrect);
+
+    DOM.quizInput.disabled = true;
+    DOM.quizInput.classList.add(isCorrect ? 'correct' : 'incorrect');
+    if (!isCorrect) {
+      DOM.quizAnswerReveal.style.display = 'block';
+      DOM.quizAnswerReveal.textContent = `Đáp án đúng: ${correctAnswer}`;
+    }
+    DOM.btnQuizSubmit.style.display = 'none';
+    DOM.btnQuizNext.style.display = 'inline-flex';
+  }
+
+  DOM.btnQuizSubmit.addEventListener('click', () => {
+    if (!currentQ || currentQ.useChoice) return;
+    submitQuizText();
+  });
+
+  DOM.quizInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (currentQ && !currentQ.answered) submitQuizText();
+      else if (currentQ && currentQ.answered) DOM.btnQuizNext.click();
+    }
+  });
+
+  DOM.btnQuizNext.addEventListener('click', () => {
+    quizIdx++; renderQuizAtIndex();
+  });
+
+  document.getElementById('btnExitQuiz').addEventListener('click', () => goTo('created'));
 
   // 8. Event Listeners 
   DOM.tabItems.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.tab)));
@@ -1329,7 +1669,11 @@ procrastinate	trì hoãn			verb"></textarea>
   document.getElementById('btnAgain').addEventListener('click', () => markStatus('bad'));
   DOM.btnPrev.addEventListener('click', () => { if (idx > 0) { idx--; renderCardAtIndex(); } });
   DOM.btnNext.addEventListener('click', () => { if (idx < queue.length) { idx++; renderCardAtIndex(); } });
-  document.getElementById('btnRestartFolder').addEventListener('click', () => { if (activeFolder) initStudySession(activeFolder, activeFolder.words); });
+  document.getElementById('btnRestartFolder').addEventListener('click', () => {
+    if (!activeFolder) return;
+    if (lastSessionMode === 'quiz') initQuizSession(activeFolder, activeFolder.words);
+    else initStudySession(activeFolder, activeFolder.words);
+  });
   DOM.btnRedoBad.addEventListener('click', () => { if (!badPile.length || !activeFolder) return; initStudySession(activeFolder, [...badPile]); });
   DOM.btnShuffle.addEventListener('click', () => {
     shuffleOn = !shuffleOn; DOM.btnShuffle.classList.toggle('on', shuffleOn);
