@@ -344,7 +344,7 @@
     transform-style:preserve-3d;
     transition:transform .45s cubic-bezier(.4,.2,.2,1);
     cursor:pointer;
-    will-change: transform; /* Tối ưu hiệu suất flip */
+    will-change: transform;
   }
   .flip-card.is-flipped{ transform:rotateY(180deg); }
   .face{
@@ -1135,7 +1135,8 @@ procrastinate	trì hoãn			verb"></textarea>
     if (!text.trim()) { DOM.createErr.textContent = 'Chưa dán dữ liệu từ vựng nào.'; return; }
     
     const words = parseTabbed(text);
-    if (!words.length) { DOM.createErr.textContent = 'Không đọc được từ nào. Kiểm tra lại định dạng (cách nhau bằng Tab).'(); return; }
+    // ĐÃ SỬA LỖI CÚ PHÁP BỊ DƯ `();` Ở ĐÂY
+    if (!words.length) { DOM.createErr.textContent = 'Không đọc được từ nào. Kiểm tra lại định dạng (cách nhau bằng Tab).'; return; }
     
     DATA.folders.push({ id: generateUid(), name, createdAt: Date.now(), words });
     saveData();
@@ -1191,13 +1192,17 @@ procrastinate	trì hoãn			verb"></textarea>
   });
 
   // 9. Auth & Cloud Synchronizer
+  // ĐÃ SỬA LỖI: Dùng auth.currentUser thay vì biến currentUser để tránh Race Condition khi tải lại trang
   DOM.avatarBtn.addEventListener('click', () => {
     DOM.accountModal.classList.add('active');
-    const signedIn = !!currentUser;
+    const user = auth.currentUser; 
+    const signedIn = !!user;
+    
     DOM.accountModalSignedIn.style.display = signedIn ? 'block' : 'none';
     DOM.accountModalSignedOut.style.display = signedIn ? 'none' : 'block';
+    
     if (signedIn) {
-      DOM.accountEmail.textContent = currentUser.email || currentUser.displayName || 'Đã đăng nhập';
+      DOM.accountEmail.textContent = user.email || user.displayName || 'Đã đăng nhập';
     }
   });
 
