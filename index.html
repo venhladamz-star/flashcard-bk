@@ -7,7 +7,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
   import {
-    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+    getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
   import {
     getFirestore, doc, getDoc, setDoc, onSnapshot
@@ -30,7 +30,7 @@
   // Expose a minimal bridge for the non-module app script below.
   window.FB = {
     auth, db, provider,
-    signInWithPopup, signOut, onAuthStateChanged,
+    signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged,
     doc, getDoc, setDoc, onSnapshot
   };
 </script>
@@ -1178,13 +1178,30 @@ procrastinate	trì hoãn			verb"></textarea>
   document.getElementById('btnCloseAccount').addEventListener('click', closeAccountModal);
   document.getElementById('btnCloseAccount2').addEventListener('click', closeAccountModal);
 
+  function isMobileBrowser(){
+    return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
   document.getElementById('btnGoogleSignIn').addEventListener('click', async function(){
     try{
-      await window.FB.signInWithPopup(window.FB.auth, window.FB.provider);
-      closeAccountModal();
+      if(isMobileBrowser()){
+        await window.FB.signInWithRedirect(window.FB.auth, window.FB.provider);
+        // page will navigate away to Google and back; nothing more to do here
+      } else {
+        await window.FB.signInWithPopup(window.FB.auth, window.FB.provider);
+        closeAccountModal();
+      }
     }catch(e){
-      console.error('Sign-in failed:', e);
-      alert('Đăng nhập thất bại. Thử lại nhé.');
+      console.error('Sign-in failed:', e.code, e.message);
+      if(e.code === 'auth/unauthorized-domain'){
+        alert('Domain này chưa được cho phép đăng nhập.\nVào Firebase Console → Authentication → Settings → Authorized domains và thêm: ' + window.location.hostname);
+      } else if(e.code === 'auth/popup-closed-by-user'){
+        // user just closed the popup, no need to alarm them
+      } else if(e.code === 'auth/popup-blocked'){
+        alert('Trình duyệt đã chặn popup đăng nhập. Hãy cho phép popup rồi thử lại.');
+      } else {
+        alert('Đăng nhập thất bại (' + e.code + '). Thử lại nhé.');
+      }
     }
   });
 
@@ -1220,23 +1237,32 @@ procrastinate	trì hoãn			verb"></textarea>
       currentUser = user;
       avatarBtn.textContent = '☁️';
       avatarBtn.title = 'Đã đăng nhập — ' + (user.email || '');
-      const localSnapshot = loadLocalData();
-      const hasLocalData = localSnapshot.folders && localSnapshot.folders.length > 0;
+      try{
+        const localSnapshot = loadLocalData();
+        const hasLocalData = localSnapshot.folders && localSnapshot.folders.length > 0;
 
-      const ref = window.FB.doc(window.FB.db, 'users', user.uid);
-      const snap = await window.FB.getDoc(ref);
-      if(snap.exists()){
-        DATA = snap.data();
-        if(!DATA.folders) DATA.folders = [];
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
-        if(hasLocalData){
-          showMergeModal(localSnapshot);
+        const ref = window.FB.doc(window.FB.db, 'users', user.uid);
+        const snap = await window.FB.getDoc(ref);
+        if(snap.exists()){
+          DATA = snap.data();
+          if(!DATA.folders) DATA.folders = [];
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+          if(hasLocalData){
+            showMergeModal(localSnapshot);
+          }
+        } else {
+          // First time signing in on this account: push local data (if any) as the initial cloud copy
+          await pushToCloud();
         }
-      } else {
-        // First time signing in on this account: push local data (if any) as the initial cloud copy
-        await pushToCloud();
+        attachCloudListener(user.uid);
+      }catch(e){
+        console.error('Cloud sync failed:', e.code, e.message);
+        if(e.code === 'permission-denied'){
+          alert('Firestore từ chối quyền truy cập.\nKiểm tra lại Security Rules trong Firebase Console → Firestore Database → Rules.');
+        } else {
+          alert('Lỗi đồng bộ cloud (' + (e.code || e.message) + ').');
+        }
       }
-      attachCloudListener(user.uid);
       refreshCurrentView();
     } else {
       currentUser = null;
@@ -1249,6 +1275,14 @@ procrastinate	trì hoãn			verb"></textarea>
   });
 
   // ---------------- Init ----------------
+  window.FB.getRedirectResult(window.FB.auth).catch(function(e){
+    console.error('Redirect sign-in failed:', e.code, e.message);
+    if(e.code === 'auth/unauthorized-domain'){
+      alert('Domain này chưa được cho phép đăng nhập.\nVào Firebase Console → Authentication → Settings → Authorized domains và thêm: ' + window.location.hostname);
+    } else if(e.code){
+      alert('Đăng nhập thất bại (' + e.code + '). Thử lại nhé.');
+    }
+  });
   renderHome();
 })();
 </script>
