@@ -33,6 +33,7 @@
     signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged,
     doc, getDoc, setDoc, onSnapshot
   };
+  window.dispatchEvent(new Event('fb-ready'));
 </script>
 <style>
   :root{
@@ -749,6 +750,7 @@ procrastinate	trì hoãn			verb"></textarea>
 </div>
 
 <script>
+function startApp(){
 (function(){
   "use strict";
 
@@ -1285,6 +1287,13 @@ procrastinate	trì hoãn			verb"></textarea>
   });
   renderHome();
 })();
+}
+
+if(window.FB){
+  startApp();
+} else {
+  window.addEventListener('fb-ready', startApp, { once: true });
+}
 </script>
 </body>
 </html>
