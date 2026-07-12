@@ -534,6 +534,15 @@
   .modal-sheet h3{ margin:0 0 6px; font-size:17px; }
   .modal-sheet p{ margin:0 0 18px; font-size:13px; color:var(--ink-dim); }
   .modal-actions{ display:flex; gap:10px; }
+
+  /* Custom Admin Section in Reference Tab */
+  .admin-auth-row {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .admin-panel-box {
+    border: 1px dashed var(--accent); background: var(--bg-elev-2);
+    padding: 14px; border-radius: var(--radius); margin-bottom: 20px;
+  }
 </style>
 </head>
 <body>
@@ -579,6 +588,30 @@
     </div>
     <div id="folderListWrap">
       <div class="folder-list" id="folderList"></div>
+    </div>
+  </div>
+
+  <!-- ============ TAB: THAM KHẢO ============ -->
+  <div class="view" id="view-reference">
+    <!-- Admin Trigger & Status Auth -->
+    <div class="admin-auth-row">
+      <input type="password" class="name-input" id="adminCodeInput" placeholder="Nhập mã Admin để đăng bài..." style="margin-bottom:0; flex:1;">
+      <button class="btn ghost" id="btnCheckAdmin">Xác thực</button>
+    </div>
+
+    <!-- Admin Panel Control (Ẩn mặc định) -->
+    <div class="admin-panel-box" id="adminPanelBox" style="display:none;">
+      <div class="field-label" style="color:var(--accent);">👑 KHU VỰC ADMIN (ĐĂNG BỘ TỪ VỰNG LÊN CLOUD)</div>
+      <input type="text" class="name-input" id="refFolderNameInput" placeholder="Tên bộ từ vựng tham khảo">
+      <textarea class="paste-box" id="refPasteArea" style="min-height:120px;" placeholder="Từ [Tab] Nghĩa [Tab] Phát âm [Tab] Loại từ"></textarea>
+      <div class="err" id="refCreateErr" style="margin-bottom:10px;"></div>
+      <button class="btn primary full" id="btnPushRefFolder">Đăng bộ từ vựng công khai</button>
+    </div>
+
+    <!-- Natural List Slot -->
+    <div class="section-title">✨ Bộ từ vựng từ Admin (Mọi người tham khảo)</div>
+    <div class="folder-list" id="refFolderList">
+      <div class="empty-state"><p>Đang tải dữ liệu bộ từ vựng tham khảo...</p></div>
     </div>
   </div>
 
@@ -673,6 +706,9 @@ procrastinate	trì hoãn			verb"></textarea>
     <div class="tab-item" data-tab="created">
       <div class="ic">📁</div><div>Đã tạo</div>
     </div>
+    <div class="tab-item" data-tab="reference">
+      <div class="ic">🌐</div><div>Tham khảo</div>
+    </div>
   </div>
 
 </div>
@@ -749,7 +785,7 @@ procrastinate	trì hoãn			verb"></textarea>
 
   // 2. State App Variable
   const STORAGE_KEY = 'flashcard_data_v2';
-  const VIEWS = ['home', 'created', 'create', 'study', 'done'];
+  const VIEWS = ['home', 'created', 'create', 'study', 'done', 'reference'];
   
   let DATA = loadLocalData();
   let currentUser = null;
@@ -768,6 +804,9 @@ procrastinate	trì hoãn			verb"></textarea>
   let shuffleOn = false;
   let pendingDeleteId = null;
   let pendingLocalSnapshot = null;
+  
+  // Reference Global Database Storage
+  let globalRefData = { folders: [] };
 
   // 3. Cache DOM Elements for High Performance
   const DOM = {
@@ -808,7 +847,16 @@ procrastinate	trì hoãn			verb"></textarea>
     accountModalSignedOut: document.getElementById('accountModalSignedOut'),
     accountModalSignedIn: document.getElementById('accountModalSignedIn'),
     accountEmail: document.getElementById('accountEmail'),
-    mergeModal: document.getElementById('mergeModal')
+    mergeModal: document.getElementById('mergeModal'),
+    // Reference View Specific Elements
+    adminCodeInput: document.getElementById('adminCodeInput'),
+    btnCheckAdmin: document.getElementById('btnCheckAdmin'),
+    adminPanelBox: document.getElementById('adminPanelBox'),
+    refFolderNameInput: document.getElementById('refFolderNameInput'),
+    refPasteArea: document.getElementById('refPasteArea'),
+    refCreateErr: document.getElementById('refCreateErr'),
+    btnPushRefFolder: document.getElementById('btnPushRefFolder'),
+    refFolderList: document.getElementById('refFolderList')
   };
 
   // 4. Local Storage & Sync Helpers
@@ -842,7 +890,7 @@ procrastinate	trì hoãn			verb"></textarea>
   }
 
   function attachCloudListener(uid) {
-    if (cloudUnsub) cloudUnsub(); // Clear old listener to avoid memory leak
+    if (cloudUnsub) cloudUnsub(); 
     const ref = doc(db, 'users', uid);
     cloudUnsub = onSnapshot(ref, (snap) => {
       if (suppressNextSnapshot) { suppressNextSnapshot = false; return; }
@@ -855,10 +903,21 @@ procrastinate	trì hoãn			verb"></textarea>
     });
   }
 
+  function attachGlobalReferenceListener() {
+    const globalRef = doc(db, 'shared', 'reference_pool');
+    onSnapshot(globalRef, (snap) => {
+      globalRefData = snap.exists() ? snap.data() : { folders: [] };
+      if (DOM.views.reference.classList.contains('active')) {
+        renderRefFolderList();
+      }
+    });
+  }
+
   function refreshCurrentView() {
     const active = VIEWS.find(v => DOM.views[v].classList.contains('active'));
     if (active === 'home') renderHome();
     else if (active === 'created') renderFolderList();
+    else if (active === 'reference') renderRefFolderList();
   }
 
   function generateUid() {
@@ -872,14 +931,13 @@ procrastinate	trì hoãn			verb"></textarea>
       el.classList.toggle('active', el.dataset.tab === name || (name === 'create' && el.dataset.tab === 'created'));
     });
     
-    // Cleanup TTS khi rời khỏi màn học
     if (name !== 'study' && name !== 'done') {
       window.speechSynthesis?.cancel();
     }
 
-    if (name === 'home') renderHome();
-    else if (name === 'created') renderFolderList();
-    else if (name === 'create') {
+    refreshCurrentView();
+    
+    if (name === 'create') {
       DOM.folderNameInput.value = '';
       DOM.pasteArea.value = '';
       DOM.createErr.textContent = '';
@@ -887,9 +945,7 @@ procrastinate	trì hoãn			verb"></textarea>
     window.scrollTo(0, 0);
   }
 
-  // 6. UI Render Methods (Sử dụng DOM API thay vì innerHTML để tối ưu hiệu suất & chống XSS)
-  
-  // Helper tạo element an toàn
+  // 6. UI Render Methods 
   function createElement(tag, className, textContent) {
     const el = document.createElement(tag);
     if (className) el.className = className;
@@ -906,7 +962,6 @@ procrastinate	trì hoãn			verb"></textarea>
     DOM.statWords.textContent = totalWords;
     DOM.statLearned.textContent = learnedWords;
 
-    // Xóa node cũ trực tiếp thay vì gán innerHTML = '' để GC dọn dẹp nhanh hơn
     DOM.continueSlot.replaceChildren();
     DOM.homeRecentList.replaceChildren();
 
@@ -920,11 +975,15 @@ procrastinate	trì hoãn			verb"></textarea>
       info.appendChild(createElement('h3', null, last.name));
       info.appendChild(createElement('p', null, `${remaining > 0 ? remaining + ' từ chưa thuộc · ' : 'Đã học hết · '}${last.words.length} từ`));
       
-      const go = createElement('div', 'go', '▶');
-      
       card.appendChild(info);
-      card.appendChild(go);
-      card.addEventListener('click', () => openStudy(last.id, remaining > 0 ? 'remaining' : 'all'));
+      card.appendChild(createElement('div', 'go', '▶'));
+      
+      card.addEventListener('click', () => {
+        const list = remaining > 0 ? last.words.filter(w => w.status !== 'good') : last.words;
+        initStudySession(last, list);
+        DATA.lastStudiedFolderId = last.id;
+        saveData();
+      });
       DOM.continueSlot.appendChild(card);
     } else {
       const empty = createElement('div', 'empty-state');
@@ -937,8 +996,11 @@ procrastinate	trì hoãn			verb"></textarea>
 
     if (folders.length > 0) {
       const sorted = [...folders].sort((a, b) => b.createdAt - a.createdAt).slice(0, 4);
+      // TỐI ƯU: Sử dụng DocumentFragment
+      const frag = document.createDocumentFragment();
+      sorted.forEach(f => frag.appendChild(makeFolderCard(f, false)));
       const listEl = createElement('div', 'folder-list');
-      sorted.forEach(f => listEl.appendChild(makeFolderCard(f, false)));
+      listEl.appendChild(frag);
       DOM.homeRecentList.appendChild(listEl);
     }
   }
@@ -951,9 +1013,12 @@ procrastinate	trì hoãn			verb"></textarea>
       DOM.folderList.appendChild(empty);
       return;
     }
+    // TỐI ƯU: Sử dụng DocumentFragment
+    const frag = document.createDocumentFragment();
     [...DATA.folders].sort((a, b) => b.createdAt - a.createdAt).forEach(f => {
-      DOM.folderList.appendChild(makeFolderCard(f, true));
+      frag.appendChild(makeFolderCard(f, true));
     });
+    DOM.folderList.appendChild(frag);
   }
 
   function makeFolderCard(folder, withDelete) {
@@ -982,39 +1047,64 @@ procrastinate	trì hoãn			verb"></textarea>
     
     card.addEventListener('click', (e) => {
       if (e.target.closest('.del')) return;
-      openStudy(folder.id, 'all');
+      initStudySession(folder, folder.words);
+      DATA.lastStudiedFolderId = folder.id;
+      saveData();
     });
 
     return card;
   }
 
+  function renderRefFolderList() {
+    DOM.refFolderList.replaceChildren();
+    const refFolders = globalRefData.folders || [];
+    
+    if (refFolders.length === 0) {
+      const empty = createElement('div', 'empty-state');
+      empty.innerHTML = '<div class="icon">🌐</div><p>Chưa có bộ từ vựng tham khảo nào được đăng.</p>';
+      DOM.refFolderList.appendChild(empty);
+      return;
+    }
+    
+    // TỐI ƯU: Sử dụng DocumentFragment
+    const frag = document.createDocumentFragment();
+    [...refFolders].sort((a, b) => b.createdAt - a.createdAt).forEach(f => {
+      const card = createElement('div', 'folder-card');
+      card.appendChild(createElement('div', 'emoji', '🌍'));
+      
+      const meta = createElement('div', 'meta');
+      meta.appendChild(createElement('h3', null, f.name));
+      meta.appendChild(createElement('p', null, `${f.words.length} từ vựng chuẩn từ Admin`));
+      card.appendChild(meta);
+      
+      card.appendChild(createElement('div', 'chev', '▶'));
+      card.addEventListener('click', () => initStudySession(f, f.words));
+      
+      frag.appendChild(card);
+    });
+    DOM.refFolderList.appendChild(frag);
+  }
+
   // 7. Flashcard Logic & TTS Engine
   function parseTabbed(text) {
-    const lines = text.split(/\r?\n/).filter(l => l.trim().length);
-    const words = [];
-    
-    lines.forEach((line, index) => {
-      const cols = line.split('\t');
-      const tu = (cols[0] || '').trim();
-      if (tu) {
-        words.push({
-          tu,
+    return text.split(/\r?\n/)
+      .filter(l => l.trim().length)
+      .map(line => {
+        const cols = line.split('\t');
+        return {
+          tu: (cols[0] || '').trim(),
           nghia: (cols[1] || '').trim(),
           phat_am: (cols[2] || '').trim(),
           loai_tu: (cols[3] || '').trim(),
           status: 'new'
-        });
-      }
-    });
-    
-    return words;
+        };
+      }).filter(w => w.tu);
   }
 
   function speak(entry) {
     const p = entry.phat_am;
     if (p && /^https?:\/\/.+\.(mp3|wav|ogg|m4a)(\?.*)?$/i.test(p)) {
-      const audio = new Audio(p);
-      audio.play().catch(() => fallbackTTS(entry.tu));
+      new Audio(p).play().catch(() => fallbackTTS(entry.tu));
     } else {
       fallbackTTS(entry.tu);
     }
@@ -1022,7 +1112,7 @@ procrastinate	trì hoãn			verb"></textarea>
 
   function fallbackTTS(text) {
     if (!('speechSynthesis' in window)) return;
-    window.speechSynthesis.cancel(); // Dừng âm thanh cũ trước khi phát mới
+    window.speechSynthesis.cancel(); 
     const u = new SpeechSynthesisUtterance(text);
     u.lang = 'en-US';
     u.rate = 0.95;
@@ -1038,21 +1128,11 @@ procrastinate	trì hoãn			verb"></textarea>
     return a;
   }
 
-  function openStudy(folderId, mode) {
-    const folder = DATA.folders.find(f => f.id === folderId);
-    if (!folder) return;
-    
+  // TỐI ƯU: Gộp chung logic thiết lập Session để tái sử dụng
+  function initStudySession(folder, wordsList) {
+    if (!wordsList || wordsList.length === 0) return;
     activeFolder = folder;
-    DATA.lastStudiedFolderId = folderId;
-    saveData();
-
-    let list = folder.words;
-    if (mode === 'remaining') {
-      const rem = folder.words.filter(w => w.status !== 'good');
-      list = rem.length ? rem : folder.words;
-    }
-    
-    baseQueue = [...list];
+    baseQueue = [...wordsList];
     queue = shuffleOn ? shuffleArray(baseQueue) : [...baseQueue];
     idx = 0;
     sessionStats = { good: 0, bad: 0 };
@@ -1092,7 +1172,7 @@ procrastinate	trì hoãn			verb"></textarea>
 
   function markStatus(status) {
     const entry = queue[idx];
-    if (activeFolder) {
+    if (activeFolder && DATA.folders.some(f => f.id === activeFolder.id)) {
       const target = activeFolder.words.find(w => w.tu === entry.tu && w.nghia === entry.nghia);
       if (target) target.status = status;
       saveData();
@@ -1135,12 +1215,46 @@ procrastinate	trì hoãn			verb"></textarea>
     if (!text.trim()) { DOM.createErr.textContent = 'Chưa dán dữ liệu từ vựng nào.'; return; }
     
     const words = parseTabbed(text);
-    // ĐÃ SỬA LỖI CÚ PHÁP BỊ DƯ `();` Ở ĐÂY
-    if (!words.length) { DOM.createErr.textContent = 'Không đọc được từ nào. Kiểm tra lại định dạng (cách nhau bằng Tab).'; return; }
+    if (!words.length) { DOM.createErr.textContent = 'Không đọc được từ nào. Kiểm tra định dạng (cách nhau bằng Tab).'; return; }
     
     DATA.folders.push({ id: generateUid(), name, createdAt: Date.now(), words });
     saveData();
     goTo('created');
+  });
+
+  DOM.btnCheckAdmin.addEventListener('click', () => {
+    if (DOM.adminCodeInput.value.trim() === '220105') {
+      DOM.adminPanelBox.style.display = 'block';
+      DOM.adminCodeInput.value = '';
+    } else {
+      DOM.adminPanelBox.style.display = 'none';
+      alert('Mã Admin không đúng.');
+    }
+  });
+
+  DOM.btnPushRefFolder.addEventListener('click', async () => {
+    DOM.refCreateErr.textContent = '';
+    const name = DOM.refFolderNameInput.value.trim();
+    const text = DOM.refPasteArea.value;
+
+    if (!name) { DOM.refCreateErr.textContent = 'Hãy đặt tên bộ thẻ tham khảo.'; return; }
+    if (!text.trim()) { DOM.refCreateErr.textContent = 'Chưa nhập nội dung từ vựng.'; return; }
+
+    const words = parseTabbed(text);
+    if (!words.length) { DOM.refCreateErr.textContent = 'Sai định dạng dữ liệu cột Tab.'; return; }
+
+    const updatedFolders = globalRefData.folders ? [...globalRefData.folders] : [];
+    updatedFolders.push({ id: 'ref_' + Date.now(), name, createdAt: Date.now(), words });
+    
+    try {
+      const globalRef = doc(db, 'shared', 'reference_pool');
+      await setDoc(globalRef, { folders: updatedFolders });
+      DOM.refFolderNameInput.value = '';
+      DOM.refPasteArea.value = '';
+      alert('Đăng bộ từ vựng tham khảo thành công!');
+    } catch(e) {
+      DOM.refCreateErr.textContent = 'Lỗi kết nối Cloud: ' + e.message;
+    }
   });
 
   DOM.flipCard.addEventListener('click', (e) => {
@@ -1162,17 +1276,12 @@ procrastinate	trì hoãn			verb"></textarea>
   DOM.btnNext.addEventListener('click', () => { if (idx < queue.length) { idx++; renderCardAtIndex(); } });
 
   document.getElementById('btnRestartFolder').addEventListener('click', () => {
-    if (activeFolder) openStudy(activeFolder.id, 'all');
+    if (activeFolder) initStudySession(activeFolder, activeFolder.words);
   });
 
   DOM.btnRedoBad.addEventListener('click', () => {
     if (!badPile.length || !activeFolder) return;
-    queue = [...badPile];
-    idx = 0;
-    sessionStats = { good: 0, bad: 0 };
-    badPile = [];
-    goTo('study');
-    renderCardAtIndex();
+    initStudySession(activeFolder, [...badPile]);
   });
 
   DOM.btnShuffle.addEventListener('click', () => {
@@ -1192,7 +1301,6 @@ procrastinate	trì hoãn			verb"></textarea>
   });
 
   // 9. Auth & Cloud Synchronizer
-  // ĐÃ SỬA LỖI: Dùng auth.currentUser thay vì biến currentUser để tránh Race Condition khi tải lại trang
   DOM.avatarBtn.addEventListener('click', () => {
     DOM.accountModal.classList.add('active');
     const user = auth.currentUser; 
@@ -1211,26 +1319,17 @@ procrastinate	trì hoãn			verb"></textarea>
   document.getElementById('btnCloseAccount2').addEventListener('click', closeAccountModals);
 
   document.getElementById('btnGoogleSignIn').addEventListener('click', async () => {
-  try {
-    if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-    await signInWithRedirect(auth, provider);
-} else {
-    if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-    await signInWithRedirect(auth, provider);
-} else {
-    await signInWithPopup(auth, provider);
-}
-}
-    closeAccountModals();
-  } catch (e) {
-    console.error(e);
-    alert(
-      e.code +
-      "\n\n" +
-      (e.message || "")
-    );
-  }
-});
+    try {
+      if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+        await signInWithRedirect(auth, provider);
+      } else {
+        await signInWithPopup(auth, provider);
+      }
+      closeAccountModals();
+    } catch (e) {
+      alert(e.code + "\n\n" + (e.message || ""));
+    }
+  });
 
   document.getElementById('btnSignOut').addEventListener('click', async () => {
     await signOut(auth);
@@ -1256,9 +1355,7 @@ procrastinate	trì hoãn			verb"></textarea>
   });
 
   // Firebase State Handler
-  (onAuthStateChanged(auth, async (user) => {
-    console.log("AUTH STATE:", user);
-
+  onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
         DOM.avatarBtn.textContent = '☁️';
@@ -1285,10 +1382,8 @@ procrastinate	trì hoãn			verb"></textarea>
             }
 
             attachCloudListener(user.uid);
-
         } catch (e) {
             console.error("Cloud sync error:", e);
-            alert("Cloud sync error:\n" + e.message);
         }
 
     } else {
@@ -1300,22 +1395,15 @@ procrastinate	trì hoãn			verb"></textarea>
             cloudUnsub();
             cloudUnsub = null;
         }
-
         DATA = loadLocalData();
     }
-
     refreshCurrentView();
-});
+  });
 
   // Init Runtime App
-  getRedirectResult(auth)
-.then((result)=>{
-    console.log("Redirect Result:",result);
-})
-.catch((e)=>{
-    console.error("Redirect Error:",e);
-});
+  getRedirectResult(auth).catch(console.error);
   renderHome();
+  attachGlobalReferenceListener(); 
 </script>
 </body>
 </html>
