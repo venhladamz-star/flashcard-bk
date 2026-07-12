@@ -1211,19 +1211,18 @@ procrastinate	trì hoãn			verb"></textarea>
   document.getElementById('btnCloseAccount2').addEventListener('click', closeAccountModals);
 
   document.getElementById('btnGoogleSignIn').addEventListener('click', async () => {
-    try {
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      if (isMobile) {
-        await signInWithRedirect(auth, provider);
-      } else {
-        await signInWithPopup(auth, provider);
-        closeAccountModals();
-      }
-    } catch (e) {
-      console.error('Sign-in failed:', e);
-      alert(`Đăng nhập thất bại: ${e.code}`);
-    }
-  });
+  try {
+    await signInWithPopup(auth, provider);
+    closeAccountModals();
+  } catch (e) {
+    console.error(e);
+    alert(
+      e.code +
+      "\n\n" +
+      (e.message || "")
+    );
+  }
+});
 
   document.getElementById('btnSignOut').addEventListener('click', async () => {
     await signOut(auth);
@@ -1249,7 +1248,7 @@ procrastinate	trì hoãn			verb"></textarea>
   });
 
   // Firebase State Handler
-  onAuthStateChanged(auth, async (user) => {
+  (auth, async (user) => {
     if (user) {
       currentUser = user;
       DOM.avatarBtn.textContent = '☁️';
@@ -1286,7 +1285,13 @@ procrastinate	trì hoãn			verb"></textarea>
   });
 
   // Init Runtime App
-  getRedirectResult(auth).catch(e => console.error('Redirect error:', e));
+  getRedirectResult(auth)
+.then((result)=>{
+    console.log("Redirect Result:",result);
+})
+.catch((e)=>{
+    console.error("Redirect Error:",e);
+});
   renderHome();
 </script>
 </body>
