@@ -1320,13 +1320,11 @@ procrastinate	trì hoãn			verb"></textarea>
 
   document.getElementById('btnGoogleSignIn').addEventListener('click', async () => {
     try {
-      if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
-        await signInWithRedirect(auth, provider);
-      } else {
-        await signInWithPopup(auth, provider);
-      }
+      // Ép buộc dùng Redirect cho tất cả thiết bị để tránh lỗi bị trình duyệt chặn Cookie trên GitHub Pages
+      await signInWithRedirect(auth, provider);
       closeAccountModals();
     } catch (e) {
+      console.error(e);
       alert(e.code + "\n\n" + (e.message || ""));
     }
   });
