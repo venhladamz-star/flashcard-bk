@@ -1212,7 +1212,15 @@ procrastinate	trì hoãn			verb"></textarea>
 
   document.getElementById('btnGoogleSignIn').addEventListener('click', async () => {
   try {
+    if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    await signInWithRedirect(auth, provider);
+} else {
+    if (/Android|iPhone|iPad/i.test(navigator.userAgent)) {
+    await signInWithRedirect(auth, provider);
+} else {
     await signInWithPopup(auth, provider);
+}
+}
     closeAccountModals();
   } catch (e) {
     console.error(e);
@@ -1248,41 +1256,56 @@ procrastinate	trì hoãn			verb"></textarea>
   });
 
   // Firebase State Handler
-  (auth, async (user) => {
-    if (user) {
-      currentUser = user;
-      DOM.avatarBtn.textContent = '☁️';
-      DOM.avatarBtn.title = `Đã đăng nhập — ${user.email || ''}`;
-      try {
-        const localSnapshot = loadLocalData();
-        const hasLocalData = localSnapshot.folders && localSnapshot.folders.length > 0;
+  (onAuthStateChanged(auth, async (user) => {
+    console.log("AUTH STATE:", user);
 
-        const ref = doc(db, 'users', user.uid);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          DATA = snap.data();
-          if (!DATA.folders) DATA.folders = [];
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
-          if (hasLocalData) {
-            pendingLocalSnapshot = localSnapshot;
-            DOM.mergeModal.classList.add('active');
-          }
-        } else {
-          await pushToCloud();
+    if (user) {
+        currentUser = user;
+        DOM.avatarBtn.textContent = '☁️';
+        DOM.avatarBtn.title = `Đã đăng nhập — ${user.email || ''}`;
+
+        try {
+            const localSnapshot = loadLocalData();
+            const hasLocalData = localSnapshot.folders && localSnapshot.folders.length > 0;
+
+            const ref = doc(db, 'users', user.uid);
+            const snap = await getDoc(ref);
+
+            if (snap.exists()) {
+                DATA = snap.data();
+                if (!DATA.folders) DATA.folders = [];
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+
+                if (hasLocalData) {
+                    pendingLocalSnapshot = localSnapshot;
+                    DOM.mergeModal.classList.add('active');
+                }
+            } else {
+                await pushToCloud();
+            }
+
+            attachCloudListener(user.uid);
+
+        } catch (e) {
+            console.error("Cloud sync error:", e);
+            alert("Cloud sync error:\n" + e.message);
         }
-        attachCloudListener(user.uid);
-      } catch (e) {
-        console.error('Cloud sync error:', e);
-      }
+
     } else {
-      currentUser = null;
-      DOM.avatarBtn.textContent = '👤';
-      DOM.avatarBtn.title = 'Đăng nhập';
-      if (cloudUnsub) { cloudUnsub(); cloudUnsub = null; } // Ngăn chặn Memory Leak
-      DATA = loadLocalData();
+        currentUser = null;
+        DOM.avatarBtn.textContent = '👤';
+        DOM.avatarBtn.title = 'Đăng nhập';
+
+        if (cloudUnsub) {
+            cloudUnsub();
+            cloudUnsub = null;
+        }
+
+        DATA = loadLocalData();
     }
+
     refreshCurrentView();
-  });
+});
 
   // Init Runtime App
   getRedirectResult(auth)
