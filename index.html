@@ -1002,7 +1002,6 @@ procrastinate	trì hoãn			verb"></textarea>
   let quizQueue = [];
   let quizIdx = 0;
   let quizStats = { good: 0, bad: 0 };
-  let quizAnswered = false;
   let lastSessionMode = 'study'; // 'study' | 'quiz'
   let currentQ = null; // current quiz question object
   
@@ -1137,6 +1136,21 @@ procrastinate	trì hoãn			verb"></textarea>
 
   function generateUid() { return 'f_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
 
+  // Generic modal open/close (all modals share .modal-overlay + 'active' class)
+  function openModal(el) { el.classList.add('active'); }
+  function closeModal(el) { el.classList.remove('active'); }
+
+  // Update a word's status inside DATA (only if the folder is a saved, non-reference folder)
+  function updateWordStatus(folder, entry, status) {
+    if (!folder || !DATA.folders.some(f => f.id === folder.id)) return;
+    const target = folder.words.find(w => w.tu === entry.tu && w.nghia === entry.nghia);
+    if (target) { target.status = status; saveData(); }
+  }
+
+  async function pushRefFolders(updatedFolders) {
+    return setDoc(doc(db, 'shared', 'reference_pool'), { folders: updatedFolders });
+  }
+
   // 5. Router Engine
   function goTo(name) {
     VIEWS.forEach(v => DOM.views[v].classList.toggle('active', v === name));
@@ -1236,7 +1250,7 @@ procrastinate	trì hoãn			verb"></textarea>
         e.stopPropagation();
         pendingDeleteId = folder.id;
         DOM.deleteModalText.textContent = `"${folder.name}" sẽ bị xoá vĩnh viễn cùng toàn bộ từ vựng bên trong.`;
-        DOM.deleteModal.classList.add('active');
+        openModal(DOM.deleteModal);
       });
       card.appendChild(delBtn);
     } else {
@@ -1289,7 +1303,7 @@ procrastinate	trì hoãn			verb"></textarea>
           if (confirm(`Bạn có chắc muốn xóa bộ từ vựng "${f.name}" khỏi mục Tham khảo chung?`)) {
             const updatedFolders = globalRefData.folders.filter(x => x.id !== f.id);
             try {
-              await setDoc(doc(db, 'shared', 'reference_pool'), { folders: updatedFolders });
+              await pushRefFolders(updatedFolders);
             } catch(err) { alert('Lỗi xóa: ' + err.message); }
           }
         });
@@ -1378,11 +1392,7 @@ procrastinate	trì hoãn			verb"></textarea>
 
   function markStatus(status) {
     const entry = queue[idx];
-    if (activeFolder && DATA.folders.some(f => f.id === activeFolder.id)) {
-      const target = activeFolder.words.find(w => w.tu === entry.tu && w.nghia === entry.nghia);
-      if (target) target.status = status;
-      saveData();
-    }
+    updateWordStatus(activeFolder, entry, status);
     if (status === 'good') sessionStats.good++;
     else { sessionStats.bad++; badPile.push(entry); }
     idx++; renderCardAtIndex();
@@ -1395,28 +1405,22 @@ procrastinate	trì hoãn			verb"></textarea>
     pendingModeFolder = folder;
     pendingModeWords = wordsList;
     pendingModeConfirm = onConfirm;
-    DOM.modeModal.classList.add('active');
+    openModal(DOM.modeModal);
   }
 
   function closeModeModal() {
-    DOM.modeModal.classList.remove('active');
+    closeModal(DOM.modeModal);
     pendingModeFolder = null; pendingModeWords = null; pendingModeConfirm = null;
   }
 
-  DOM.modeOptionStudy.addEventListener('click', () => {
-    const folder = pendingModeFolder, words = pendingModeWords, confirm = pendingModeConfirm;
+  function confirmModeSelection(startFn) {
+    const folder = pendingModeFolder, words = pendingModeWords, onConfirm = pendingModeConfirm;
     closeModeModal();
-    if (confirm) confirm();
-    initStudySession(folder, words);
-  });
-
-  DOM.modeOptionQuiz.addEventListener('click', () => {
-    const folder = pendingModeFolder, words = pendingModeWords, confirm = pendingModeConfirm;
-    closeModeModal();
-    if (confirm) confirm();
-    initQuizSession(folder, words);
-  });
-
+    if (onConfirm) onConfirm();
+    startFn(folder, words);
+  }
+  DOM.modeOptionStudy.addEventListener('click', () => confirmModeSelection(initStudySession));
+  DOM.modeOptionQuiz.addEventListener('click', () => confirmModeSelection(initQuizSession));
   DOM.btnCancelMode.addEventListener('click', closeModeModal);
 
   // 7c. Quiz Engine
@@ -1502,12 +1506,7 @@ procrastinate	trì hoãn			verb"></textarea>
   }
 
   function recordQuizResult(isCorrect) {
-    const entry = currentQ.entry;
-    if (activeFolder && DATA.folders.some(f => f.id === activeFolder.id)) {
-      const target = activeFolder.words.find(w => w.tu === entry.tu && w.nghia === entry.nghia);
-      if (target) target.status = isCorrect ? 'good' : 'bad';
-      saveData();
-    }
+    updateWordStatus(activeFolder, currentQ.entry, isCorrect ? 'good' : 'bad');
     if (isCorrect) quizStats.good++; else quizStats.bad++;
   }
 
@@ -1560,22 +1559,20 @@ procrastinate	trì hoãn			verb"></textarea>
     quizIdx++; renderQuizAtIndex();
   });
 
-  document.getElementById('btnExitQuiz').addEventListener('click', () => goTo('created'));
-
   // 8. Event Listeners 
   DOM.tabItems.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.tab)));
   document.getElementById('btnOpenCreate').addEventListener('click', () => goTo('create'));
-  document.getElementById('btnBackToCreated').addEventListener('click', () => goTo('created'));
-  document.getElementById('btnExitStudy').addEventListener('click', () => goTo('created'));
-  document.getElementById('btnDoneToCreated').addEventListener('click', () => goTo('created'));
-  document.getElementById('btnCancelDelete').addEventListener('click', () => { pendingDeleteId = null; DOM.deleteModal.classList.remove('active'); });
+  ['btnBackToCreated', 'btnExitStudy', 'btnExitQuiz', 'btnDoneToCreated'].forEach(id =>
+    document.getElementById(id).addEventListener('click', () => goTo('created'))
+  );
+  document.getElementById('btnCancelDelete').addEventListener('click', () => { pendingDeleteId = null; closeModal(DOM.deleteModal); });
   document.getElementById('btnConfirmDelete').addEventListener('click', () => {
     if (pendingDeleteId) {
       DATA.folders = DATA.folders.filter(f => f.id !== pendingDeleteId);
       if (DATA.lastStudiedFolderId === pendingDeleteId) DATA.lastStudiedFolderId = null;
       saveData(); renderFolderList();
     }
-    pendingDeleteId = null; DOM.deleteModal.classList.remove('active');
+    pendingDeleteId = null; closeModal(DOM.deleteModal);
   });
 
   document.getElementById('btnSaveFolder').addEventListener('click', () => {
@@ -1649,7 +1646,7 @@ procrastinate	trì hoãn			verb"></textarea>
     }
 
     try {
-      await setDoc(doc(db, 'shared', 'reference_pool'), { folders: updatedFolders });
+      await pushRefFolders(updatedFolders);
       alert(editingRefId ? 'Cập nhật thành công!' : 'Đăng thành công!');
       resetAdminForm();
     } catch(e) { 
@@ -1690,14 +1687,14 @@ procrastinate	trì hoãn			verb"></textarea>
 
   // 9. REBUILT AUTH & CLOUD CORE
   DOM.avatarBtn.addEventListener('click', () => {
-    DOM.accountModal.classList.add('active');
+    openModal(DOM.accountModal);
     const signedIn = !!currentUser;
     DOM.accountModalSignedIn.style.display = signedIn ? 'block' : 'none';
     DOM.accountModalSignedOut.style.display = signedIn ? 'none' : 'block';
     if (signedIn) DOM.accountEmail.textContent = currentUser.email || currentUser.displayName || 'Đã đăng nhập';
   });
 
-  const closeAccountModals = () => DOM.accountModal.classList.remove('active');
+  const closeAccountModals = () => closeModal(DOM.accountModal);
   document.getElementById('btnCloseAccount').addEventListener('click', closeAccountModals);
   document.getElementById('btnCloseAccount2').addEventListener('click', closeAccountModals);
 
@@ -1717,7 +1714,7 @@ procrastinate	trì hoãn			verb"></textarea>
   });
 
   document.getElementById('btnSkipMerge').addEventListener('click', () => {
-    pendingLocalSnapshot = null; DOM.mergeModal.classList.remove('active');
+    pendingLocalSnapshot = null; closeModal(DOM.mergeModal);
   });
 
   document.getElementById('btnDoMerge').addEventListener('click', async () => {
@@ -1726,7 +1723,7 @@ procrastinate	trì hoãn			verb"></textarea>
       pendingLocalSnapshot.folders.forEach(f => { if (!existingIds.has(f.id)) DATA.folders.push(f); });
       saveData(); refreshCurrentView();
     }
-    pendingLocalSnapshot = null; DOM.mergeModal.classList.remove('active');
+    pendingLocalSnapshot = null; closeModal(DOM.mergeModal);
   });
 
   onAuthStateChanged(auth, async (user) => {
@@ -1749,7 +1746,7 @@ procrastinate	trì hoãn			verb"></textarea>
 
                 if (hasLocalData) {
                     pendingLocalSnapshot = localSnapshot;
-                    DOM.mergeModal.classList.add('active');
+                    openModal(DOM.mergeModal);
                 }
             } else {
                 DATA = localSnapshot;
