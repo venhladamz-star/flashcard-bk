@@ -1399,7 +1399,20 @@ procrastinate	trì hoãn			verb"></textarea>
   });
 
   // Init Runtime App
-  getRedirectResult(auth).catch(console.error);
+  // Init Runtime App
+  getRedirectResult(auth)
+    .then((result) => {
+      if (result?.user) {
+        console.log("Đăng nhập thành công từ Redirect:", result.user);
+        // Kích hoạt render lại giao diện khi có dữ liệu user trả về thành công
+        currentUser = result.user;
+        refreshCurrentView();
+      }
+    })
+    .catch((e) => {
+      console.error("Lỗi Redirect Auth:", e);
+    });
+
   renderHome();
   attachGlobalReferenceListener(); 
 </script>
