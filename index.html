@@ -836,46 +836,31 @@
   <!-- ============ TAB: NGỮ PHÁP ============ -->
   <div class="view" id="view-grammar">
     <div class="row-actions">
-      <button class="btn primary full" id="btnOpenAddChapter" style="display:none;">＋ Thêm chương mới</button>
+      <button class="btn primary full" id="btnOpenAddLesson" style="display:none;">＋ Thêm bài mới</button>
     </div>
     <div class="section-title">📐 Ngữ pháp (đăng bởi Admin)</div>
-    <div id="chapterListWrap">
-      <div id="chapterList"><div class="empty-state"><p>Đang tải nội dung ngữ pháp...</p></div></div>
+    <div id="lessonListWrap">
+      <div id="lessonList"><div class="empty-state"><p>Đang tải nội dung ngữ pháp...</p></div></div>
     </div>
     <p style="text-align:center; color:var(--ink-faint); font-size:11.5px; margin-top:18px;">Là Admin? Xác thực ở tab "Tham khảo" để đăng/sửa nội dung ngữ pháp tại đây.</p>
-  </div>
-
-  <!-- ============ GRAMMAR: LESSON LIST (INSIDE A CHAPTER) ============ -->
-  <div class="view" id="view-grammar-chapter">
-    <div class="study-header">
-      <div class="back-btn" id="btnBackToGrammar">‹ Ngữ pháp</div>
-    </div>
-    <h2 id="chapterViewTitle" style="margin:0 0 16px; font-size:19px;">—</h2>
-    <div class="row-actions">
-      <button class="btn ghost full" id="btnOpenAddLesson" style="display:none;">＋ Thêm bài mới</button>
-    </div>
-    <div id="lessonList"></div>
   </div>
 
   <!-- ============ GRAMMAR: LESSON READER ============ -->
   <div class="view" id="view-grammar-lesson">
     <div class="study-header">
-      <div class="back-btn" id="btnBackToChapter">‹ Quay lại</div>
+      <div class="back-btn" id="btnBackToGrammar">‹ Ngữ pháp</div>
       <div class="icon-btn" id="btnEditLesson" title="Sửa bài" style="width:34px;height:34px;font-size:14px;display:none;">✏️</div>
     </div>
     <h2 id="lessonViewTitle" style="margin:0 0 16px; font-size:20px;">—</h2>
     <div class="md-content" id="lessonContent"></div>
   </div>
 
-  <!-- ============ GRAMMAR: EDITOR (chapter+lesson create/edit) ============ -->
+  <!-- ============ GRAMMAR: EDITOR (lesson create/edit) ============ -->
   <div class="view" id="view-grammar-edit">
     <div class="study-header">
       <div class="back-btn" id="btnCancelGrammarEdit">‹ Hủy</div>
     </div>
     <div class="panel">
-      <div class="field-label" id="gEditChapterLabel">Chương</div>
-      <select class="name-input" id="gEditChapterSelect" style="margin-bottom:14px;"></select>
-
       <div class="field-label">Tiêu đề bài</div>
       <input type="text" class="name-input" id="gEditTitleInput" placeholder="VD: Thì hiện tại đơn">
 
@@ -1077,18 +1062,6 @@ procrastinate	trì hoãn			verb"></textarea>
   </div>
 </div>
 
-<div class="modal-overlay" id="chapterModal">
-  <div class="modal-sheet">
-    <h3 id="chapterModalTitle">Chương mới</h3>
-    <input type="text" class="name-input" id="chapterNameInput" placeholder="VD: Thì, Cấu trúc câu, Mệnh đề quan hệ...">
-    <div class="err" id="chapterModalErr"></div>
-    <div class="modal-actions">
-      <button class="btn ghost full" id="btnCancelChapter">Huỷ</button>
-      <button class="btn primary full" id="btnSaveChapter">Lưu</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-overlay" id="deleteModal">
   <div class="modal-sheet">
     <h3>Xoá bộ thẻ này?</h3>
@@ -1163,7 +1136,7 @@ procrastinate	trì hoãn			verb"></textarea>
 
   // 2. State App Variable
   const STORAGE_KEY = 'flashcard_data_v2';
-  const VIEWS = ['home', 'created', 'create', 'study', 'quiz', 'done', 'grammar', 'grammar-chapter', 'grammar-lesson', 'grammar-edit', 'reference'];
+  const VIEWS = ['home', 'created', 'create', 'study', 'quiz', 'done', 'grammar', 'grammar-lesson', 'grammar-edit', 'reference'];
   
   let DATA = loadLocalData();
   let currentUser = null;
@@ -1192,15 +1165,12 @@ procrastinate	trì hoãn			verb"></textarea>
   let currentQ = null; // current quiz question object
 
   // Grammar state
-  let activeChapter = null;
   let activeLesson = null;
-  let pendingDeleteChapterId = null;
-  let editingChapterId = null; // set when chapterModal is editing an existing chapter
   let editingLessonId = null;  // set when grammar editor is editing an existing lesson
-  
+
   // Admin logic state
   let globalRefData = { folders: [] };
-  let globalGrammarData = { chapters: [] };
+  let globalGrammarData = { lessons: [] };
   let isAdminLogged = false;
   let editingRefId = null;
 
@@ -1277,28 +1247,15 @@ procrastinate	trì hoãn			verb"></textarea>
     btnQuizNext: document.getElementById('btnQuizNext'),
 
     // Grammar tab
-    chapterList: document.getElementById('chapterList'),
-    btnOpenAddChapter: document.getElementById('btnOpenAddChapter'),
-    chapterModal: document.getElementById('chapterModal'),
-    chapterModalTitle: document.getElementById('chapterModalTitle'),
-    chapterNameInput: document.getElementById('chapterNameInput'),
-    chapterModalErr: document.getElementById('chapterModalErr'),
-    btnCancelChapter: document.getElementById('btnCancelChapter'),
-    btnSaveChapter: document.getElementById('btnSaveChapter'),
+    lessonList: document.getElementById('lessonList'),
+    btnOpenAddLesson: document.getElementById('btnOpenAddLesson'),
 
     btnBackToGrammar: document.getElementById('btnBackToGrammar'),
-    chapterViewTitle: document.getElementById('chapterViewTitle'),
-    btnOpenAddLesson: document.getElementById('btnOpenAddLesson'),
-    lessonList: document.getElementById('lessonList'),
-
-    btnBackToChapter: document.getElementById('btnBackToChapter'),
     btnEditLesson: document.getElementById('btnEditLesson'),
     lessonViewTitle: document.getElementById('lessonViewTitle'),
     lessonContent: document.getElementById('lessonContent'),
 
     btnCancelGrammarEdit: document.getElementById('btnCancelGrammarEdit'),
-    gEditChapterLabel: document.getElementById('gEditChapterLabel'),
-    gEditChapterSelect: document.getElementById('gEditChapterSelect'),
     gEditTitleInput: document.getElementById('gEditTitleInput'),
     gEditTabWrite: document.getElementById('gEditTabWrite'),
     gEditTabPreview: document.getElementById('gEditTabPreview'),
@@ -1352,14 +1309,9 @@ procrastinate	trì hoãn			verb"></textarea>
       if (DOM.views.reference.classList.contains('active')) renderRefFolderList();
     });
     onSnapshot(doc(db, 'shared', 'grammar_pool'), (snap) => {
-      globalGrammarData = snap.exists() ? snap.data() : { chapters: [] };
-      if (!globalGrammarData.chapters) globalGrammarData.chapters = [];
+      globalGrammarData = normalizeGrammarData(snap.exists() ? snap.data() : null);
       const active = VIEWS.find(v => DOM.views[v].classList.contains('active'));
-      if (active === 'grammar') renderChapterList();
-      else if (active === 'grammar-chapter' && activeChapter) {
-        const fresh = globalGrammarData.chapters.find(c => c.id === activeChapter.id);
-        if (fresh) { activeChapter = fresh; renderLessonList(); }
-      }
+      if (active === 'grammar') renderLessonList();
     });
   }
 
@@ -1368,8 +1320,7 @@ procrastinate	trì hoãn			verb"></textarea>
     if (active === 'home') renderHome();
     else if (active === 'created') renderFolderList();
     else if (active === 'reference') renderRefFolderList();
-    else if (active === 'grammar') renderChapterList();
-    else if (active === 'grammar-chapter' && activeChapter) renderLessonList();
+    else if (active === 'grammar') renderLessonList();
   }
 
   function generateUid() { return 'f_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
@@ -1389,8 +1340,23 @@ procrastinate	trì hoãn			verb"></textarea>
     return setDoc(doc(db, 'shared', 'reference_pool'), { folders: updatedFolders });
   }
 
-  async function pushGrammarChapters(updatedChapters) {
-    return setDoc(doc(db, 'shared', 'grammar_pool'), { chapters: updatedChapters });
+  async function pushGrammarLessons(updatedLessons) {
+    return setDoc(doc(db, 'shared', 'grammar_pool'), { lessons: updatedLessons });
+  }
+
+  // Migration helper: old data was nested as { chapters: [{ name, lessons: [...] }] }.
+  // Flatten it into { lessons: [...] } in memory, keeping every lesson's title/content intact.
+  // Nothing is written back to Firestore here — the cloud document stays untouched until
+  // an admin explicitly saves again, so no existing data is at risk.
+  function normalizeGrammarData(raw) {
+    if (!raw) return { lessons: [] };
+    if (Array.isArray(raw.lessons)) return { lessons: raw.lessons };
+    if (Array.isArray(raw.chapters)) {
+      const lessons = [];
+      raw.chapters.forEach(ch => (ch.lessons || []).forEach(ls => lessons.push(ls)));
+      return { lessons };
+    }
+    return { lessons: [] };
   }
 
   // ---- Lightweight Markdown -> HTML renderer (no external deps) ----
@@ -1492,73 +1458,33 @@ procrastinate	trì hoãn			verb"></textarea>
     return html;
   }
 
-  // ---- Grammar: Chapters & Lessons (Admin-managed, shared cloud content) ----
-  function renderChapterList() {
-    const chapters = globalGrammarData.chapters || [];
-    DOM.chapterList.replaceChildren();
+  // ---- Grammar: Lessons (flat list, Admin-managed shared cloud content) ----
+  function renderLessonList() {
+    const lessons = globalGrammarData.lessons || [];
+    DOM.lessonList.replaceChildren();
 
-    if (chapters.length === 0) {
-      DOM.chapterList.innerHTML = `<div class="empty-state"><p>${isAdminLogged ? 'Chưa có chương ngữ pháp nào. Bấm "Thêm chương mới" để bắt đầu.' : 'Chưa có nội dung ngữ pháp nào được đăng.'}</p></div>`;
+    if (lessons.length === 0) {
+      DOM.lessonList.innerHTML = `<div class="empty-state"><p>${isAdminLogged ? 'Chưa có bài ngữ pháp nào. Bấm "Thêm bài mới" để bắt đầu.' : 'Chưa có nội dung ngữ pháp nào được đăng.'}</p></div>`;
     } else {
-      chapters.forEach(ch => {
-        const card = createElement('div', 'chapter-card');
-        const lessonCount = (ch.lessons || []).length;
-        card.innerHTML = `
-          <div class="emoji">📐</div>
-          <div class="meta"><h3></h3><p></p></div>
-          ${isAdminLogged ? '<div class="del">✕</div>' : ''}`;
-        card.querySelector('h3').textContent = ch.name;
-        card.querySelector('p').textContent = `${lessonCount} bài`;
+      lessons.forEach(ls => {
+        const card = createElement('div', 'lesson-card');
+        card.innerHTML = `<div class="ic">📄</div><div class="meta"><h4></h4></div>${isAdminLogged ? '<div class="del">✕</div>' : ''}<div class="chev">›</div>`;
+        card.querySelector('h4').textContent = ls.title;
         if (isAdminLogged) {
           card.querySelector('.del').addEventListener('click', async (e) => {
             e.stopPropagation();
-            if (confirm(`Xoá chương "${ch.name}" cùng toàn bộ bài bên trong khỏi Ngữ pháp công khai?`)) {
-              const updated = chapters.filter(c => c.id !== ch.id);
-              try { await pushGrammarChapters(updated); } catch (err) { alert('Lỗi xoá: ' + err.message); }
+            if (confirm(`Xoá bài "${ls.title}" khỏi Ngữ pháp công khai?`)) {
+              const updated = lessons.filter(l => l.id !== ls.id);
+              try { await pushGrammarLessons(updated); } catch (err) { alert('Lỗi xoá: ' + err.message); }
             }
           });
         }
-        card.addEventListener('click', () => openChapterView(ch));
-        DOM.chapterList.appendChild(card);
+        card.addEventListener('click', () => openLessonView(ls));
+        DOM.lessonList.appendChild(card);
       });
     }
 
-    DOM.btnOpenAddChapter.style.display = isAdminLogged ? 'block' : 'none';
-  }
-
-  function openChapterView(ch) {
-    activeChapter = ch;
-    DOM.chapterViewTitle.textContent = ch.name;
     DOM.btnOpenAddLesson.style.display = isAdminLogged ? 'block' : 'none';
-    goTo('grammar-chapter');
-  }
-
-  function renderLessonList() {
-    if (!activeChapter) return;
-    const lessons = activeChapter.lessons || [];
-    DOM.lessonList.replaceChildren();
-    if (lessons.length === 0) {
-      DOM.lessonList.innerHTML = '<div class="empty-state"><p>Chương này chưa có bài nào.</p></div>';
-      return;
-    }
-    lessons.forEach(ls => {
-      const card = createElement('div', 'lesson-card');
-      card.innerHTML = `<div class="ic">📄</div><div class="meta"><h4></h4></div>${isAdminLogged ? '<div class="del">✕</div>' : ''}<div class="chev">›</div>`;
-      card.querySelector('h4').textContent = ls.title;
-      if (isAdminLogged) {
-        card.querySelector('.del').addEventListener('click', async (e) => {
-          e.stopPropagation();
-          if (confirm(`Xoá bài "${ls.title}"?`)) {
-            const updated = globalGrammarData.chapters.map(c =>
-              c.id === activeChapter.id ? { ...c, lessons: c.lessons.filter(l => l.id !== ls.id) } : c
-            );
-            try { await pushGrammarChapters(updated); } catch (err) { alert('Lỗi xoá: ' + err.message); }
-          }
-        });
-      }
-      card.addEventListener('click', () => openLessonView(ls));
-      DOM.lessonList.appendChild(card);
-    });
   }
 
   function openLessonView(ls) {
@@ -1569,48 +1495,10 @@ procrastinate	trì hoãn			verb"></textarea>
     goTo('grammar-lesson');
   }
 
-  // ---- Grammar: Chapter create/edit modal (Admin only) ----
-  function openChapterModal(existingChapter) {
-    if (!isAdminLogged) return;
-    editingChapterId = existingChapter ? existingChapter.id : null;
-    DOM.chapterModalTitle.textContent = existingChapter ? 'Sửa tên chương' : 'Chương mới';
-    DOM.chapterNameInput.value = existingChapter ? existingChapter.name : '';
-    DOM.chapterModalErr.textContent = '';
-    openModal(DOM.chapterModal);
-    setTimeout(() => DOM.chapterNameInput.focus(), 50);
-  }
-
-  DOM.btnOpenAddChapter.addEventListener('click', () => openChapterModal(null));
-  DOM.btnCancelChapter.addEventListener('click', () => closeModal(DOM.chapterModal));
-
-  DOM.btnSaveChapter.addEventListener('click', async () => {
-    const name = DOM.chapterNameInput.value.trim();
-    if (!name) { DOM.chapterModalErr.textContent = 'Vui lòng nhập tên chương.'; return; }
-    const chapters = globalGrammarData.chapters || [];
-    let updated;
-    if (editingChapterId) {
-      updated = chapters.map(c => c.id === editingChapterId ? { ...c, name } : c);
-    } else {
-      updated = [...chapters, { id: generateUid(), name, lessons: [] }];
-    }
-    try {
-      await pushGrammarChapters(updated);
-      closeModal(DOM.chapterModal);
-    } catch (err) { DOM.chapterModalErr.textContent = 'Lỗi Cloud: ' + err.message; }
-  });
-
   // ---- Grammar: Lesson editor (create/edit, Admin only) ----
-  function openLessonEditor(chapter, lesson) {
+  function openLessonEditor(lesson) {
     if (!isAdminLogged) return;
     editingLessonId = lesson ? lesson.id : null;
-    const chapters = globalGrammarData.chapters || [];
-    DOM.gEditChapterSelect.replaceChildren();
-    chapters.forEach(ch => {
-      const opt = document.createElement('option');
-      opt.value = ch.id; opt.textContent = ch.name;
-      DOM.gEditChapterSelect.appendChild(opt);
-    });
-    DOM.gEditChapterSelect.value = chapter ? chapter.id : (chapters[0] ? chapters[0].id : '');
     DOM.gEditTitleInput.value = lesson ? lesson.title : '';
     DOM.gEditMarkdown.value = lesson ? lesson.markdown : '';
     DOM.gEditErr.textContent = '';
@@ -1630,49 +1518,32 @@ procrastinate	trì hoãn			verb"></textarea>
   DOM.gEditTabWrite.addEventListener('click', () => setGrammarEditorTab('write'));
   DOM.gEditTabPreview.addEventListener('click', () => setGrammarEditorTab('preview'));
 
-  DOM.btnOpenAddLesson.addEventListener('click', () => openLessonEditor(activeChapter, null));
-  DOM.btnEditLesson.addEventListener('click', () => openLessonEditor(activeChapter, activeLesson));
-  DOM.btnCancelGrammarEdit.addEventListener('click', () => goTo(activeChapter ? 'grammar-chapter' : 'grammar'));
+  DOM.btnOpenAddLesson.addEventListener('click', () => openLessonEditor(null));
+  DOM.btnEditLesson.addEventListener('click', () => openLessonEditor(activeLesson));
+  DOM.btnCancelGrammarEdit.addEventListener('click', () => goTo('grammar'));
 
   DOM.btnSaveLesson.addEventListener('click', async () => {
-    const chapterId = DOM.gEditChapterSelect.value;
     const title = DOM.gEditTitleInput.value.trim();
     const markdown = DOM.gEditMarkdown.value;
-    if (!chapterId) { DOM.gEditErr.textContent = 'Vui lòng tạo một chương trước.'; return; }
     if (!title) { DOM.gEditErr.textContent = 'Vui lòng nhập tiêu đề bài.'; return; }
 
-    const chapters = globalGrammarData.chapters || [];
-    let newLessonRef = null;
-    let updated;
+    const lessons = globalGrammarData.lessons || [];
+    let newLessonRef, updated;
 
     if (editingLessonId) {
-      updated = chapters.map(c => {
-        const hasLesson = (c.lessons || []).some(l => l.id === editingLessonId);
-        if (!hasLesson) return c;
-        const lesson = c.lessons.find(l => l.id === editingLessonId);
-        const updatedLesson = { ...lesson, title, markdown };
-        if (c.id === chapterId) {
-          newLessonRef = updatedLesson;
-          return { ...c, lessons: c.lessons.map(l => l.id === editingLessonId ? updatedLesson : l) };
-        }
-        // moved to a different chapter: remove from here
-        newLessonRef = updatedLesson;
-        return { ...c, lessons: c.lessons.filter(l => l.id !== editingLessonId) };
+      updated = lessons.map(l => {
+        if (l.id !== editingLessonId) return l;
+        newLessonRef = { ...l, title, markdown };
+        return newLessonRef;
       });
-      // if moved, add into the target chapter
-      if (!updated.find(c => c.id === chapterId).lessons.some(l => l.id === editingLessonId)) {
-        updated = updated.map(c => c.id === chapterId ? { ...c, lessons: [...(c.lessons || []), newLessonRef] } : c);
-      }
     } else {
       newLessonRef = { id: generateUid(), title, markdown };
-      updated = chapters.map(c => c.id === chapterId ? { ...c, lessons: [...(c.lessons || []), newLessonRef] } : c);
+      updated = [...lessons, newLessonRef];
     }
 
     try {
-      await pushGrammarChapters(updated);
-      activeChapter = updated.find(c => c.id === chapterId);
+      await pushGrammarLessons(updated);
       activeLesson = newLessonRef;
-      DOM.chapterViewTitle.textContent = activeChapter.name;
       DOM.lessonViewTitle.textContent = activeLesson.title;
       DOM.lessonContent.innerHTML = renderMarkdown(activeLesson.markdown);
       DOM.btnEditLesson.style.display = isAdminLogged ? 'flex' : 'none';
@@ -1681,19 +1552,17 @@ procrastinate	trì hoãn			verb"></textarea>
   });
 
   DOM.btnDeleteLessonInEdit.addEventListener('click', async () => {
-    if (!editingLessonId || !activeChapter) return;
+    if (!editingLessonId) return;
     if (!confirm('Xoá bài này?')) return;
-    const updated = globalGrammarData.chapters.map(c =>
-      c.id === activeChapter.id ? { ...c, lessons: c.lessons.filter(l => l.id !== editingLessonId) } : c
-    );
+    const updated = (globalGrammarData.lessons || []).filter(l => l.id !== editingLessonId);
     try {
-      await pushGrammarChapters(updated);
-      goTo('grammar-chapter');
+      await pushGrammarLessons(updated);
+      goTo('grammar');
     } catch (err) { alert('Lỗi xoá: ' + err.message); }
   });
 
   DOM.btnBackToGrammar.addEventListener('click', () => goTo('grammar'));
-  DOM.btnBackToChapter.addEventListener('click', () => goTo('grammar-chapter'));
+
 
   // 5. Router Engine
   function goTo(name) {
@@ -2137,7 +2006,7 @@ procrastinate	trì hoãn			verb"></textarea>
       DOM.adminPanelBox.style.display = 'block'; 
       DOM.adminAuthRow.style.display = 'none';
       renderRefFolderList(); // Tải lại danh sách để hiện nút Sửa/Xóa
-      renderChapterList(); // Hiện nút quản lý Ngữ pháp
+      renderLessonList(); // Hiện nút quản lý Ngữ pháp
     } else { 
       alert('Mã Admin không đúng.'); 
     }
