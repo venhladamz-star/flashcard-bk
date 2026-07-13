@@ -338,6 +338,79 @@
     margin-top:10px;
   }
 
+  /* ---------- Sample-format table (visual guide for adding vocab) ---------- */
+  .sample-table-wrap{
+    border:1px solid var(--line-solid);
+    border-radius:12px;
+    overflow:hidden;
+    margin-bottom:14px;
+  }
+  table.sample-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12px;
+  }
+  table.sample-table th{
+    background:var(--bg-elev-2);
+    color:var(--ink-dim);
+    font-weight:700;
+    text-align:left;
+    padding:9px 10px;
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:0.04em;
+    border-bottom:1px solid var(--line-solid);
+    white-space:nowrap;
+  }
+  table.sample-table th.req{ color:var(--accent); }
+  table.sample-table th .opt-tag{
+    display:block;
+    font-size:9px;
+    text-transform:none;
+    letter-spacing:0;
+    color:var(--ink-faint);
+    font-weight:400;
+    margin-top:1px;
+  }
+  table.sample-table td{
+    padding:9px 10px;
+    border-bottom:1px solid var(--line-solid);
+    color:var(--ink);
+    font-family:var(--mono);
+    font-size:11.5px;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:120px;
+  }
+  table.sample-table tr:last-child td{ border-bottom:none; }
+  table.sample-table td.empty-cell{ color:var(--ink-faint); font-style:italic; }
+  .sample-table-caption{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:8px;
+    gap:10px;
+  }
+  .sample-table-caption p{
+    margin:0;
+    font-size:11.5px;
+    color:var(--ink-faint);
+  }
+  .btn-insert-sample{
+    font-size:11px;
+    font-weight:600;
+    color:var(--accent);
+    background:var(--accent-soft);
+    border:none;
+    padding:6px 11px;
+    border-radius:8px;
+    cursor:pointer;
+    white-space:nowrap;
+    flex-shrink:0;
+  }
+  .btn-insert-sample:hover{ opacity:0.85; }
+
   /* ---------- Study view ---------- */
   .study-header{
     display:flex;
@@ -734,6 +807,21 @@
 
   .gr-fab-row{ display:flex; gap:10px; margin-bottom:18px; }
 
+  .word-item{
+    background:var(--bg-elev);
+    border:1px solid var(--line-solid);
+    border-radius:12px;
+    padding:12px 16px;
+    margin-bottom:8px;
+  }
+  .word-item .top-row{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .word-item .term{ font-size:15px; font-weight:700; }
+  .word-item .src{
+    font-size:10.5px; color:var(--accent); background:var(--accent-soft);
+    padding:2px 8px; border-radius:6px; flex-shrink:0; white-space:nowrap;
+  }
+  .word-item .meaning{ font-size:13px; color:var(--ink-dim); margin-top:3px; }
+
   /* Markdown-rendered lesson content */
   .md-content{ font-size:14.5px; line-height:1.7; }
   .md-content h1, .md-content h2, .md-content h3{
@@ -810,7 +898,7 @@
         <div class="num" id="statWords">0</div>
         <div class="label">Tổng từ</div>
       </div>
-      <div class="stat-card good">
+      <div class="stat-card good" id="statLearnedCard" style="cursor:pointer;">
         <div class="num" id="statLearned">0</div>
         <div class="label">Đã thuộc</div>
       </div>
@@ -821,6 +909,21 @@
 
     <div class="section-title">Bộ thẻ của bạn</div>
     <div id="homeRecentList"></div>
+  </div>
+
+  <!-- ============ TỪ ĐÃ THUỘC (gộp từ mọi bộ thẻ) ============ -->
+  <div class="view" id="view-learned-words">
+    <div class="study-header">
+      <div class="back-btn" id="btnBackFromLearned">‹ Trang chủ</div>
+    </div>
+    <h2 style="margin:0 0 4px; font-size:19px;">Từ đã thuộc</h2>
+    <p id="learnedWordsSub" style="margin:0 0 16px; color:var(--ink-dim); font-size:13px;">—</p>
+
+    <div class="row-actions" id="learnedWordsActions" style="display:none;">
+      <button class="btn primary full" id="btnLearnedModeStart">Ôn lại</button>
+    </div>
+
+    <div id="learnedWordsList"></div>
   </div>
 
   <!-- ============ TAB: ĐÃ TẠO ============ -->
@@ -927,20 +1030,47 @@
       <div class="field-label">Tên bộ thẻ</div>
       <input type="text" class="name-input" id="folderNameInput" placeholder="VD: Từ vựng Bài 5 — Op-amp">
       <div class="field-label">Dán danh sách từ</div>
-      <textarea class="paste-box" id="pasteArea" placeholder="Dán trực tiếp từ Word, Excel, Google Docs...
 
-serendipity	tình cờ may mắn tìm thấy điều tốt đẹp	/ˌserənˈdɪpɪti/	noun
-ambiguous	mơ hồ không rõ ràng	/æmˈbɪɡjuəs/	adjective
-procrastinate	trì hoãn			verb"></textarea>
-      <div class="field-order">
-        <span class="req">từ</span>
-        <span class="req">nghĩa</span>
-        <span>phát âm (nếu có)</span>
-        <span>loại từ (nếu có)</span>
+      <div class="sample-table-caption">
+        <p>Định dạng đúng trông như bảng dưới đây:</p>
+        <button type="button" class="btn-insert-sample" id="btnInsertSample">Chèn ví dụ mẫu</button>
       </div>
+      <div class="sample-table-wrap">
+        <table class="sample-table">
+          <thead>
+            <tr>
+              <th class="req">Từ</th>
+              <th class="req">Nghĩa</th>
+              <th>Phát âm<span class="opt-tag">không bắt buộc</span></th>
+              <th>Loại từ<span class="opt-tag">không bắt buộc</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>serendipity</td>
+              <td>tình cờ may mắn</td>
+              <td>/ˌserənˈdɪpɪti/</td>
+              <td>noun</td>
+            </tr>
+            <tr>
+              <td>ambiguous</td>
+              <td>mơ hồ, không rõ</td>
+              <td>/æmˈbɪɡjuəs/</td>
+              <td>adjective</td>
+            </tr>
+            <tr>
+              <td>procrastinate</td>
+              <td>trì hoãn</td>
+              <td class="empty-cell">để trống</td>
+              <td class="empty-cell">để trống</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <textarea class="paste-box" id="pasteArea" placeholder="Dán dữ liệu vào đây (từ Excel, Google Sheets, Word...) — mỗi dòng 1 từ, các cột cách nhau bằng phím Tab."></textarea>
       <div class="hint">
-        Mỗi dòng 1 từ, các cột cách nhau bằng <b>Tab</b> (copy thẳng từ Excel/Sheets là đúng định dạng).<br>
-        Cột phát âm để trống → app tự đọc bằng giọng máy. Dán link .mp3 vào đó → app phát file đó.
+        Cột <b>phát âm</b> để trống → app tự đọc bằng giọng máy. Dán link .mp3 vào đó → app phát file đó thay vì đọc máy.
       </div>
       <div class="err" id="createErr"></div>
     </div>
@@ -1136,7 +1266,7 @@ procrastinate	trì hoãn			verb"></textarea>
 
   // 2. State App Variable
   const STORAGE_KEY = 'flashcard_data_v2';
-  const VIEWS = ['home', 'created', 'create', 'study', 'quiz', 'done', 'grammar', 'grammar-lesson', 'grammar-edit', 'reference'];
+  const VIEWS = ['home', 'created', 'create', 'study', 'quiz', 'done', 'grammar', 'grammar-lesson', 'grammar-edit', 'reference', 'learned-words'];
   
   let DATA = loadLocalData();
   let currentUser = null;
@@ -1186,85 +1316,20 @@ procrastinate	trì hoãn			verb"></textarea>
   });
 
   // 3. Cache DOM Elements
-  const DOM = {
+  // DOM.foo lazily resolves document.getElementById('foo') on first access and caches it —
+  // every key here is an exact element id, so this is a drop-in replacement for a manually
+  // written object literal without needing 100+ getElementById lines.
+  const DOM = new Proxy({
     views: VIEWS.reduce((acc, v) => ({ ...acc, [v]: document.getElementById(`view-${v}`) }), {}),
-    tabItems: document.querySelectorAll('.tab-item'),
-    avatarBtn: document.getElementById('avatarBtn'),
-    statFolders: document.getElementById('statFolders'),
-    statWords: document.getElementById('statWords'),
-    statLearned: document.getElementById('statLearned'),
-    continueSlot: document.getElementById('continueSlot'),
-    homeRecentList: document.getElementById('homeRecentList'),
-    folderList: document.getElementById('folderList'),
-    folderNameInput: document.getElementById('folderNameInput'),
-    pasteArea: document.getElementById('pasteArea'),
-    createErr: document.getElementById('createErr'),
-    posText: document.getElementById('posText'),
-    btnShuffle: document.getElementById('btnShuffle'),
-    progFill: document.getElementById('progFill'),
-    flipCard: document.getElementById('flipCard'),
-    cardTag: document.getElementById('cardTag'),
-    termText: document.getElementById('termText'),
-    ipaText: document.getElementById('ipaText'),
-    meaningText: document.getElementById('meaningText'),
-    btnPrev: document.getElementById('btnPrev'),
-    btnNext: document.getElementById('btnNext'),
-    doneFolderName: document.getElementById('doneFolderName'),
-    doneGood: document.getElementById('doneGood'),
-    doneBad: document.getElementById('doneBad'),
-    btnRedoBad: document.getElementById('btnRedoBad'),
-    deleteModal: document.getElementById('deleteModal'),
-    deleteModalText: document.getElementById('deleteModalText'),
-    accountModal: document.getElementById('accountModal'),
-    accountModalSignedOut: document.getElementById('accountModalSignedOut'),
-    accountModalSignedIn: document.getElementById('accountModalSignedIn'),
-    accountEmail: document.getElementById('accountEmail'),
-    mergeModal: document.getElementById('mergeModal'),
-    adminAuthRow: document.getElementById('adminAuthRow'),
-    adminCodeInput: document.getElementById('adminCodeInput'),
-    btnCheckAdmin: document.getElementById('btnCheckAdmin'),
-    adminPanelBox: document.getElementById('adminPanelBox'),
-    adminPanelTitle: document.getElementById('adminPanelTitle'),
-    refFolderNameInput: document.getElementById('refFolderNameInput'),
-    refPasteArea: document.getElementById('refPasteArea'),
-    refCreateErr: document.getElementById('refCreateErr'),
-    btnPushRefFolder: document.getElementById('btnPushRefFolder'),
-    btnCancelRefEdit: document.getElementById('btnCancelRefEdit'),
-    refFolderList: document.getElementById('refFolderList'),
-    modeModal: document.getElementById('modeModal'),
-    modeOptionStudy: document.getElementById('modeOptionStudy'),
-    modeOptionQuiz: document.getElementById('modeOptionQuiz'),
-    btnCancelMode: document.getElementById('btnCancelMode'),
-    quizPosText: document.getElementById('quizPosText'),
-    quizProgFill: document.getElementById('quizProgFill'),
-    quizTag: document.getElementById('quizTag'),
-    quizPrompt: document.getElementById('quizPrompt'),
-    quizOptions: document.getElementById('quizOptions'),
-    quizInputWrap: document.getElementById('quizInputWrap'),
-    quizInput: document.getElementById('quizInput'),
-    quizAnswerReveal: document.getElementById('quizAnswerReveal'),
-    btnQuizSubmit: document.getElementById('btnQuizSubmit'),
-    btnQuizNext: document.getElementById('btnQuizNext'),
-
-    // Grammar tab
-    lessonList: document.getElementById('lessonList'),
-    btnOpenAddLesson: document.getElementById('btnOpenAddLesson'),
-
-    btnBackToGrammar: document.getElementById('btnBackToGrammar'),
-    btnEditLesson: document.getElementById('btnEditLesson'),
-    lessonViewTitle: document.getElementById('lessonViewTitle'),
-    lessonContent: document.getElementById('lessonContent'),
-
-    btnCancelGrammarEdit: document.getElementById('btnCancelGrammarEdit'),
-    gEditTitleInput: document.getElementById('gEditTitleInput'),
-    gEditTabWrite: document.getElementById('gEditTabWrite'),
-    gEditTabPreview: document.getElementById('gEditTabPreview'),
-    gEditMarkdown: document.getElementById('gEditMarkdown'),
-    gEditPreviewBox: document.getElementById('gEditPreviewBox'),
-    gEditErr: document.getElementById('gEditErr'),
-    btnDeleteLessonInEdit: document.getElementById('btnDeleteLessonInEdit'),
-    btnSaveLesson: document.getElementById('btnSaveLesson')
-  };
+    tabItems: document.querySelectorAll('.tab-item')
+  }, {
+    get(cache, key) {
+      if (key in cache) return cache[key];
+      const el = document.getElementById(key);
+      cache[key] = el;
+      return el;
+    }
+  });
 
   // 4. Storage Helpers
   function loadLocalData() {
@@ -1321,6 +1386,7 @@ procrastinate	trì hoãn			verb"></textarea>
     else if (active === 'created') renderFolderList();
     else if (active === 'reference') renderRefFolderList();
     else if (active === 'grammar') renderLessonList();
+    else if (active === 'learned-words') renderLearnedWordsView();
   }
 
   function generateUid() { return 'f_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
@@ -1329,10 +1395,25 @@ procrastinate	trì hoãn			verb"></textarea>
   function openModal(el) { el.classList.add('active'); }
   function closeModal(el) { el.classList.remove('active'); }
 
-  // Update a word's status inside DATA (only if the folder is a saved, non-reference folder)
+  // Shorthand for toggling an element's visibility via inline style.display
+  function setDisplay(el, value) { el.style.display = value; }
+
+  // Shared "session finished" screen used by both Study and Quiz engines
+  function showDoneScreen(good, bad, showRedoBad) {
+    DOM.doneFolderName.textContent = sessionDisplayName;
+    DOM.doneGood.textContent = good;
+    DOM.doneBad.textContent = bad;
+    setDisplay(DOM.btnRedoBad, showRedoBad ? 'block' : 'none');
+    goTo('done');
+  }
+
+  // Update a word's status inside DATA (only if the folder is a saved, non-reference folder).
+  // If entry carries a _sourceFolder (set when mixing words from multiple decks, e.g. the
+  // "learned words" review), that takes priority over the folder passed for the session.
   function updateWordStatus(folder, entry, status) {
-    if (!folder || !DATA.folders.some(f => f.id === folder.id)) return;
-    const target = folder.words.find(w => w.tu === entry.tu && w.nghia === entry.nghia);
+    const targetFolder = entry._sourceFolder || folder;
+    if (!targetFolder || !DATA.folders.some(f => f.id === targetFolder.id)) return;
+    const target = targetFolder.words.find(w => w.tu === entry.tu && w.nghia === entry.nghia);
     if (target) { target.status = status; saveData(); }
   }
 
@@ -1586,6 +1667,15 @@ procrastinate	trì hoãn			verb"></textarea>
     return el;
   }
 
+  // Builds the standard "nothing here yet" placeholder block used across every list view.
+  // actionBtn is an optional pre-built <button> to append (e.g. a "create new" CTA).
+  function emptyState(icon, message, actionBtn) {
+    const el = createElement('div', 'empty-state');
+    el.innerHTML = `${icon ? `<div class="icon">${icon}</div>` : ''}<p>${message}</p>`;
+    if (actionBtn) el.appendChild(actionBtn);
+    return el;
+  }
+
   function renderHome() {
     const folders = DATA.folders || [];
     const totalWords = folders.reduce((s, f) => s + f.words.length, 0);
@@ -1615,12 +1705,9 @@ procrastinate	trì hoãn			verb"></textarea>
       });
       DOM.continueSlot.appendChild(card);
     } else {
-      const empty = createElement('div', 'empty-state');
-      empty.innerHTML = `<div class="icon">📚</div><p>Chưa có bộ thẻ nào. Tạo bộ đầu tiên để bắt đầu học.</p>`;
       const btn = createElement('button', 'btn primary', '＋ Tạo bộ thẻ');
       btn.addEventListener('click', () => goTo('create'));
-      empty.appendChild(btn);
-      DOM.continueSlot.appendChild(empty);
+      DOM.continueSlot.appendChild(emptyState('📚', 'Chưa có bộ thẻ nào. Tạo bộ đầu tiên để bắt đầu học.', btn));
     }
 
     if (folders.length > 0) {
@@ -1633,12 +1720,55 @@ procrastinate	trì hoãn			verb"></textarea>
     }
   }
 
+  // ---- Learned Words (gộp từ 'đã thuộc' của mọi bộ thẻ) ----
+  function getAllLearnedWords() {
+    const folders = DATA.folders || [];
+    const result = [];
+    folders.forEach(f => {
+      f.words.filter(w => w.status === 'good').forEach(w => {
+        // Tag each entry with its source folder so study/quiz sessions can
+        // update the right deck even when words come from several decks at once.
+        result.push({ ...w, _sourceFolder: f, _sourceFolderName: f.name });
+      });
+    });
+    return result;
+  }
+
+  function renderLearnedWordsView() {
+    const words = getAllLearnedWords();
+    DOM.learnedWordsSub.textContent = `${words.length} từ đã thuộc trong tất cả bộ thẻ`;
+    DOM.learnedWordsActions.style.display = words.length ? 'block' : 'none';
+    DOM.learnedWordsList.replaceChildren();
+
+    if (words.length === 0) {
+      DOM.learnedWordsList.innerHTML = '<div class="empty-state"><p>Chưa có từ nào được đánh dấu "đã thuộc". Hãy học hoặc kiểm tra để đánh dấu!</p></div>';
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    words.forEach(w => {
+      const item = createElement('div', 'word-item');
+      item.innerHTML = `
+        <div class="top-row"><div class="term"></div><div class="src"></div></div>
+        <div class="meaning"></div>`;
+      item.querySelector('.term').textContent = w.tu;
+      item.querySelector('.src').textContent = w._sourceFolderName;
+      item.querySelector('.meaning').textContent = w.nghia;
+      frag.appendChild(item);
+    });
+    DOM.learnedWordsList.appendChild(frag);
+  }
+
+  DOM.statLearnedCard.addEventListener('click', () => { renderLearnedWordsView(); goTo('learned-words'); });
+  DOM.btnBackFromLearned.addEventListener('click', () => goTo('home'));
+  DOM.btnLearnedModeStart.addEventListener('click', () => {
+    const words = getAllLearnedWords();
+    openModeModal(null, words, null, 'Từ đã thuộc');
+  });
+
   function renderFolderList() {
     DOM.folderList.replaceChildren();
     if (!DATA.folders || DATA.folders.length === 0) {
-      const empty = createElement('div', 'empty-state');
-      empty.innerHTML = '<div class="icon">📁</div><p>Chưa có bộ thẻ nào. Bấm "Tạo bộ thẻ mới" để bắt đầu.</p>';
-      DOM.folderList.appendChild(empty);
+      DOM.folderList.appendChild(emptyState('📁', 'Chưa có bộ thẻ nào. Bấm "Tạo bộ thẻ mới" để bắt đầu.'));
       return;
     }
     const frag = document.createDocumentFragment();
@@ -1681,9 +1811,7 @@ procrastinate	trì hoãn			verb"></textarea>
     DOM.refFolderList.replaceChildren();
     const refFolders = globalRefData.folders || [];
     if (refFolders.length === 0) {
-      const empty = createElement('div', 'empty-state');
-      empty.innerHTML = '<div class="icon">🌐</div><p>Chưa có bộ từ vựng tham khảo nào được đăng.</p>';
-      DOM.refFolderList.appendChild(empty);
+      DOM.refFolderList.appendChild(emptyState('🌐', 'Chưa có bộ từ vựng tham khảo nào được đăng.'));
       return;
     }
     const frag = document.createDocumentFragment();
@@ -1772,9 +1900,13 @@ procrastinate	trì hoãn			verb"></textarea>
     return a;
   }
 
-  function initStudySession(folder, wordsList) {
+  let sessionDisplayName = ''; // shown on the Done screen; falls back to activeFolder.name
+  let lastQuizFullQueue = []; // preserves the original quiz word list for "restart from beginning"
+
+  function initStudySession(folder, wordsList, displayName) {
     if (!wordsList || wordsList.length === 0) return;
     activeFolder = folder; baseQueue = [...wordsList];
+    sessionDisplayName = displayName || (folder ? folder.name : '');
     queue = shuffleOn ? shuffleArray(baseQueue) : [...baseQueue];
     idx = 0; sessionStats = { good: 0, bad: 0 }; badPile = [];
     lastSessionMode = 'study';
@@ -1784,11 +1916,8 @@ procrastinate	trì hoãn			verb"></textarea>
 
   function renderCardAtIndex() {
     if (idx >= queue.length) {
-      DOM.doneFolderName.textContent = activeFolder ? activeFolder.name : '';
-      DOM.doneGood.textContent = sessionStats.good;
-      DOM.doneBad.textContent = sessionStats.bad;
-      DOM.btnRedoBad.style.display = badPile.length ? 'block' : 'none';
-      goTo('done'); return;
+      showDoneScreen(sessionStats.good, sessionStats.bad, badPile.length > 0);
+      return;
     }
     const entry = queue[idx];
     flipped = false; DOM.flipCard.classList.remove('is-flipped');
@@ -1813,34 +1942,38 @@ procrastinate	trì hoãn			verb"></textarea>
 
   // 7b. Mode select modal
   let pendingModeConfirm = null;
-  function openModeModal(folder, wordsList, onConfirm) {
+  let pendingModeDisplayName = null;
+  function openModeModal(folder, wordsList, onConfirm, displayName) {
     if (!wordsList || wordsList.length === 0) return;
     pendingModeFolder = folder;
     pendingModeWords = wordsList;
     pendingModeConfirm = onConfirm;
+    pendingModeDisplayName = displayName || null;
     openModal(DOM.modeModal);
   }
 
   function closeModeModal() {
     closeModal(DOM.modeModal);
-    pendingModeFolder = null; pendingModeWords = null; pendingModeConfirm = null;
+    pendingModeFolder = null; pendingModeWords = null; pendingModeConfirm = null; pendingModeDisplayName = null;
   }
 
   function confirmModeSelection(startFn) {
-    const folder = pendingModeFolder, words = pendingModeWords, onConfirm = pendingModeConfirm;
+    const folder = pendingModeFolder, words = pendingModeWords, onConfirm = pendingModeConfirm, displayName = pendingModeDisplayName;
     closeModeModal();
     if (onConfirm) onConfirm();
-    startFn(folder, words);
+    startFn(folder, words, displayName);
   }
   DOM.modeOptionStudy.addEventListener('click', () => confirmModeSelection(initStudySession));
   DOM.modeOptionQuiz.addEventListener('click', () => confirmModeSelection(initQuizSession));
   DOM.btnCancelMode.addEventListener('click', closeModeModal);
 
   // 7c. Quiz Engine
-  function initQuizSession(folder, wordsList) {
+  function initQuizSession(folder, wordsList, displayName) {
     if (!wordsList || wordsList.length < 1) return;
     activeFolder = folder;
+    sessionDisplayName = displayName || (folder ? folder.name : '');
     quizQueue = shuffleArray(wordsList);
+    lastQuizFullQueue = [...wordsList];
     quizIdx = 0; quizStats = { good: 0, bad: 0 };
     lastSessionMode = 'quiz';
     goTo('quiz'); renderQuizAtIndex();
@@ -1862,11 +1995,8 @@ procrastinate	trì hoãn			verb"></textarea>
 
   function renderQuizAtIndex() {
     if (quizIdx >= quizQueue.length) {
-      DOM.doneFolderName.textContent = activeFolder ? activeFolder.name : '';
-      DOM.doneGood.textContent = quizStats.good;
-      DOM.doneBad.textContent = quizStats.bad;
-      DOM.btnRedoBad.style.display = 'none';
-      goTo('done'); return;
+      showDoneScreen(quizStats.good, quizStats.bad, false);
+      return;
     }
     const entry = quizQueue[quizIdx];
     const askMeaning = Math.random() < 0.5; // true: show word -> ask meaning
@@ -1988,6 +2118,18 @@ procrastinate	trì hoãn			verb"></textarea>
     pendingDeleteId = null; closeModal(DOM.deleteModal);
   });
 
+  DOM.btnInsertSample.addEventListener('click', () => {
+    const sample = [
+      'serendipity\ttình cờ may mắn\t/ˌserənˈdɪpɪti/\tnoun',
+      'ambiguous\tmơ hồ, không rõ\t/æmˈbɪɡjuəs/\tadjective',
+      'procrastinate\ttrì hoãn\t\t'
+    ].join('\n');
+    DOM.pasteArea.value = DOM.pasteArea.value.trim()
+      ? DOM.pasteArea.value.replace(/\n?$/, '\n') + sample
+      : sample;
+    DOM.pasteArea.focus();
+  });
+
   document.getElementById('btnSaveFolder').addEventListener('click', () => {
     DOM.createErr.textContent = '';
     const name = DOM.folderNameInput.value.trim(), text = DOM.pasteArea.value;
@@ -2081,11 +2223,15 @@ procrastinate	trì hoãn			verb"></textarea>
   DOM.btnPrev.addEventListener('click', () => { if (idx > 0) { idx--; renderCardAtIndex(); } });
   DOM.btnNext.addEventListener('click', () => { if (idx < queue.length) { idx++; renderCardAtIndex(); } });
   document.getElementById('btnRestartFolder').addEventListener('click', () => {
-    if (!activeFolder) return;
-    if (lastSessionMode === 'quiz') initQuizSession(activeFolder, activeFolder.words);
-    else initStudySession(activeFolder, activeFolder.words);
+    if (lastSessionMode === 'quiz') {
+      if (!lastQuizFullQueue.length) return;
+      initQuizSession(activeFolder, [...lastQuizFullQueue], sessionDisplayName);
+    } else {
+      if (!baseQueue.length) return;
+      initStudySession(activeFolder, [...baseQueue], sessionDisplayName);
+    }
   });
-  DOM.btnRedoBad.addEventListener('click', () => { if (!badPile.length || !activeFolder) return; initStudySession(activeFolder, [...badPile]); });
+  DOM.btnRedoBad.addEventListener('click', () => { if (!badPile.length) return; initStudySession(activeFolder, [...badPile], sessionDisplayName); });
   DOM.btnShuffle.addEventListener('click', () => {
     shuffleOn = !shuffleOn; DOM.btnShuffle.classList.toggle('on', shuffleOn);
     const seen = queue.slice(0, idx), remaining = queue.slice(idx);
