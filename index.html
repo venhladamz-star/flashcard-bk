@@ -342,11 +342,13 @@
   .sample-table-wrap{
     border:1px solid var(--line-solid);
     border-radius:12px;
-    overflow:hidden;
     margin-bottom:14px;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
   }
   table.sample-table{
     width:100%;
+    min-width:420px;
     border-collapse:collapse;
     font-size:12px;
   }
@@ -362,6 +364,8 @@
     border-bottom:1px solid var(--line-solid);
     white-space:nowrap;
   }
+  table.sample-table th:first-child{ border-top-left-radius:11px; }
+  table.sample-table th:last-child{ border-top-right-radius:11px; }
   table.sample-table th.req{ color:var(--accent); }
   table.sample-table th .opt-tag{
     display:block;
@@ -379,9 +383,6 @@
     font-family:var(--mono);
     font-size:11.5px;
     white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    max-width:120px;
   }
   table.sample-table tr:last-child td{ border-bottom:none; }
   table.sample-table td.empty-cell{ color:var(--ink-faint); font-style:italic; }
@@ -1032,7 +1033,7 @@
       <div class="field-label">Dán danh sách từ</div>
 
       <div class="sample-table-caption">
-        <p>Định dạng đúng trông như bảng dưới đây:</p>
+        <p>Định dạng đúng trông như bảng dưới đây (vuốt ngang nếu cần):</p>
         <button type="button" class="btn-insert-sample" id="btnInsertSample">Chèn ví dụ mẫu</button>
       </div>
       <div class="sample-table-wrap">
@@ -1041,8 +1042,8 @@
             <tr>
               <th class="req">Từ</th>
               <th class="req">Nghĩa</th>
-              <th>Phát âm<span class="opt-tag">không bắt buộc</span></th>
-              <th>Loại từ<span class="opt-tag">không bắt buộc</span></th>
+              <th>Phát âm<span class="opt-tag">tùy chọn</span></th>
+              <th>Loại từ<span class="opt-tag">tùy chọn</span></th>
             </tr>
           </thead>
           <tbody>
