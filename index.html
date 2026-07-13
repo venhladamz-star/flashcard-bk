@@ -64,6 +64,75 @@
     padding-bottom:78px;
   }
 
+  /* ---------- Desktop / Tablet layout: left sidebar instead of bottom tabbar ---------- */
+  body[data-layout="desktop"] #app{
+    max-width:1080px;
+    flex-direction:row;
+    padding-bottom:0;
+  }
+  body[data-layout="desktop"] .main-col{
+    flex:1;
+    min-width:0;
+    padding-bottom:40px;
+  }
+  body[data-layout="desktop"] .main-col .view{
+    max-width:640px;
+    margin:0 auto;
+  }
+  body[data-layout="desktop"] .tabbar{ display:none; }
+  .sidebar{
+    display:none;
+    flex-direction:column;
+    width:236px;
+    flex-shrink:0;
+    padding:24px 16px;
+    border-right:1px solid var(--line-solid);
+    min-height:100vh;
+    position:sticky;
+    top:0;
+  }
+  body[data-layout="desktop"] .sidebar{ display:flex; }
+  .sidebar-brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:0 8px;
+    margin-bottom:28px;
+  }
+  .sidebar-brand .logo{
+    width:34px;height:34px;
+    border-radius:10px;
+    background:var(--accent);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:16px;
+    flex-shrink:0;
+  }
+  .sidebar-brand h1{ font-size:16px; margin:0; font-weight:800; }
+  .sidebar-nav{ display:flex; flex-direction:column; gap:2px; flex:1; }
+  .sidebar-item{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    padding:11px 12px;
+    border-radius:10px;
+    color:var(--ink-dim);
+    cursor:pointer;
+    font-size:14px;
+    font-weight:600;
+    transition: background 0.15s, color 0.15s;
+  }
+  .sidebar-item:hover{ background:var(--bg-elev-2); color:var(--ink); }
+  .sidebar-item.active{ background:var(--accent-soft); color:var(--accent); }
+  .sidebar-item .ic{ font-size:17px; width:20px; text-align:center; flex-shrink:0; }
+  .sidebar-footer{
+    display:flex;
+    gap:8px;
+    padding-top:14px;
+    border-top:1px solid var(--line-solid);
+  }
+  .sidebar-footer .icon-btn{ width:36px; height:36px; }
+
   /* ---------- Top bar ---------- */
   .topbar{
     padding:20px 20px 14px;
@@ -86,6 +155,7 @@
     display: flex;
     gap: 10px;
   }
+  body[data-layout="desktop"] .topbar{ display:none; }
   .icon-btn{
     width:38px;height:38px;
     border-radius:50%;
@@ -631,6 +701,8 @@
     z-index:100;
   }
   .modal-overlay.active{ display:flex; }
+  body[data-layout="desktop"] .modal-overlay{ align-items:center; }
+  body[data-layout="desktop"] .modal-sheet{ border-radius:20px; border-bottom:1px solid var(--line-solid); max-width:440px; }
   .modal-sheet{
     background:var(--bg-elev);
     border-radius:20px 20px 0 0;
@@ -644,6 +716,19 @@
   .modal-sheet h3{ margin:0 0 6px; font-size:17px; }
   .modal-sheet p{ margin:0 0 18px; font-size:13px; color:var(--ink-dim); }
   .modal-actions{ display:flex; gap:10px; }
+  .settings-section{
+    margin-top:16px;
+    padding-top:16px;
+    border-top:1px solid var(--line-solid);
+  }
+  .settings-label{
+    font-size:11px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:0.05em;
+    color:var(--ink-faint);
+    margin-bottom:10px;
+  }
 
   /* ---------- Mode select modal ---------- */
   .mode-option{
@@ -662,6 +747,9 @@
   .mode-option .ic{ font-size:24px; flex-shrink:0; }
   .mode-option .txt h4{ margin:0 0 3px; font-size:15px; font-weight:700; }
   .mode-option .txt p{ margin:0; font-size:12px; color:var(--ink-dim); }
+
+  /* ---------- Device select modal (uses .mode-option too) ---------- */
+  #deviceModal .modal-sheet{ max-width:420px; }
 
   /* ---------- Quiz view ---------- */
   .quiz-header{
@@ -876,6 +964,26 @@
 <body>
 
 <div id="app">
+
+  <!-- ============ SIDEBAR (Laptop / Tablet layout only) ============ -->
+  <div class="sidebar" id="mainSidebar">
+    <div class="sidebar-brand">
+      <div class="logo">🗂️</div>
+      <h1>Flashcard</h1>
+    </div>
+    <div class="sidebar-nav" id="sidebarNav">
+      <div class="sidebar-item active" data-tab="home"><span class="ic">🏠</span>Trang chủ</div>
+      <div class="sidebar-item" data-tab="created"><span class="ic">📁</span>Đã tạo</div>
+      <div class="sidebar-item" data-tab="grammar"><span class="ic">📐</span>Ngữ pháp</div>
+      <div class="sidebar-item" data-tab="reference"><span class="ic">🌐</span>Tham khảo</div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="icon-btn" id="sidebarThemeBtn" title="Giao diện sáng/tối">🌓</div>
+      <div class="icon-btn" id="sidebarAvatarBtn" title="Tài khoản">👤</div>
+    </div>
+  </div>
+
+  <div class="main-col">
 
   <div class="topbar">
     <div>
@@ -1158,7 +1266,7 @@
     </div>
   </div>
 
-  <!-- ============ TABBAR ============ -->
+  <!-- ============ TABBAR (Phone layout only) ============ -->
   <div class="tabbar" id="mainTabbar">
     <div class="tab-item active" data-tab="home">
       <div class="ic">🏠</div><div>Trang chủ</div>
@@ -1174,9 +1282,30 @@
     </div>
   </div>
 
-</div>
+  </div><!-- /.main-col -->
+</div><!-- /#app -->
 
 <!-- Delete confirm modal -->
+<div class="modal-overlay" id="deviceModal">
+  <div class="modal-sheet">
+    <h3>Bạn đang dùng thiết bị nào?</h3>
+    <p>Giao diện sẽ được tối ưu riêng cho lựa chọn của bạn. Có thể đổi lại sau trong mục Tài khoản.</p>
+    <div class="mode-option" data-device="phone">
+      <div class="ic">📱</div>
+      <div class="txt"><h4>Điện thoại</h4><p>Menu điều hướng ở phía dưới màn hình.</p></div>
+    </div>
+    <div class="mode-option" data-device="tablet">
+      <div class="ic">📲</div>
+      <div class="txt"><h4>Máy tính bảng</h4><p>Sidebar bên trái, nội dung rộng rãi hơn.</p></div>
+    </div>
+    <div class="mode-option" data-device="desktop">
+      <div class="ic">💻</div>
+      <div class="txt"><h4>Laptop / Máy tính</h4><p>Sidebar bên trái, tối ưu cho màn hình lớn.</p></div>
+    </div>
+    <button class="btn ghost full" id="btnCancelDeviceModal" style="display:none;">Đóng</button>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modeModal">
   <div class="modal-sheet">
     <h3 id="modeModalTitle">Chọn chế độ</h3>
@@ -1222,6 +1351,11 @@
         <button class="btn ghost full" id="btnCloseAccount2">Đóng</button>
         <button class="btn bad full" id="btnSignOut">Đăng xuất</button>
       </div>
+    </div>
+
+    <div class="settings-section">
+      <div class="settings-label">Giao diện thiết bị</div>
+      <button class="btn ghost full" id="btnOpenDeviceSettings">Đổi giao diện thiết bị</button>
     </div>
   </div>
 </div>
@@ -1306,15 +1440,25 @@
   let editingRefId = null;
 
   // Theme logic init
-  const themeBtn = document.getElementById('themeBtn');
   let isLightMode = localStorage.getItem('flashcard_theme') === 'light';
   if (isLightMode) document.body.classList.add('light-mode');
 
-  themeBtn.addEventListener('click', () => {
+  function toggleTheme() {
     isLightMode = !isLightMode;
     document.body.classList.toggle('light-mode', isLightMode);
     localStorage.setItem('flashcard_theme', isLightMode ? 'light' : 'dark');
-  });
+  }
+  document.getElementById('themeBtn').addEventListener('click', toggleTheme);
+  document.getElementById('sidebarThemeBtn').addEventListener('click', toggleTheme);
+
+  // Device layout logic init (phone / tablet / desktop) — tablet and desktop both use
+  // the sidebar layout; only 'phone' keeps the original bottom-tabbar layout.
+  const DEVICE_KEY = 'flashcard_device_layout';
+  function applyLayout(device) {
+    document.body.dataset.layout = (device === 'tablet' || device === 'desktop') ? 'desktop' : 'phone';
+  }
+  let savedDevice = localStorage.getItem(DEVICE_KEY);
+  if (savedDevice) applyLayout(savedDevice);
 
   // 3. Cache DOM Elements
   // DOM.foo lazily resolves document.getElementById('foo') on first access and caches it —
@@ -1322,7 +1466,8 @@
   // written object literal without needing 100+ getElementById lines.
   const DOM = new Proxy({
     views: VIEWS.reduce((acc, v) => ({ ...acc, [v]: document.getElementById(`view-${v}`) }), {}),
-    tabItems: document.querySelectorAll('.tab-item')
+    tabItems: document.querySelectorAll('.tab-item'),
+    sidebarNavItems: document.querySelectorAll('.sidebar-item')
   }, {
     get(cache, key) {
       if (key in cache) return cache[key];
@@ -1649,9 +1794,9 @@
   // 5. Router Engine
   function goTo(name) {
     VIEWS.forEach(v => DOM.views[v].classList.toggle('active', v === name));
-    DOM.tabItems.forEach(el => {
-      el.classList.toggle('active', el.dataset.tab === name || (name === 'create' && el.dataset.tab === 'created'));
-    });
+    const isActiveTab = (el) => el.dataset.tab === name || (name === 'create' && el.dataset.tab === 'created');
+    DOM.tabItems.forEach(el => el.classList.toggle('active', isActiveTab(el)));
+    DOM.sidebarNavItems.forEach(el => el.classList.toggle('active', isActiveTab(el)));
     if (name !== 'study' && name !== 'done') window.speechSynthesis?.cancel();
     refreshCurrentView();
     if (name === 'create') {
@@ -2105,6 +2250,7 @@
 
   // 8. Event Listeners 
   DOM.tabItems.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.tab)));
+  DOM.sidebarNavItems.forEach(item => item.addEventListener('click', () => goTo(item.dataset.tab)));
   document.getElementById('btnOpenCreate').addEventListener('click', () => goTo('create'));
   ['btnBackToCreated', 'btnExitStudy', 'btnExitQuiz', 'btnDoneToCreated'].forEach(id =>
     document.getElementById(id).addEventListener('click', () => goTo('created'))
@@ -2247,17 +2393,38 @@
   });
 
   // 9. REBUILT AUTH & CLOUD CORE
-  DOM.avatarBtn.addEventListener('click', () => {
+  function openAccountModal() {
     openModal(DOM.accountModal);
     const signedIn = !!currentUser;
     DOM.accountModalSignedIn.style.display = signedIn ? 'block' : 'none';
     DOM.accountModalSignedOut.style.display = signedIn ? 'none' : 'block';
     if (signedIn) DOM.accountEmail.textContent = currentUser.email || currentUser.displayName || 'Đã đăng nhập';
-  });
+  }
+  DOM.avatarBtn.addEventListener('click', openAccountModal);
+  DOM.sidebarAvatarBtn.addEventListener('click', openAccountModal);
 
   const closeAccountModals = () => closeModal(DOM.accountModal);
   document.getElementById('btnCloseAccount').addEventListener('click', closeAccountModals);
   document.getElementById('btnCloseAccount2').addEventListener('click', closeAccountModals);
+
+  // Device layout modal: shown automatically on first run, or re-opened from Account > Settings
+  function openDeviceModal(isSettingsReopen) {
+    document.getElementById('btnCancelDeviceModal').style.display = isSettingsReopen ? 'block' : 'none';
+    openModal(DOM.deviceModal);
+  }
+  document.getElementById('btnCancelDeviceModal').addEventListener('click', () => closeModal(DOM.deviceModal));
+  document.getElementById('btnOpenDeviceSettings').addEventListener('click', () => {
+    closeAccountModals();
+    openDeviceModal(true);
+  });
+  document.querySelectorAll('#deviceModal .mode-option').forEach(option => {
+    option.addEventListener('click', () => {
+      localStorage.setItem(DEVICE_KEY, option.dataset.device);
+      applyLayout(option.dataset.device);
+      closeModal(DOM.deviceModal);
+    });
+  });
+  if (!savedDevice) openDeviceModal(false); // first run: ask which device this is
 
   document.getElementById('btnGoogleSignIn').addEventListener('click', async () => {
     try {
