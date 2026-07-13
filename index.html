@@ -2173,6 +2173,10 @@ procrastinate	trì hoãn			verb"></textarea>
         DOM.avatarBtn.textContent = '👤';
         DOM.avatarBtn.title = 'Đăng nhập';
         if (cloudUnsub) { cloudUnsub(); cloudUnsub = null; }
+        // localStorage may still hold the just-logged-out account's cloud data
+        // (it gets overwritten with cloud data on every sign-in). Clear it so
+        // the next session starts empty instead of showing the old account's decks.
+        localStorage.removeItem(STORAGE_KEY);
         DATA = loadLocalData();
     }
     refreshCurrentView();
