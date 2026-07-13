@@ -64,16 +64,24 @@
     padding-bottom:78px;
   }
 
-  /* ---------- Desktop / Tablet layout: left sidebar instead of bottom tabbar ---------- */
+  /* ---------- Desktop / Tablet layout: left sidebar instead of bottom tabbar ----------
+     Fix: on desktop the whole #app is locked to viewport height and only .main-col
+     (the scrollable content column) scrolls — this stops the body/page from scrolling
+     when a list is taller than the screen. Sidebar scrolls independently if needed. */
   body[data-layout="desktop"] #app{
     max-width:1080px;
     flex-direction:row;
     padding-bottom:0;
+    height:100vh;
+    height:100dvh;
+    overflow:hidden;
   }
   body[data-layout="desktop"] .main-col{
     flex:1;
     min-width:0;
     padding-bottom:40px;
+    height:100%;
+    overflow-y:auto;
   }
   body[data-layout="desktop"] .main-col .view{
     max-width:640px;
@@ -91,7 +99,12 @@
     position:sticky;
     top:0;
   }
-  body[data-layout="desktop"] .sidebar{ display:flex; }
+  body[data-layout="desktop"] .sidebar{
+    display:flex;
+    height:100%;
+    position:static;
+    overflow-y:auto;
+  }
   .sidebar-brand{
     display:flex;
     align-items:center;
