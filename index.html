@@ -1409,6 +1409,12 @@
 
   // 2. State App Variable
   const STORAGE_KEY = 'flashcard_data_v2';
+  // Tracks whether the cache in STORAGE_KEY was written by the guest (before any sign-in)
+  // or copied down from a cloud account. Without this, the merge-prompt logic can't tell
+  // "genuine local data created while signed out" apart from "cloud data we just cached
+  // locally on a previous sign-in" — which was causing the merge modal to reappear on
+  // every login even when there was nothing new to merge.
+  const SOURCE_KEY = 'flashcard_data_source';
   const VIEWS = ['home', 'created', 'create', 'study', 'quiz', 'done', 'grammar', 'grammar-lesson', 'grammar-edit', 'reference', 'learned-words'];
   
   let DATA = loadLocalData();
@@ -1498,6 +1504,8 @@
     if (currentUser) {
       clearTimeout(saveDebounceTimer);
       saveDebounceTimer = setTimeout(() => pushToCloud(), 500);
+    } else {
+      localStorage.setItem(SOURCE_KEY, 'local');
     }
   }
 
@@ -1517,6 +1525,7 @@
         DATA = snap.data();
         if (!DATA.folders) DATA.folders = [];
         localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+        localStorage.setItem(SOURCE_KEY, 'cloud');
         refreshCurrentView();
       }
     });
@@ -2475,7 +2484,11 @@
 
         try {
             const localSnapshot = loadLocalData();
-            const hasLocalData = localSnapshot.folders && localSnapshot.folders.length > 0;
+            // Only treat this as "data to offer merging" if it was created while signed
+            // out (source !== 'cloud'). A cache left over from a previous cloud sign-in
+            // is not guest data and must never re-trigger the merge prompt.
+            const wasGuestData = localStorage.getItem(SOURCE_KEY) !== 'cloud';
+            const hasLocalData = wasGuestData && localSnapshot.folders && localSnapshot.folders.length > 0;
             const ref = doc(db, 'users', user.uid);
             const snap = await getDoc(ref);
 
@@ -2484,6 +2497,7 @@
                 if (!cloudData.folders) cloudData.folders = [];
                 DATA = cloudData; 
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+                localStorage.setItem(SOURCE_KEY, 'cloud');
 
                 if (hasLocalData) {
                     pendingLocalSnapshot = localSnapshot;
@@ -2491,6 +2505,7 @@
                 }
             } else {
                 DATA = localSnapshot;
+                localStorage.setItem(SOURCE_KEY, 'cloud');
                 await pushToCloud();
             }
             attachCloudListener(user.uid);
@@ -2504,6 +2519,7 @@
         // (it gets overwritten with cloud data on every sign-in). Clear it so
         // the next session starts empty instead of showing the old account's decks.
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(SOURCE_KEY);
         DATA = loadLocalData();
     }
     refreshCurrentView();
