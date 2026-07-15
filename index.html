@@ -423,67 +423,34 @@
     margin-top:10px;
   }
 
-  /* ---------- Sample-format table (visual guide for adding vocab) ---------- */
-  .sample-table-wrap{
-    border:1px solid var(--line-solid);
-    border-radius:12px;
-    margin-bottom:14px;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-  }
-  table.sample-table{
-    width:100%;
-    min-width:420px;
-    border-collapse:collapse;
-    font-size:12px;
-  }
-  table.sample-table th{
-    background:var(--bg-elev-2);
-    color:var(--ink-dim);
-    font-weight:700;
-    text-align:left;
-    padding:9px 10px;
-    font-size:10.5px;
-    text-transform:uppercase;
-    letter-spacing:0.04em;
-    border-bottom:1px solid var(--line-solid);
-    white-space:nowrap;
-  }
-  table.sample-table th:first-child{ border-top-left-radius:11px; }
-  table.sample-table th:last-child{ border-top-right-radius:11px; }
-  table.sample-table th.req{ color:var(--accent); }
-  table.sample-table th .opt-tag{
-    display:block;
-    font-size:9px;
-    text-transform:none;
-    letter-spacing:0;
-    color:var(--ink-faint);
-    font-weight:400;
-    margin-top:1px;
-  }
-  table.sample-table td{
-    padding:9px 10px;
-    border-bottom:1px solid var(--line-solid);
-    color:var(--ink);
-    font-family:var(--mono);
+  /* ---------- Sample-format line (simple copyable guide for adding vocab) ---------- */
+  .sample-line-caption{
+    margin:0 0 8px;
     font-size:11.5px;
-    white-space:nowrap;
+    color:var(--ink-faint);
   }
-  table.sample-table tr:last-child td{ border-bottom:none; }
-  table.sample-table td.empty-cell{ color:var(--ink-faint); font-style:italic; }
-  .sample-table-caption{
+  .sample-line-wrap{
     display:flex;
     align-items:center;
-    justify-content:space-between;
-    margin-bottom:8px;
-    gap:10px;
+    gap:8px;
+    background:var(--bg-elev-2);
+    border:1px solid var(--line-solid);
+    border-radius:10px;
+    padding:10px 12px;
+    margin-bottom:14px;
   }
-  .sample-table-caption p{
-    margin:0;
+  .sample-line-text{
+    flex:1;
+    min-width:0;
+    overflow-x:auto;
+    white-space:nowrap;
+    -webkit-overflow-scrolling:touch;
+    font-family:var(--mono);
     font-size:11.5px;
-    color:var(--ink-faint);
+    color:var(--ink);
   }
-  .btn-insert-sample{
+  .sample-line-text b{ color:var(--accent); font-weight:700; }
+  .btn-copy-sample{
     font-size:11px;
     font-weight:600;
     color:var(--accent);
@@ -495,7 +462,7 @@
     white-space:nowrap;
     flex-shrink:0;
   }
-  .btn-insert-sample:hover{ opacity:0.85; }
+  .btn-copy-sample:hover{ opacity:0.85; }
 
   /* ---------- Study view ---------- */
   .study-header{
@@ -1163,41 +1130,12 @@
       <input type="text" class="name-input" id="folderNameInput" placeholder="VD: Từ vựng Bài 5 — Op-amp">
       <div class="field-label">Dán danh sách từ</div>
 
-      <div class="sample-table-caption">
-        <p>Định dạng đúng trông như bảng dưới đây (vuốt ngang nếu cần):</p>
-        <button type="button" class="btn-insert-sample" id="btnInsertSample">Chèn ví dụ mẫu</button>
+      <div class="sample-line-caption">
+        <p>Định dạng đúng: mỗi dòng 1 từ, các cột cách nhau bằng phím <b>Tab</b>. Cột phát âm &amp; loại từ có thể để trống.</p>
       </div>
-      <div class="sample-table-wrap">
-        <table class="sample-table">
-          <thead>
-            <tr>
-              <th class="req">Từ</th>
-              <th class="req">Nghĩa</th>
-              <th>Phát âm<span class="opt-tag">tùy chọn</span></th>
-              <th>Loại từ<span class="opt-tag">tùy chọn</span></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>serendipity</td>
-              <td>tình cờ may mắn</td>
-              <td>/ˌserənˈdɪpɪti/</td>
-              <td>noun</td>
-            </tr>
-            <tr>
-              <td>ambiguous</td>
-              <td>mơ hồ, không rõ</td>
-              <td>/æmˈbɪɡjuəs/</td>
-              <td>adjective</td>
-            </tr>
-            <tr>
-              <td>procrastinate</td>
-              <td>trì hoãn</td>
-              <td class="empty-cell">để trống</td>
-              <td class="empty-cell">để trống</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="sample-line-wrap">
+        <div class="sample-line-text" id="sampleLineText"><b>serendipity</b>&nbsp;&nbsp;→&nbsp;&nbsp;tình cờ may mắn&nbsp;&nbsp;→&nbsp;&nbsp;/ˌserənˈdɪpɪti/&nbsp;&nbsp;→&nbsp;&nbsp;noun</div>
+        <button type="button" class="btn-copy-sample" id="btnCopySample">Sao chép mẫu</button>
       </div>
 
       <textarea class="paste-box" id="pasteArea" placeholder="Dán dữ liệu vào đây (từ Excel, Google Sheets, Word...) — mỗi dòng 1 từ, các cột cách nhau bằng phím Tab."></textarea>
@@ -1461,8 +1399,8 @@
     document.body.classList.toggle('light-mode', isLightMode);
     localStorage.setItem('flashcard_theme', isLightMode ? 'light' : 'dark');
   }
-  document.getElementById('themeBtn').addEventListener('click', toggleTheme);
-  document.getElementById('sidebarThemeBtn').addEventListener('click', toggleTheme);
+  DOM.themeBtn.addEventListener('click', toggleTheme);
+  DOM.sidebarThemeBtn.addEventListener('click', toggleTheme);
 
   // Device layout logic init (phone / tablet / desktop) — tablet and desktop both use
   // the sidebar layout; only 'phone' keeps the original bottom-tabbar layout.
@@ -2284,12 +2222,12 @@
     }
   });
 
-  document.getElementById('btnOpenCreate').addEventListener('click', () => goTo('create'));
+  DOM.btnOpenCreate.addEventListener('click', () => goTo('create'));
   ['btnBackToCreated', 'btnExitStudy', 'btnExitQuiz', 'btnDoneToCreated'].forEach(id =>
-    document.getElementById(id).addEventListener('click', () => goTo('created'))
+    DOM[id].addEventListener('click', () => goTo('created'))
   );
-  document.getElementById('btnCancelDelete').addEventListener('click', () => { pendingDeleteId = null; closeModal(DOM.deleteModal); });
-  document.getElementById('btnConfirmDelete').addEventListener('click', () => {
+  DOM.btnCancelDelete.addEventListener('click', () => { pendingDeleteId = null; closeModal(DOM.deleteModal); });
+  DOM.btnConfirmDelete.addEventListener('click', () => {
     if (pendingDeleteId) {
       DATA.folders = DATA.folders.filter(f => f.id !== pendingDeleteId);
       if (DATA.lastStudiedFolderId === pendingDeleteId) DATA.lastStudiedFolderId = null;
@@ -2298,19 +2236,28 @@
     pendingDeleteId = null; closeModal(DOM.deleteModal);
   });
 
-  DOM.btnInsertSample.addEventListener('click', () => {
+  DOM.btnCopySample.addEventListener('click', async () => {
     const sample = [
       'serendipity\ttình cờ may mắn\t/ˌserənˈdɪpɪti/\tnoun',
       'ambiguous\tmơ hồ, không rõ\t/æmˈbɪɡjuəs/\tadjective',
       'procrastinate\ttrì hoãn\t\t'
     ].join('\n');
-    DOM.pasteArea.value = DOM.pasteArea.value.trim()
-      ? DOM.pasteArea.value.replace(/\n?$/, '\n') + sample
-      : sample;
-    DOM.pasteArea.focus();
+    const btn = DOM.btnCopySample;
+    const original = btn.textContent;
+    try {
+      await navigator.clipboard.writeText(sample);
+    } catch (e) {
+      // Fallback for browsers without clipboard API access
+      DOM.pasteArea.value = DOM.pasteArea.value.trim()
+        ? DOM.pasteArea.value.replace(/\n?$/, '\n') + sample
+        : sample;
+      DOM.pasteArea.focus();
+    }
+    btn.textContent = 'Đã sao chép!';
+    setTimeout(() => { btn.textContent = original; }, 1500);
   });
 
-  document.getElementById('btnSaveFolder').addEventListener('click', () => {
+  DOM.btnSaveFolder.addEventListener('click', () => {
     DOM.createErr.textContent = '';
     const name = DOM.folderNameInput.value.trim(), text = DOM.pasteArea.value;
     if (!name) return DOM.createErr.textContent = 'Hãy đặt tên cho bộ thẻ.';
@@ -2396,13 +2343,13 @@
   });
 
   const handleSpeakEvent = (e) => { e.stopPropagation(); if (queue[idx]) speak(queue[idx]); };
-  document.getElementById('speakBtnFront').addEventListener('click', handleSpeakEvent);
-  document.getElementById('speakBtnBack').addEventListener('click', handleSpeakEvent);
-  document.getElementById('btnGood').addEventListener('click', () => markStatus('good'));
-  document.getElementById('btnAgain').addEventListener('click', () => markStatus('bad'));
+  DOM.speakBtnFront.addEventListener('click', handleSpeakEvent);
+  DOM.speakBtnBack.addEventListener('click', handleSpeakEvent);
+  DOM.btnGood.addEventListener('click', () => markStatus('good'));
+  DOM.btnAgain.addEventListener('click', () => markStatus('bad'));
   DOM.btnPrev.addEventListener('click', () => { if (idx > 0) { idx--; renderCardAtIndex(); } });
   DOM.btnNext.addEventListener('click', () => { if (idx < queue.length) { idx++; renderCardAtIndex(); } });
-  document.getElementById('btnRestartFolder').addEventListener('click', () => {
+  DOM.btnRestartFolder.addEventListener('click', () => {
     if (lastSessionMode === 'quiz') {
       if (!lastQuizFullQueue.length) return;
       initQuizSession(activeFolder, [...lastQuizFullQueue], sessionDisplayName);
@@ -2437,16 +2384,16 @@
   DOM.sidebarAvatarBtn.addEventListener('click', openAccountModal);
 
   const closeAccountModals = () => closeModal(DOM.accountModal);
-  document.getElementById('btnCloseAccount').addEventListener('click', closeAccountModals);
-  document.getElementById('btnCloseAccount2').addEventListener('click', closeAccountModals);
+  DOM.btnCloseAccount.addEventListener('click', closeAccountModals);
+  DOM.btnCloseAccount2.addEventListener('click', closeAccountModals);
 
   // Device layout modal: shown automatically on first run, or re-opened from Account > Settings
   function openDeviceModal(isSettingsReopen) {
-    document.getElementById('btnCancelDeviceModal').style.display = isSettingsReopen ? 'block' : 'none';
+    DOM.btnCancelDeviceModal.style.display = isSettingsReopen ? 'block' : 'none';
     openModal(DOM.deviceModal);
   }
-  document.getElementById('btnCancelDeviceModal').addEventListener('click', () => closeModal(DOM.deviceModal));
-  document.getElementById('btnOpenDeviceSettings').addEventListener('click', () => {
+  DOM.btnCancelDeviceModal.addEventListener('click', () => closeModal(DOM.deviceModal));
+  DOM.btnOpenDeviceSettings.addEventListener('click', () => {
     closeAccountModals();
     openDeviceModal(true);
   });
@@ -2459,7 +2406,7 @@
   });
   if (!savedDevice) openDeviceModal(false); // first run: ask which device this is
 
-  document.getElementById('btnGoogleSignIn').addEventListener('click', async () => {
+  DOM.btnGoogleSignIn.addEventListener('click', async () => {
     try {
       await signInWithPopup(auth, provider);
       closeAccountModals();
@@ -2469,16 +2416,16 @@
     }
   });
 
-  document.getElementById('btnSignOut').addEventListener('click', async () => {
+  DOM.btnSignOut.addEventListener('click', async () => {
     await signOut(auth);
     closeAccountModals();
   });
 
-  document.getElementById('btnSkipMerge').addEventListener('click', () => {
+  DOM.btnSkipMerge.addEventListener('click', () => {
     pendingLocalSnapshot = null; closeModal(DOM.mergeModal);
   });
 
-  document.getElementById('btnDoMerge').addEventListener('click', async () => {
+  DOM.btnDoMerge.addEventListener('click', async () => {
     if (pendingLocalSnapshot) {
       const existingIds = new Set(DATA.folders.map(f => f.id));
       pendingLocalSnapshot.folders.forEach(f => { if (!existingIds.has(f.id)) DATA.folders.push(f); });
