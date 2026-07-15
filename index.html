@@ -57,7 +57,7 @@
   /* Theme-switch transition shared by every themed surface, instead of repeating
      "transition: background 0.3s, border-color 0.3s" (or variants) on ~20 rules below. */
   .stat-card, .continue-card, .empty-state, .folder-card, .panel, input.name-input,
-  textarea.paste-box, .face, .speak-btn, .nav-btn, .done-stats > div, .tabbar,
+  textarea.paste-box, .face, .speak-btn, .nav-btn, .done-stats > div,
   .modal-sheet, .chapter-card, .lesson-card, .word-item, .quiz-card, .quiz-option,
   input.quiz-input, .admin-panel-box{
     transition: background 0.3s, border-color 0.3s, color 0.3s;
@@ -69,7 +69,7 @@
     display:flex;
     flex-direction:column;
     position:relative;
-    padding-bottom:78px;
+    padding-bottom:24px;
   }
 
   /* ---------- Desktop / Tablet layout: left sidebar instead of bottom tabbar ----------
@@ -95,7 +95,6 @@
     max-width:640px;
     margin:0 auto;
   }
-  body[data-layout="desktop"] .tabbar{ display:none; }
   .sidebar{
     display:none;
     flex-direction:column;
@@ -675,32 +674,39 @@
   .done-stats .l{ font-size:11px; color:var(--ink-dim); margin-top:2px; }
   .done-actions{ display:flex; flex-direction:column; gap:10px; }
 
-  /* ---------- Tabbar ---------- */
-  .tabbar{
-    position:fixed;
-    bottom:0; left:0; right:0;
-    max-width:520px;
-    margin:0 auto;
-    background:var(--bg-elev); /* Sử dụng biến bg-elev thay vì màu trong suốt để hỗ trợ cả 2 theme */
-    border-top:1px solid var(--line-solid);
-    display:flex;
-    padding:10px 6px calc(10px + env(safe-area-inset-bottom));
-    z-index:50;
-  }
-  .tab-item{
-    flex:1;
-    display:flex;
+  /* ---------- Phone nav: ☰ button in topbar + dropdown menu ---------- */
+  .nav-menu-wrap{ position:relative; }
+  body[data-layout="desktop"] .nav-menu-wrap{ display:none; }
+  .nav-dropdown{
+    position:absolute;
+    top:calc(100% + 8px);
+    right:0;
+    min-width:190px;
+    background:var(--bg-elev);
+    border:1px solid var(--line-solid);
+    border-radius:14px;
+    padding:6px;
+    box-shadow:0 12px 32px rgba(0,0,0,0.28);
+    z-index:60;
+    display:none;
     flex-direction:column;
+    gap:2px;
+  }
+  .nav-dropdown.open{ display:flex; }
+  .nav-dropdown-item{
+    display:flex;
     align-items:center;
-    gap:3px;
-    padding:6px 4px;
-    color:var(--ink-faint);
+    gap:11px;
+    padding:10px 12px;
+    border-radius:9px;
+    color:var(--ink-dim);
     cursor:pointer;
-    font-size:10.5px;
+    font-size:13.5px;
     font-weight:600;
   }
-  .tab-item .ic{ font-size:20px; line-height:1; }
-  .tab-item.active{ color:var(--accent); }
+  .nav-dropdown-item:hover{ background:var(--bg-elev-2); }
+  .nav-dropdown-item.active{ background:var(--accent-soft); color:var(--accent); }
+  .nav-dropdown-item .ic{ font-size:16px; width:18px; text-align:center; flex-shrink:0; }
 
   /* modal */
   .modal-overlay{
@@ -1001,6 +1007,15 @@
     <div class="topbar-actions">
       <div class="icon-btn" id="themeBtn" title="Giao diện sáng/tối">🌓</div>
       <div class="icon-btn" id="avatarBtn" title="Tài khoản">👤</div>
+      <div class="nav-menu-wrap">
+        <div class="icon-btn" id="navMenuBtn" title="Menu">☰</div>
+        <div class="nav-dropdown" id="navDropdown">
+          <div class="nav-dropdown-item active" data-tab="home"><span class="ic">🏠</span>Trang chủ</div>
+          <div class="nav-dropdown-item" data-tab="created"><span class="ic">📁</span>Đã tạo</div>
+          <div class="nav-dropdown-item" data-tab="grammar"><span class="ic">📐</span>Ngữ pháp</div>
+          <div class="nav-dropdown-item" data-tab="reference"><span class="ic">🌐</span>Tham khảo</div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1274,22 +1289,6 @@
     </div>
   </div>
 
-  <!-- ============ TABBAR (Phone layout only) ============ -->
-  <div class="tabbar" id="mainTabbar">
-    <div class="tab-item active" data-tab="home">
-      <div class="ic">🏠</div><div>Trang chủ</div>
-    </div>
-    <div class="tab-item" data-tab="created">
-      <div class="ic">📁</div><div>Đã tạo</div>
-    </div>
-    <div class="tab-item" data-tab="grammar">
-      <div class="ic">📐</div><div>Ngữ pháp</div>
-    </div>
-    <div class="tab-item" data-tab="reference">
-      <div class="ic">🌐</div><div>Tham khảo</div>
-    </div>
-  </div>
-
   </div><!-- /.main-col -->
 </div><!-- /#app -->
 
@@ -1480,7 +1479,7 @@
   // written object literal without needing 100+ getElementById lines.
   const DOM = new Proxy({
     views: VIEWS.reduce((acc, v) => ({ ...acc, [v]: document.getElementById(`view-${v}`) }), {}),
-    tabItems: document.querySelectorAll('.tab-item'),
+    navDropdownItems: document.querySelectorAll('.nav-dropdown-item'),
     sidebarNavItems: document.querySelectorAll('.sidebar-item')
   }, {
     get(cache, key) {
@@ -1817,7 +1816,7 @@
   function goTo(name) {
     VIEWS.forEach(v => DOM.views[v].classList.toggle('active', v === name));
     const isActiveTab = (el) => el.dataset.tab === name || (name === 'create' && el.dataset.tab === 'created');
-    DOM.tabItems.forEach(el => el.classList.toggle('active', isActiveTab(el)));
+    DOM.navDropdownItems.forEach(el => el.classList.toggle('active', isActiveTab(el)));
     DOM.sidebarNavItems.forEach(el => el.classList.toggle('active', isActiveTab(el)));
     if (name !== 'study' && name !== 'done') window.speechSynthesis?.cancel();
     refreshCurrentView();
@@ -2271,8 +2270,20 @@
   });
 
   // 8. Event Listeners 
-  DOM.tabItems.forEach(tab => tab.addEventListener('click', () => goTo(tab.dataset.tab)));
+  DOM.navDropdownItems.forEach(item => item.addEventListener('click', () => { goTo(item.dataset.tab); closeNavDropdown(); }));
   DOM.sidebarNavItems.forEach(item => item.addEventListener('click', () => goTo(item.dataset.tab)));
+
+  function closeNavDropdown() { DOM.navDropdown.classList.remove('open'); }
+  DOM.navMenuBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    DOM.navDropdown.classList.toggle('open');
+  });
+  document.addEventListener('click', (e) => {
+    if (DOM.navDropdown.classList.contains('open') && !DOM.navDropdown.contains(e.target) && e.target !== DOM.navMenuBtn) {
+      closeNavDropdown();
+    }
+  });
+
   document.getElementById('btnOpenCreate').addEventListener('click', () => goTo('create'));
   ['btnBackToCreated', 'btnExitStudy', 'btnExitQuiz', 'btnDoneToCreated'].forEach(id =>
     document.getElementById(id).addEventListener('click', () => goTo('created'))
