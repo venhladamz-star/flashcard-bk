@@ -423,66 +423,41 @@
     margin-top:10px;
   }
 
-  /* ---------- Sample-format table (visual guide for adding vocab) ---------- */
-  .sample-table-wrap{
-    border:1px solid var(--line-solid);
-    border-radius:12px;
-    margin-bottom:14px;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-  }
-  table.sample-table{
-    width:100%;
-    min-width:420px;
-    border-collapse:collapse;
-    font-size:12px;
-  }
-  table.sample-table th{
-    background:var(--bg-elev-2);
-    color:var(--ink-dim);
-    font-weight:700;
-    text-align:left;
-    padding:9px 10px;
-    font-size:10.5px;
-    text-transform:uppercase;
-    letter-spacing:0.04em;
-    border-bottom:1px solid var(--line-solid);
-    white-space:nowrap;
-  }
-  table.sample-table th:first-child{ border-top-left-radius:11px; }
-  table.sample-table th:last-child{ border-top-right-radius:11px; }
-  table.sample-table th.req{ color:var(--accent); }
-  table.sample-table th .opt-tag{
-    display:block;
-    font-size:9px;
-    text-transform:none;
-    letter-spacing:0;
-    color:var(--ink-faint);
-    font-weight:400;
-    margin-top:1px;
-  }
-  table.sample-table td{
-    padding:9px 10px;
-    border-bottom:1px solid var(--line-solid);
-    color:var(--ink);
-    font-family:var(--mono);
-    font-size:11.5px;
-    white-space:nowrap;
-  }
-  table.sample-table tr:last-child td{ border-bottom:none; }
-  table.sample-table td.empty-cell{ color:var(--ink-faint); font-style:italic; }
-  .sample-table-caption{
+  /* ---------- Sample-format text block (copyable guide for adding vocab) ---------- */
+  .sample-text-caption{
     display:flex;
     align-items:center;
     justify-content:space-between;
     margin-bottom:8px;
     gap:10px;
   }
-  .sample-table-caption p{
+  .sample-text-caption p{
     margin:0;
     font-size:11.5px;
     color:var(--ink-faint);
   }
+  .sample-text-block{
+    background:var(--bg-elev-2);
+    border:1px solid var(--line-solid);
+    border-radius:12px;
+    padding:12px 14px;
+    margin-bottom:14px;
+    font-family:var(--mono);
+    font-size:12px;
+    line-height:1.9;
+    color:var(--ink);
+    white-space:pre;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    user-select:all;
+    cursor:text;
+  }
+  .sample-text-hint{
+    font-size:11px;
+    color:var(--ink-faint);
+    margin:-8px 0 14px;
+  }
+  .sample-text-hint b{ color:var(--accent); font-weight:600; }
   .btn-insert-sample{
     font-size:11px;
     font-weight:600;
@@ -1163,42 +1138,14 @@
       <input type="text" class="name-input" id="folderNameInput" placeholder="VD: Từ vựng Bài 5 — Op-amp">
       <div class="field-label">Dán danh sách từ</div>
 
-      <div class="sample-table-caption">
-        <p>Định dạng đúng trông như bảng dưới đây (vuốt ngang nếu cần):</p>
+      <div class="sample-text-caption">
+        <p>Bôi đen dòng mẫu dưới đây để copy, hoặc bấm nút chèn thẳng vào ô nhập:</p>
         <button type="button" class="btn-insert-sample" id="btnInsertSample">Chèn ví dụ mẫu</button>
       </div>
-      <div class="sample-table-wrap">
-        <table class="sample-table">
-          <thead>
-            <tr>
-              <th class="req">Từ</th>
-              <th class="req">Nghĩa</th>
-              <th>Phát âm<span class="opt-tag">tùy chọn</span></th>
-              <th>Loại từ<span class="opt-tag">tùy chọn</span></th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>serendipity</td>
-              <td>tình cờ may mắn</td>
-              <td>/ˌserənˈdɪpɪti/</td>
-              <td>noun</td>
-            </tr>
-            <tr>
-              <td>ambiguous</td>
-              <td>mơ hồ, không rõ</td>
-              <td>/æmˈbɪɡjuəs/</td>
-              <td>adjective</td>
-            </tr>
-            <tr>
-              <td>procrastinate</td>
-              <td>trì hoãn</td>
-              <td class="empty-cell">để trống</td>
-              <td class="empty-cell">để trống</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <div class="sample-text-block" id="sampleTextBlock">serendipity	tình cờ may mắn	/ˌserənˈdɪpɪti/	noun
+ambiguous	mơ hồ, không rõ	/æmˈbɪɡjuəs/	adjective
+procrastinate	trì hoãn</div>
+      <p class="sample-text-hint">Mỗi dòng 1 từ, theo thứ tự <b>Từ → Nghĩa → Phát âm (tuỳ chọn) → Loại từ (tuỳ chọn)</b>, cách nhau bằng phím Tab.</p>
 
       <textarea class="paste-box" id="pasteArea" placeholder="Dán dữ liệu vào đây (từ Excel, Google Sheets, Word...) — mỗi dòng 1 từ, các cột cách nhau bằng phím Tab."></textarea>
       <div class="hint">
@@ -2299,11 +2246,7 @@
   });
 
   DOM.btnInsertSample.addEventListener('click', () => {
-    const sample = [
-      'serendipity\ttình cờ may mắn\t/ˌserənˈdɪpɪti/\tnoun',
-      'ambiguous\tmơ hồ, không rõ\t/æmˈbɪɡjuəs/\tadjective',
-      'procrastinate\ttrì hoãn\t\t'
-    ].join('\n');
+    const sample = DOM.sampleTextBlock.textContent;
     DOM.pasteArea.value = DOM.pasteArea.value.trim()
       ? DOM.pasteArea.value.replace(/\n?$/, '\n') + sample
       : sample;
