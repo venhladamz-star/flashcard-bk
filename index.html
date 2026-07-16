@@ -58,7 +58,7 @@
      "transition: background 0.3s, border-color 0.3s" (or variants) on ~20 rules below. */
   .stat-card, .continue-card, .empty-state, .folder-card, .panel, input.name-input,
   textarea.paste-box, .face, .speak-btn, .nav-btn, .done-stats > div,
-  .modal-sheet, .chapter-card, .lesson-card, .word-item, .quiz-card, .quiz-option,
+  .modal-sheet, .lesson-card, .word-item, .quiz-card, .quiz-option,
   input.quiz-input, .admin-panel-box{
     transition: background 0.3s, border-color 0.3s, color 0.3s;
   }
@@ -394,23 +394,6 @@
   }
   textarea.paste-box:focus{ border-color:var(--accent); }
   textarea.paste-box::placeholder{ color:var(--ink-faint); }
-  .field-order{
-    display:flex;
-    flex-wrap:wrap;
-    gap:6px;
-    margin-top:12px;
-  }
-  .field-order span{
-    font-family:var(--mono);
-    font-size:10px;
-    text-transform:uppercase;
-    letter-spacing:0.05em;
-    padding:4px 9px;
-    border-radius:6px;
-    background:var(--bg-elev-2);
-    color:var(--ink-dim);
-  }
-  .field-order span.req{ color:var(--accent); background:var(--accent-soft); }
   .hint{
     font-size:11.5px;
     color:var(--ink-faint);
@@ -837,30 +820,6 @@
   }
 
   /* ---------- Grammar tab ---------- */
-  .chapter-card{
-    background:var(--bg-elev);
-    border:1px solid var(--line-solid);
-    border-radius:var(--radius);
-    padding:16px 18px;
-    display:flex;
-    align-items:center;
-    gap:14px;
-    cursor:pointer;
-    margin-bottom:10px;
-  }
-  .chapter-card:hover{ background:var(--bg-elev-2); }
-  .chapter-card .emoji{
-    width:44px;height:44px;
-    border-radius:12px;
-    background:var(--good-soft);
-    display:flex;align-items:center;justify-content:center;
-    font-size:20px;
-    flex-shrink:0;
-  }
-  .chapter-card .meta{ flex:1; min-width:0; }
-  .chapter-card .meta h3{ margin:0 0 4px; font-size:15px; font-weight:700; }
-  .chapter-card .meta p{ margin:0; font-size:12.5px; color:var(--ink-dim); }
-
   .lesson-card{
     background:var(--bg-elev);
     border:1px solid var(--line-solid);
@@ -878,12 +837,10 @@
   .lesson-card .meta{ flex:1; min-width:0; }
   .lesson-card .meta h4{ margin:0; font-size:14px; font-weight:700; }
   .lesson-card .chev{ color:var(--ink-faint); font-size:16px; flex-shrink:0; }
-  .lesson-card .del, .chapter-card .del{
+  .lesson-card .del{
     color:var(--ink-faint); font-size:14px; padding:6px; flex-shrink:0;
   }
-  .lesson-card .del:hover, .chapter-card .del:hover{ color:var(--bad); }
-
-  .gr-fab-row{ display:flex; gap:10px; margin-bottom:18px; }
+  .lesson-card .del:hover{ color:var(--bad); }
 
   .word-item{
     background:var(--bg-elev);
@@ -1192,7 +1149,7 @@ procrastinate	trì hoãn</div>
     </div>
   </div>
 
-  <!-- ============ DONE VIEW ============ -->
+  <!-- ============ QUIZ VIEW ============ -->
   <div class="view" id="view-quiz">
     <div class="quiz-header">
       <div class="back-btn" id="btnExitQuiz">‹ Thoát</div>
@@ -1219,6 +1176,7 @@ procrastinate	trì hoãn</div>
     </div>
   </div>
 
+  <!-- ============ DONE VIEW ============ -->
   <div class="view" id="view-done">
     <div class="done-wrap">
       <div class="trophy">🏆</div>
@@ -2114,10 +2072,14 @@ procrastinate	trì hoãn</div>
     }
     const entry = quizQueue[quizIdx];
     const askMeaning = Math.random() < 0.5; // true: show word -> ask meaning
-    const useChoice = Math.random() < 0.5;  // true: multiple choice, false: free text
-
     const promptField = askMeaning ? 'tu' : 'nghia';
     const answerField = askMeaning ? 'nghia' : 'tu';
+
+    // Multiple choice needs at least 2 distinct distractors (3 options total) to be
+    // meaningful. Small decks (or decks with many duplicate meanings) can't supply that,
+    // so fall back to free-text instead of showing a near-useless 1-2-option "choice".
+    const distractors = pickDistractors(quizQueue, entry, answerField, 3);
+    const useChoice = distractors.length >= 2 && Math.random() < 0.5;
 
     currentQ = { entry, askMeaning, useChoice, answerField, answered: false };
 
@@ -2140,7 +2102,6 @@ procrastinate	trì hoãn</div>
       DOM.quizInputWrap.style.display = 'none';
       DOM.quizOptions.replaceChildren();
 
-      const distractors = pickDistractors(quizQueue, entry, answerField, 3);
       const options = shuffleArray([entry[answerField], ...distractors]);
 
       options.forEach(optText => {
