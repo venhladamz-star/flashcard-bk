@@ -792,8 +792,7 @@
   .quiz-option:hover{ background:var(--bg-elev-2); }
   .quiz-option.correct{ background:var(--good-soft); border-color:var(--good); color:var(--good); }
   .quiz-option.incorrect{ background:var(--bad-soft); border-color:var(--bad); color:var(--bad); }
-  .quiz-option:disabled{ pointer-events:none; opacity:1; }
-  .quiz-option:disabled:not(.correct):not(.incorrect){ opacity:.5; }
+  .quiz-option.answered:not(.correct):not(.incorrect){ opacity:.5; }
 
   .quiz-input-wrap{ margin-bottom:18px; }
   input.quiz-input{
@@ -2339,6 +2338,38 @@ procrastinate	trì hoãn</div>
     DOM.refFolderList.appendChild(frag);
   }
 
+  // ---- Shared multiple-choice UI helpers ----
+  // Used by the Quiz Engine and by the Speed/Blank/Wheel games — all of them show
+  // "N choices, pick one" screens that only differ in prompt/correct-answer text and
+  // what happens after picking, so the rendering + reveal logic lives here once.
+  function renderMultipleChoice(container, options, onPick) {
+    container.replaceChildren();
+    options.forEach(opt => {
+      const btn = createElement('div', 'quiz-option', opt);
+      btn.addEventListener('click', () => onPick(opt, btn));
+      container.appendChild(btn);
+    });
+  }
+
+  // Locks a rendered multiple-choice row and highlights correct/incorrect after an answer.
+  function revealMultipleChoiceAnswer(container, correctAnswer, pickedBtn) {
+    [...container.children].forEach(b => {
+      b.style.pointerEvents = 'none';
+      b.classList.add('answered');
+      if (b.textContent === correctAnswer) b.classList.add('correct');
+      else if (b === pickedBtn) b.classList.add('incorrect');
+    });
+  }
+
+  // Simple exit button wiring shared by every game view: go back to the Games grid,
+  // optionally running a bit of cleanup first (clearing intervals, resetting state, etc).
+  function wireGameExit(buttonId, onExit) {
+    document.getElementById(buttonId).addEventListener('click', () => {
+      if (onExit) onExit();
+      goTo('games');
+    });
+  }
+
   // 7. Flashcard Engine
   function parseTabbed(text) {
     return text.split(/\r?\n/).filter(l => l.trim().length).map(line => {
@@ -2502,17 +2533,8 @@ procrastinate	trì hoãn</div>
     if (useChoice) {
       DOM.quizOptions.style.display = 'flex';
       DOM.quizInputWrap.style.display = 'none';
-      DOM.quizOptions.replaceChildren();
-
       const options = shuffleArray([entry[answerField], ...distractors]);
-
-      options.forEach(optText => {
-        const btn = document.createElement('button');
-        btn.className = 'quiz-option';
-        btn.textContent = optText;
-        btn.addEventListener('click', () => submitQuizChoice(btn, optText));
-        DOM.quizOptions.appendChild(btn);
-      });
+      renderMultipleChoice(DOM.quizOptions, options, (optText, btn) => submitQuizChoice(btn, optText));
       DOM.btnQuizSubmit.style.display = 'none';
     } else {
       DOM.quizOptions.style.display = 'none';
@@ -2536,12 +2558,7 @@ procrastinate	trì hoãn</div>
     const correctAnswer = currentQ.entry[currentQ.answerField];
     const isCorrect = optText === correctAnswer;
     recordQuizResult(isCorrect);
-
-    [...DOM.quizOptions.children].forEach(btn => {
-      btn.disabled = true;
-      if (btn.textContent === correctAnswer) btn.classList.add('correct');
-      else if (btn === btnEl && !isCorrect) btn.classList.add('incorrect');
-    });
+    revealMultipleChoiceAnswer(DOM.quizOptions, correctAnswer, btnEl);
     DOM.btnQuizNext.style.display = 'inline-flex';
   }
 
@@ -2680,36 +2697,6 @@ procrastinate	trì hoãn</div>
     closeModal(DOM.gameResultModal);
     if (lastPlayedGameId && lastPlayedWords) startGame(lastPlayedGameId, lastPlayedWords);
   });
-
-  // Renders a row of .quiz-option buttons into `container`, wired to a single onPick(optionText)
-  // callback. Used by Speed, Blank and Wheel — they all show "N choices, pick one" screens that
-  // only differ in what the prompt/correct-answer text is and what happens after picking.
-  function renderMultipleChoice(container, options, onPick) {
-    container.replaceChildren();
-    options.forEach(opt => {
-      const btn = createElement('div', 'quiz-option', opt);
-      btn.addEventListener('click', () => onPick(opt, btn));
-      container.appendChild(btn);
-    });
-  }
-
-  // Locks a rendered multiple-choice row and highlights correct/incorrect after an answer.
-  function revealMultipleChoiceAnswer(container, correctAnswer, pickedBtn) {
-    [...container.children].forEach(b => {
-      b.style.pointerEvents = 'none';
-      if (b.textContent === correctAnswer) b.classList.add('correct');
-      else if (b === pickedBtn) b.classList.add('incorrect');
-    });
-  }
-
-  // Simple exit button wiring shared by every game view: go back to the Games grid,
-  // optionally running a bit of cleanup first (clearing intervals, resetting state, etc).
-  function wireGameExit(buttonId, onExit) {
-    document.getElementById(buttonId).addEventListener('click', () => {
-      if (onExit) onExit();
-      goTo('games');
-    });
-  }
 
   // ---- Game 1: Nối từ (Matching pairs) ----
   let matchState = null; // { tiles, selected, movesCount, matchedCount, totalPairs, timerInterval, startTime }
