@@ -233,6 +233,18 @@
     margin-top:4px;
   }
   .stat-card.good .num{ color:var(--good) }
+  .stat-row-2{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+    margin-bottom:22px;
+  }
+  .stat-row-2 .stat-card{ display:flex; align-items:center; gap:12px; text-align:left; padding:14px 16px; }
+  .stat-row-2 .stat-card .icon{ font-size:22px; flex-shrink:0; }
+  .stat-row-2 .stat-card .num{ font-size:20px; }
+  .stat-card.due{ border-color:var(--accent); }
+  .stat-card.due .num{ color:var(--accent); }
+  .stat-card.streak .num{ color:var(--gold); }
   .stat-card.accent .num{ color:var(--accent) }
 
   .section-title{
@@ -1210,6 +1222,17 @@
       </div>
     </div>
 
+    <div class="stat-row-2">
+      <div class="stat-card due" id="statDueCard" style="cursor:pointer;">
+        <div class="icon">⏰</div>
+        <div><div class="num" id="statDue">0</div><div class="label">Cần ôn hôm nay</div></div>
+      </div>
+      <div class="stat-card streak">
+        <div class="icon">🔥</div>
+        <div><div class="num" id="statStreak">0</div><div class="label">Ngày liên tiếp</div></div>
+      </div>
+    </div>
+
     <div class="section-title">Tiếp tục học</div>
     <div id="continueSlot"></div>
 
@@ -1230,6 +1253,21 @@
     </div>
 
     <div id="learnedWordsList"></div>
+  </div>
+
+  <!-- ============ CẦN ÔN HÔM NAY (SRS due words, gộp từ mọi bộ thẻ) ============ -->
+  <div class="view" id="view-due-words">
+    <div class="study-header">
+      <div class="back-btn" id="btnBackFromDue">‹ Trang chủ</div>
+    </div>
+    <h2 style="margin:0 0 4px; font-size:19px;">Cần ôn hôm nay</h2>
+    <p id="dueWordsSub" style="margin:0 0 16px; color:var(--ink-dim); font-size:13px;">—</p>
+
+    <div class="row-actions" id="dueWordsActions" style="display:none;">
+      <button class="btn primary full" id="btnDueModeStart">Ôn ngay</button>
+    </div>
+
+    <div id="dueWordsList"></div>
   </div>
 
   <!-- ============ TAB: ĐÃ TẠO ============ -->
@@ -1707,7 +1745,7 @@ procrastinate	trì hoãn</div>
   const SOURCE_KEY = 'flashcard_data_source';
   const VIEWS = [
     'home', 'created', 'create', 'study', 'quiz', 'done', 'grammar', 'grammar-lesson', 'grammar-edit',
-    'reference', 'learned-words', 'games',
+    'reference', 'learned-words', 'due-words', 'games',
     'game-match', 'game-hangman', 'game-scramble', 'game-speed', 'game-falling', 'game-blank', 'game-wheel'
   ];
   
@@ -1852,6 +1890,7 @@ procrastinate	trì hoãn</div>
     else if (active === 'reference') renderRefFolderList();
     else if (active === 'grammar') renderLessonList();
     else if (active === 'learned-words') renderLearnedWordsView();
+    else if (active === 'due-words') renderDueWordsView();
     else if (active === 'games') renderGameGrid();
   }
 
@@ -1873,6 +1912,50 @@ procrastinate	trì hoãn</div>
     goTo('done');
   }
 
+  // ---- Spaced Repetition (SRS) ----
+  // Each word now tracks srsLevel (0-4) instead of a binary good/bad status:
+  //   0 Mới        1 Đang học      2 Ôn tập      3 Đã thuộc      4 Thành thạo
+  // Answering correctly advances a level (review interval grows); answering
+  // incorrectly drops back to level 0 (review again tomorrow). `status` is kept
+  // in sync as a derived field (srsLevel >= 3 -> 'good', else 'bad'/'new') purely
+  // for backward compatibility with old saved data — new code should read srsLevel.
+  const SRS_INTERVAL_DAYS = [1, 3, 7, 16, 35]; // days until next review, indexed by srsLevel after answering
+  const SRS_LEARNED_LEVEL = 3; // level at which a word counts as "đã thuộc"
+
+  function todayStr() { return new Date().toISOString().slice(0, 10); }
+  function daysFromNow(n) {
+    const d = new Date();
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function applySrsAnswer(word, isCorrect) {
+    const currentLevel = word.srsLevel ?? (word.status === 'good' ? SRS_LEARNED_LEVEL : 0);
+    const newLevel = isCorrect ? Math.min(4, currentLevel + 1) : 0;
+    word.srsLevel = newLevel;
+    word.nextReviewDate = daysFromNow(SRS_INTERVAL_DAYS[newLevel]);
+    word.status = newLevel >= SRS_LEARNED_LEVEL ? 'good' : (newLevel === 0 ? 'new' : 'bad'); // legacy mirror
+  }
+
+  function isWordLearned(word) {
+    return (word.srsLevel ?? (word.status === 'good' ? SRS_LEARNED_LEVEL : 0)) >= SRS_LEARNED_LEVEL;
+  }
+
+  function isWordDueForReview(word) {
+    // A word with no review history yet (freshly added) is always due.
+    if (!word.nextReviewDate) return true;
+    return word.nextReviewDate <= todayStr();
+  }
+
+  function bumpStreak() {
+    const today = todayStr();
+    if (!DATA.streak) DATA.streak = { count: 0, lastStudyDate: null };
+    if (DATA.streak.lastStudyDate === today) return; // already counted today
+    const yesterday = daysFromNow(-1);
+    DATA.streak.count = (DATA.streak.lastStudyDate === yesterday) ? DATA.streak.count + 1 : 1;
+    DATA.streak.lastStudyDate = today;
+  }
+
   // Update a word's status inside DATA (only if the folder is a saved, non-reference folder).
   // If entry carries a _sourceFolder (set when mixing words from multiple decks, e.g. the
   // "learned words" review), that takes priority over the folder passed for the session.
@@ -1880,7 +1963,11 @@ procrastinate	trì hoãn</div>
     const targetFolder = entry._sourceFolder || folder;
     if (!targetFolder || !DATA.folders.some(f => f.id === targetFolder.id)) return;
     const target = targetFolder.words.find(w => w.tu === entry.tu && w.nghia === entry.nghia);
-    if (target) { target.status = status; saveData(); }
+    if (target) {
+      applySrsAnswer(target, status === 'good');
+      bumpStreak();
+      saveData();
+    }
   }
 
   async function pushRefFolders(updatedFolders) {
@@ -2152,11 +2239,14 @@ procrastinate	trì hoãn</div>
   function renderHome() {
     const folders = DATA.folders || [];
     const totalWords = folders.reduce((s, f) => s + f.words.length, 0);
-    const learnedWords = folders.reduce((s, f) => s + f.words.filter(w => w.status === 'good').length, 0);
+    const learnedWords = folders.reduce((s, f) => s + f.words.filter(isWordLearned).length, 0);
+    const dueWords = folders.reduce((s, f) => s + f.words.filter(isWordDueForReview).length, 0);
 
     DOM.statFolders.textContent = folders.length;
     DOM.statWords.textContent = totalWords;
     DOM.statLearned.textContent = learnedWords;
+    DOM.statDue.textContent = dueWords;
+    DOM.statStreak.textContent = DATA.streak?.count || 0;
 
     DOM.continueSlot.replaceChildren();
     DOM.homeRecentList.replaceChildren();
@@ -2164,7 +2254,7 @@ procrastinate	trì hoãn</div>
     const last = folders.find(f => f.id === DATA.lastStudiedFolderId) || folders[0];
     
     if (last) {
-      const remaining = last.words.filter(w => w.status !== 'good').length;
+      const remaining = last.words.filter(w => !isWordLearned(w)).length;
       const card = createElement('div', 'continue-card');
       const info = createElement('div', 'info');
       info.appendChild(createElement('h3', null, last.name));
@@ -2173,7 +2263,7 @@ procrastinate	trì hoãn</div>
       card.appendChild(createElement('div', 'go', '▶'));
       
       card.addEventListener('click', () => {
-        const list = remaining > 0 ? last.words.filter(w => w.status !== 'good') : last.words;
+        const list = remaining > 0 ? last.words.filter(w => !isWordLearned(w)) : last.words;
         openModeModal(last, list, () => { DATA.lastStudiedFolderId = last.id; saveData(); });
       });
       DOM.continueSlot.appendChild(card);
@@ -2198,9 +2288,22 @@ procrastinate	trì hoãn</div>
     const folders = DATA.folders || [];
     const result = [];
     folders.forEach(f => {
-      f.words.filter(w => w.status === 'good').forEach(w => {
+      f.words.filter(isWordLearned).forEach(w => {
         // Tag each entry with its source folder so study/quiz sessions can
         // update the right deck even when words come from several decks at once.
+        result.push({ ...w, _sourceFolder: f, _sourceFolderName: f.name });
+      });
+    });
+    return result;
+  }
+
+  // All words across every deck that are due for review today (or overdue) — the
+  // SRS counterpart to getAllLearnedWords(), used by the "Cần ôn hôm nay" card.
+  function getAllDueWords() {
+    const folders = DATA.folders || [];
+    const result = [];
+    folders.forEach(f => {
+      f.words.filter(isWordDueForReview).forEach(w => {
         result.push({ ...w, _sourceFolder: f, _sourceFolderName: f.name });
       });
     });
@@ -2238,6 +2341,37 @@ procrastinate	trì hoãn</div>
     openModeModal(null, words, null, 'Từ đã thuộc');
   });
 
+  function renderDueWordsView() {
+    const words = getAllDueWords();
+    DOM.dueWordsSub.textContent = `${words.length} từ đến hạn ôn tập hôm nay`;
+    DOM.dueWordsActions.style.display = words.length ? 'block' : 'none';
+    DOM.dueWordsList.replaceChildren();
+
+    if (words.length === 0) {
+      DOM.dueWordsList.appendChild(emptyState('🎉', 'Không có từ nào cần ôn hôm nay. Học vài từ mới hoặc quay lại sau nhé!'));
+      return;
+    }
+    const frag = document.createDocumentFragment();
+    words.forEach(w => {
+      const item = createElement('div', 'word-item');
+      item.innerHTML = `
+        <div class="top-row"><div class="term"></div><div class="src"></div></div>
+        <div class="meaning"></div>`;
+      item.querySelector('.term').textContent = w.tu;
+      item.querySelector('.src').textContent = w._sourceFolderName;
+      item.querySelector('.meaning').textContent = w.nghia;
+      frag.appendChild(item);
+    });
+    DOM.dueWordsList.appendChild(frag);
+  }
+
+  DOM.statDueCard.addEventListener('click', () => { renderDueWordsView(); goTo('due-words'); });
+  DOM.btnBackFromDue.addEventListener('click', () => goTo('home'));
+  DOM.btnDueModeStart.addEventListener('click', () => {
+    const words = getAllDueWords();
+    openModeModal(null, words, null, 'Ôn tập hôm nay');
+  });
+
   function renderFolderList() {
     DOM.folderList.replaceChildren();
     if (!DATA.folders || DATA.folders.length === 0) {
@@ -2252,7 +2386,7 @@ procrastinate	trì hoãn</div>
   }
 
   function makeFolderCard(folder, withDelete) {
-    const learned = folder.words.filter(w => w.status === 'good').length;
+    const learned = folder.words.filter(isWordLearned).length;
     const card = createElement('div', 'folder-card');
     card.appendChild(createElement('div', 'emoji', '📘'));
     const meta = createElement('div', 'meta');
@@ -2376,7 +2510,8 @@ procrastinate	trì hoãn</div>
         const cols = line.split('\t');
         return {
           tu: (cols[0] || '').trim(), nghia: (cols[1] || '').trim(),
-          phat_am: (cols[2] || '').trim(), loai_tu: (cols[3] || '').trim(), status: 'new'
+          phat_am: (cols[2] || '').trim(), loai_tu: (cols[3] || '').trim(),
+          status: 'new', srsLevel: 0
         };
       }).filter(w => w.tu);
   }
