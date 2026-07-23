@@ -1109,6 +1109,52 @@
   }
   .word-item .meaning{ font-size:13px; color:var(--ink-dim); margin-top:3px; }
 
+  /* ---------- Edit-folder view: per-word inline editor rows ---------- */
+  .edit-word-row{
+    background:var(--bg-elev);
+    border:1px solid var(--line-solid);
+    border-radius:12px;
+    padding:12px;
+    margin-bottom:10px;
+  }
+  .edit-word-row .edit-row-head{
+    display:flex;
+    justify-content:flex-end;
+    margin-bottom:6px;
+  }
+  .edit-word-row .edit-row-fields{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+  }
+  .edit-word-row input{
+    width:100%;
+    padding:9px 10px;
+    border-radius:8px;
+    border:1px solid var(--line-solid);
+    background:var(--bg-elev-2);
+    color:var(--ink);
+    font-size:13px;
+    font-family:var(--sans);
+    outline:none;
+  }
+  .edit-word-row input:focus{ border-color:var(--accent); }
+  .edit-word-row input.edit-tu, .edit-word-row input.edit-nghia{ font-weight:600; }
+  .edit-word-row input.edit-phat-am, .edit-word-row input.edit-loai-tu{ font-size:12px; color:var(--ink-dim); }
+  .edit-word-row input.edit-phat-am::placeholder, .edit-word-row input.edit-loai-tu::placeholder{ color:var(--ink-faint); }
+  .edit-word-row .btn-remove-word{
+    width:24px; height:24px;
+    border-radius:50%;
+    background:var(--bg-elev-2);
+    color:var(--ink-faint);
+    border:none;
+    font-size:12px;
+    cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .edit-word-row .btn-remove-word:hover{ background:var(--bad-soft); color:var(--bad); }
+
   /* Markdown-rendered lesson content */
   .md-content{ font-size:14.5px; line-height:1.7; }
   .md-content h1, .md-content h2, .md-content h3{
@@ -1513,6 +1559,23 @@ procrastinate	trì hoãn</div>
     <button class="btn primary full" id="btnSaveFolder">Lưu bộ thẻ</button>
   </div>
 
+  <!-- ============ SỬA BỘ THẺ (edit words in an existing deck) ============ -->
+  <div class="view" id="view-edit-folder">
+    <div class="study-header">
+      <div class="back-btn" id="btnCancelEditFolder">‹ Hủy</div>
+    </div>
+    <div class="panel">
+      <div class="field-label">Tên bộ thẻ</div>
+      <input type="text" class="name-input" id="editFolderNameInput" placeholder="Tên bộ thẻ">
+    </div>
+    <div class="row-actions">
+      <button class="btn ghost full" id="btnAddEditWord">＋ Thêm từ</button>
+    </div>
+    <div id="editWordList"></div>
+    <div class="err" id="editFolderErr"></div>
+    <button class="btn primary full" id="btnSaveEditFolder">Lưu thay đổi</button>
+  </div>
+
   <!-- ============ STUDY VIEW ============ -->
   <div class="view" id="view-study">
     <div class="study-header">
@@ -1630,6 +1693,10 @@ procrastinate	trì hoãn</div>
       <div class="ic">✏️</div>
       <div class="txt"><h4>Kiểm tra</h4><p>Trắc nghiệm hoặc tự luận, chấm điểm ngay.</p></div>
     </div>
+    <div class="mode-option" id="modeOptionEdit" style="display:none;">
+      <div class="ic">🛠️</div>
+      <div class="txt"><h4>Sửa bộ thẻ</h4><p>Sửa, xoá hoặc thêm từ vào bộ này.</p></div>
+    </div>
     <button class="btn ghost full" id="btnCancelMode">Hủy</button>
   </div>
 </div>
@@ -1744,7 +1811,7 @@ procrastinate	trì hoãn</div>
   // every login even when there was nothing new to merge.
   const SOURCE_KEY = 'flashcard_data_source';
   const VIEWS = [
-    'home', 'created', 'create', 'study', 'quiz', 'done', 'grammar', 'grammar-lesson', 'grammar-edit',
+    'home', 'created', 'create', 'edit-folder', 'study', 'quiz', 'done', 'grammar', 'grammar-lesson', 'grammar-edit',
     'reference', 'learned-words', 'due-words', 'games',
     'game-match', 'game-hangman', 'game-scramble', 'game-speed', 'game-falling', 'game-blank', 'game-wheel'
   ];
@@ -2589,6 +2656,11 @@ procrastinate	trì hoãn</div>
     pendingModeWords = wordsList;
     pendingModeConfirm = onConfirm;
     pendingModeDisplayName = displayName || null;
+    // "Sửa bộ thẻ" only makes sense for a single deck the user actually owns —
+    // not for Reference decks, and not for mixed-source lists like "Từ đã thuộc"
+    // or "Cần ôn hôm nay" (folder is null there).
+    const isOwnFolder = folder && DATA.folders.some(f => f.id === folder.id);
+    DOM.modeOptionEdit.style.display = isOwnFolder ? 'flex' : 'none';
     openModal(DOM.modeModal);
   }
 
@@ -2605,6 +2677,11 @@ procrastinate	trì hoãn</div>
   }
   DOM.modeOptionStudy.addEventListener('click', () => confirmModeSelection(initStudySession));
   DOM.modeOptionQuiz.addEventListener('click', () => confirmModeSelection(initQuizSession));
+  DOM.modeOptionEdit.addEventListener('click', () => {
+    const folder = pendingModeFolder;
+    closeModeModal();
+    openEditFolderView(folder);
+  });
   DOM.btnCancelMode.addEventListener('click', closeModeModal);
 
   // 7c. Quiz Engine
@@ -3451,6 +3528,83 @@ procrastinate	trì hoãn</div>
     if (!words.length) return DOM.createErr.textContent = 'Sai định dạng (cách nhau bằng Tab).';
     DATA.folders.push({ id: generateUid(), name, createdAt: Date.now(), words });
     saveData(); goTo('created');
+  });
+
+  // ---- Sửa bộ thẻ: edit/remove/add individual words in one of the user's own decks ----
+  let editingFolderId = null;
+
+  function openEditFolderView(folder) {
+    if (!folder) return;
+    editingFolderId = folder.id;
+    DOM.editFolderNameInput.value = folder.name;
+    DOM.editFolderErr.textContent = '';
+    renderEditWordList(folder.words);
+    goTo('edit-folder');
+  }
+
+  function makeEditWordRow(word) {
+    const row = createElement('div', 'edit-word-row');
+    row.innerHTML = `
+      <div class="edit-row-head"><button type="button" class="btn-remove-word" title="Xoá từ này">✕</button></div>
+      <div class="edit-row-fields">
+        <input class="edit-tu" placeholder="Từ (bắt buộc)">
+        <input class="edit-nghia" placeholder="Nghĩa (bắt buộc)">
+        <input class="edit-phat-am" placeholder="Phát âm (tuỳ chọn)">
+        <input class="edit-loai-tu" placeholder="Loại từ (tuỳ chọn)">
+      </div>`;
+    row.querySelector('.edit-tu').value = word?.tu || '';
+    row.querySelector('.edit-nghia').value = word?.nghia || '';
+    row.querySelector('.edit-phat-am').value = word?.phat_am || '';
+    row.querySelector('.edit-loai-tu').value = word?.loai_tu || '';
+    // Preserve SRS progress (srsLevel, nextReviewDate, status) on the row so saving
+    // doesn't silently reset a word's review history back to "Mới".
+    row._srsData = word ? { srsLevel: word.srsLevel, nextReviewDate: word.nextReviewDate, status: word.status } : {};
+    row.querySelector('.btn-remove-word').addEventListener('click', () => row.remove());
+    return row;
+  }
+
+  function renderEditWordList(words) {
+    DOM.editWordList.replaceChildren();
+    const frag = document.createDocumentFragment();
+    words.forEach(w => frag.appendChild(makeEditWordRow(w)));
+    DOM.editWordList.appendChild(frag);
+  }
+
+  DOM.btnAddEditWord.addEventListener('click', () => {
+    DOM.editWordList.appendChild(makeEditWordRow(null));
+  });
+
+  DOM.btnCancelEditFolder.addEventListener('click', () => { editingFolderId = null; goTo('created'); });
+
+  DOM.btnSaveEditFolder.addEventListener('click', () => {
+    DOM.editFolderErr.textContent = '';
+    const name = DOM.editFolderNameInput.value.trim();
+    if (!name) return DOM.editFolderErr.textContent = 'Hãy đặt tên cho bộ thẻ.';
+
+    const rows = [...DOM.editWordList.children];
+    const words = [];
+    for (const row of rows) {
+      const tu = row.querySelector('.edit-tu').value.trim();
+      const nghia = row.querySelector('.edit-nghia').value.trim();
+      if (!tu || !nghia) continue; // silently skip rows left blank (e.g. an unused "＋ Thêm từ" row)
+      words.push({
+        tu, nghia,
+        phat_am: row.querySelector('.edit-phat-am').value.trim(),
+        loai_tu: row.querySelector('.edit-loai-tu').value.trim(),
+        status: row._srsData.status ?? 'new',
+        srsLevel: row._srsData.srsLevel ?? 0,
+        ...(row._srsData.nextReviewDate ? { nextReviewDate: row._srsData.nextReviewDate } : {})
+      });
+    }
+    if (words.length === 0) return DOM.editFolderErr.textContent = 'Bộ thẻ cần có ít nhất 1 từ.';
+
+    const folder = DATA.folders.find(f => f.id === editingFolderId);
+    if (!folder) { editingFolderId = null; goTo('created'); return; }
+    folder.name = name;
+    folder.words = words;
+    saveData();
+    editingFolderId = null;
+    goTo('created');
   });
 
   // Admin Panel Action Listeners
