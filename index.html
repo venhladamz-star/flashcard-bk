@@ -1130,12 +1130,15 @@
     text-align:center;
     box-shadow: 0 0 16px #ec489944;
     transition: filter .1s ease;
+    white-space:nowrap;
+    max-width:none;
   }
   .sniper-enemy .meaning{
     font-size:12px;
     color:#f9a8d4;
     font-weight:600;
     margin-bottom:3px;
+    white-space:nowrap;
   }
   .sniper-enemy .letters{
     font-family:var(--mono);
@@ -1143,6 +1146,7 @@
     font-weight:800;
     letter-spacing:3px;
     color:#fff;
+    white-space:nowrap;
   }
   .sniper-enemy .letters .filled{ color:#4ade80; }
   .sniper-enemy.hit{ filter:brightness(1.8); }
@@ -3149,7 +3153,10 @@ procrastinate	trì hoãn</div>
     DOM.matchTimer.textContent = '0s';
     renderMatchGrid();
     goTo('game-match');
-    stopActiveGameTimers = () => clearInterval(matchState.timerInterval);
+    stopActiveGameTimers = () => {
+      clearInterval(matchState.timerInterval);
+      clearTimeout(matchState.wrongTileTimeout);
+    };
   }
 
   function renderMatchGrid() {
@@ -3198,7 +3205,11 @@ procrastinate	trì hoãn</div>
       } else {
         matchState.tileEls[a].classList.add('wrong');
         matchState.tileEls[b].classList.add('wrong');
-        setTimeout(() => {
+        // Stored on matchState (not a bare local timeout) so exiting/restarting the game
+        // can cancel it — otherwise a stale callback from a previous round could fire after
+        // a brand-new matchState already exists and wrongly clear its `.selected`.
+        clearTimeout(matchState.wrongTileTimeout);
+        matchState.wrongTileTimeout = setTimeout(() => {
           matchState.tileEls[a].classList.remove('wrong');
           matchState.tileEls[b].classList.remove('wrong');
           matchState.selected = [];
@@ -3207,7 +3218,10 @@ procrastinate	trì hoãn</div>
       }
     }
   }
-  wireGameExit('btnExitMatch', () => clearInterval(matchState?.timerInterval));
+  wireGameExit('btnExitMatch', () => {
+    clearInterval(matchState?.timerInterval);
+    clearTimeout(matchState?.wrongTileTimeout);
+  });
 
   // ---- Game 2: Đoán từ (Hangman) ----
   const HANGMAN_MAX_LIVES = 6;
@@ -3323,13 +3337,18 @@ procrastinate	trì hoãn</div>
   let scrambleState = null; // { words, idx, score, answerLetters, filledIdx, chips }
   function startScrambleGame(words) {
     scrambleState = { words: words.slice(0, 10), idx: 0, score: 0 };
+    stopActiveGameTimers = () => clearTimeout(scrambleState?.nextWordTimeout);
     renderScrambleWord();
     goTo('game-scramble');
   }
 
   function scrambleLetters(word) {
+    // Capped at 20 attempts: for a word made of a single repeated letter (e.g. "aaa"),
+    // every shuffle produces the same string, so the old uncapped loop never terminated.
     let shuffled;
-    do { shuffled = shuffleArray(word.split('')); } while (shuffled.join('') === word && word.length > 1);
+    let attempts = 0;
+    do { shuffled = shuffleArray(word.split('')); attempts++; }
+    while (shuffled.join('') === word && word.length > 1 && attempts < 20);
     return shuffled;
   }
 
@@ -3405,7 +3424,8 @@ procrastinate	trì hoãn</div>
       scrambleState.score += 10;
       DOM.scrambleScore.textContent = scrambleState.score;
     }
-    setTimeout(() => { scrambleState.idx++; renderScrambleWord(); }, isCorrect ? 400 : 700);
+    clearTimeout(scrambleState.nextWordTimeout);
+    scrambleState.nextWordTimeout = setTimeout(() => { scrambleState.idx++; renderScrambleWord(); }, isCorrect ? 400 : 700);
   });
 
   document.getElementById('btnScrambleHint').addEventListener('click', () => {
@@ -3417,7 +3437,7 @@ procrastinate	trì hoãn</div>
     if (chip) placeScrambleChip(chip.id);
   });
 
-  wireGameExit('btnExitScramble');
+  wireGameExit('btnExitScramble', () => clearTimeout(scrambleState?.nextWordTimeout));
 
   // ---- Game 4: Đua với thời gian (Speed round) ----
   const SPEED_ROUND_MS = 12000;
@@ -3425,7 +3445,10 @@ procrastinate	trì hoãn</div>
   function startSpeedGame(words) {
     speedState = { pool: words, idx: 0, score: 0, combo: 0, timerRAF: null };
     goTo('game-speed');
-    stopActiveGameTimers = () => cancelAnimationFrame(speedState.timerRAF);
+    stopActiveGameTimers = () => {
+      cancelAnimationFrame(speedState.timerRAF);
+      clearTimeout(speedState.nextQuestionTimeout);
+    };
     nextSpeedQuestion();
   }
 
@@ -3476,10 +3499,14 @@ procrastinate	trì hoãn</div>
       speedState.combo = 0;
     }
     speedState.idx++;
-    setTimeout(nextSpeedQuestion, 250);
+    clearTimeout(speedState.nextQuestionTimeout);
+    speedState.nextQuestionTimeout = setTimeout(nextSpeedQuestion, 250);
   }
 
-  wireGameExit('btnExitSpeed', () => cancelAnimationFrame(speedState?.timerRAF));
+  wireGameExit('btnExitSpeed', () => {
+    cancelAnimationFrame(speedState?.timerRAF);
+    clearTimeout(speedState?.nextQuestionTimeout);
+  });
 
   // ---- Game 5: Bắn chữ phản xạ (Word Sniper) ----
   // Enemies fall from the top, each showing the Vietnamese meaning and the English
@@ -3546,10 +3573,33 @@ procrastinate	trì hoãn</div>
     el.innerHTML = `<div class="meaning"></div><div class="letters"></div>`;
     el.querySelector('.meaning').textContent = entry.nghia;
     el.querySelector('.letters').innerHTML = renderSniperLetters(enemy);
-    enemy.x = 40 + Math.random() * Math.max(0, sniperState.stageWidth - 80);
-    el.style.left = enemy.x + 'px';
     el.style.top = '-40px';
+    el.style.left = '-9999px'; // render off-screen first so offsetWidth reflects the real card size
     DOM.fallingStage.appendChild(el);
+
+    // Long words can render wider than the play area, especially on narrow phone
+    // screens. Shrink the card's font size (letters + meaning together) until its
+    // rendered width fits within 70% of the stage, so nothing overflows or forces
+    // an oversized spawn margin. Floor of 0.5x keeps it legible even for very long words.
+    const maxCardWidth = sniperState.stageWidth * 0.7;
+    let fontScale = 1;
+    while (el.offsetWidth > maxCardWidth && fontScale > 0.5) {
+      fontScale -= 0.05;
+      el.querySelector('.letters').style.fontSize = (15 * fontScale).toFixed(1) + 'px';
+      el.querySelector('.letters').style.letterSpacing = (3 * fontScale).toFixed(1) + 'px';
+      el.querySelector('.meaning').style.fontSize = (12 * fontScale).toFixed(1) + 'px';
+    }
+
+    // With nowrap text, wide cards (long words) need a bigger edge margin than short
+    // ones, or they'd spawn partly outside the stage. Measure the actual rendered
+    // width (transform:translateX(-50%) means `left` is the card's horizontal center)
+    // and clamp the spawn position so the whole card always stays within bounds.
+    const halfWidth = el.offsetWidth / 2;
+    const margin = halfWidth + 8;
+    const usableWidth = Math.max(0, sniperState.stageWidth - margin * 2);
+    enemy.x = margin + Math.random() * usableWidth;
+    el.style.left = enemy.x + 'px';
+
     enemy.el = el;
     sniperState.active.push(enemy);
   }
@@ -3735,6 +3785,7 @@ procrastinate	trì hoãn</div>
     blankState = { words: words.slice(0, 10), idx: 0, score: 0, correctCount: 0 };
     renderBlankQuestion();
     goTo('game-blank');
+    stopActiveGameTimers = () => clearTimeout(blankState?.nextQuestionTimeout);
   }
 
   function renderBlankQuestion() {
@@ -3762,10 +3813,11 @@ procrastinate	trì hoãn</div>
     updateWordStatus(null, entry, isCorrect ? 'good' : 'bad');
     if (isCorrect) { blankState.score += 10; blankState.correctCount++; DOM.blankScore.textContent = blankState.score; }
     revealMultipleChoiceAnswer(DOM.blankOptions, entry.tu, btnEl);
-    setTimeout(() => { blankState.idx++; blankState.answered = false; renderBlankQuestion(); }, 700);
+    clearTimeout(blankState.nextQuestionTimeout);
+    blankState.nextQuestionTimeout = setTimeout(() => { blankState.idx++; blankState.answered = false; renderBlankQuestion(); }, 700);
   }
 
-  wireGameExit('btnExitBlank');
+  wireGameExit('btnExitBlank', () => clearTimeout(blankState?.nextQuestionTimeout));
 
   // ---- Game 7: Vòng quay may mắn (Word Wheel) ----
   let wheelState = null; // { pool, spinsLeft, score, currentEntry }
@@ -3832,13 +3884,13 @@ procrastinate	trì hoãn</div>
     revealMultipleChoiceAnswer(DOM.wheelOptions, correctAnswer, btnEl);
 
     if (wheelState.spinsLeft <= 0) {
-      setTimeout(() => showGameResult('wheel', wheelState.score, `Hoàn thành ${WHEEL_TOTAL_SPINS} lượt quay, ${wheelState.score} điểm!`), 900);
+      wheelSpinTimeout = setTimeout(() => showGameResult('wheel', wheelState.score, `Hoàn thành ${WHEEL_TOTAL_SPINS} lượt quay, ${wheelState.score} điểm!`), 900);
     } else {
       DOM.btnWheelSpin.disabled = false;
     }
   }
 
-  wireGameExit('btnExitWheel');
+  wireGameExit('btnExitWheel', () => clearTimeout(wheelSpinTimeout));
 
   // 8. Event Listeners 
   DOM.navDropdownItems.forEach(item => item.addEventListener('click', () => { goTo(item.dataset.tab); closeNavDropdown(); }));
