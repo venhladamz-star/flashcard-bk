@@ -239,8 +239,8 @@
 
   /* ---------- Views ---------- */
   .view{ display:none; padding:0 20px 20px; flex:1; }
-  .view.active{ display:block; animation:fadeIn .2s ease; }
-  @keyframes fadeIn{ from{opacity:0; transform:translateY(4px)} to{opacity:1; transform:translateY(0)} }
+  .view.active{ display:block; animation:fadeIn .28s cubic-bezier(.16,1,.3,1); }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(10px) scale(.99)} to{opacity:1; transform:translateY(0) scale(1)} }
 
   /* ---------- Home ---------- */
   .stat-grid{
@@ -306,8 +306,10 @@
     gap:14px;
     cursor:pointer;
     box-shadow: var(--glass-shadow);
+    transition: filter .2s ease, transform .15s cubic-bezier(.34,1.4,.64,1);
   }
   .continue-card:hover { filter: brightness(1.1); }
+  .continue-card:active { transform: scale(.985); }
   .continue-card .info h3{
     margin:0 0 6px;
     font-size:17px;
@@ -353,9 +355,9 @@
     font-size:14px;
     font-weight:600;
     cursor:pointer;
-    transition:transform .1s, opacity .15s, background 0.3s, color 0.3s, border-color 0.3s;
+    transition:transform .15s cubic-bezier(.34,1.4,.64,1), opacity .15s, background 0.3s, color 0.3s, border-color 0.3s;
   }
-  .btn:active{ transform:scale(.97) }
+  .btn:active{ transform:scale(.96) }
   .btn.primary{ background:var(--accent); color:#fff; }
   .btn.ghost{
     background: var(--glass-fill), var(--bg-elev-2);
@@ -388,8 +390,10 @@
     gap:14px;
     cursor:pointer;
     box-shadow: var(--glass-shadow);
+    transition: background .2s ease, transform .15s cubic-bezier(.34,1.4,.64,1);
   }
-  .folder-card:hover { background: var(--bg-elev-2); }
+  .folder-card:hover { background: var(--glass-fill), var(--bg-elev-2); }
+  .folder-card:active { transform: scale(.985); }
   .folder-card .emoji{
     width:44px;height:44px;
     border-radius:12px;
@@ -554,7 +558,9 @@
     font-size:14px;
     cursor:pointer;
     padding: 4px 0;
+    transition: color .15s ease;
   }
+  .back-btn:hover{ color:var(--ink); }
   .progress-track{
     height:5px;
     background:var(--bg-elev-2);
@@ -625,8 +631,10 @@
     font-size:16px;
     cursor:pointer;
     z-index:2;
+    transition: background .2s ease, transform .15s cubic-bezier(.34,1.4,.64,1);
   }
   .speak-btn:hover { background: var(--glass-fill), var(--line-solid); }
+  .speak-btn:active { transform: scale(.92); }
   .face.back .speak-btn{ background: var(--glass-fill), var(--bg-elev); }
   .face .term{
     font-size:30px;
@@ -672,7 +680,9 @@
     display:flex;align-items:center;justify-content:center;
     cursor:pointer;
     flex-shrink:0;
+    transition: background .2s ease, transform .15s cubic-bezier(.34,1.4,.64,1), opacity .2s ease;
   }
+  .nav-btn:active{ transform: scale(.92); }
   .nav-btn:disabled{ opacity:.3; pointer-events: none; }
   .grade-row{
     display:flex;
@@ -1082,41 +1092,123 @@
     text-align:center; font-size:12px; color:var(--accent); font-weight:700; margin-bottom:6px; min-height:16px;
   }
 
-  /* ---------- Game 5: Falling words ---------- */
-  .falling-stage{
-    position:relative;
-    height:360px;
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    border:1px solid var(--glass-border);
-    border-radius:14px;
-    overflow:hidden;
-    margin-bottom:14px;
-    box-shadow: var(--glass-shadow);
+  /* ---------- Game 5: Word Sniper (Bắn chữ phản xạ) ---------- */
+  .sniper-hud{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-bottom:8px;
   }
-  .falling-word{
+  .sniper-lives{ font-size:18px; letter-spacing:4px; }
+  .sniper-combo{
+    font-size:12px; font-weight:800; color:var(--gold);
+    min-height:16px;
+  }
+  .sniper-stage{
+    position:relative;
+    height:380px;
+    background:
+      radial-gradient(circle at 50% 100%, #5b8def22 0%, transparent 55%),
+      linear-gradient(180deg, #05070c 0%, #0b0f1a 100%);
+    border:1px solid var(--glass-border);
+    border-radius:16px;
+    overflow:hidden;
+    margin-bottom:12px;
+    box-shadow: var(--glass-shadow), inset 0 0 40px #00000060;
+    /* Subtle scanline texture for the cyberpunk feel, purely decorative. */
+    background-image:
+      repeating-linear-gradient(0deg, #ffffff05 0px, transparent 1px, transparent 3px),
+      radial-gradient(circle at 50% 100%, #5b8def22 0%, transparent 55%),
+      linear-gradient(180deg, #05070c 0%, #0b0f1a 100%);
+  }
+  .sniper-enemy{
     position:absolute;
     left:0;
-    padding:6px 12px;
-    background:var(--accent-soft);
-    color:var(--accent);
-    border:1px solid var(--accent);
-    border-radius:8px;
-    font-size:13px;
-    font-weight:700;
-    white-space:nowrap;
-  }
-  .falling-lives{ text-align:center; font-size:20px; letter-spacing:6px; margin-bottom:8px; }
-  .falling-hint-text{
-    font-size:12px;
-    color:var(--accent);
-    min-height:16px;
-    margin-bottom:10px;
+    transform:translateX(-50%);
+    padding:8px 14px;
+    background: linear-gradient(155deg, #ec489922, #ec489908);
+    border:1px solid #ec4899;
+    border-radius:10px;
     text-align:center;
+    box-shadow: 0 0 16px #ec489944;
+    transition: filter .1s ease;
   }
-  #fallingInputWrap{ display:flex; gap:8px; }
-  #fallingInputWrap input{ flex:1; }
+  .sniper-enemy .meaning{
+    font-size:12px;
+    color:#f9a8d4;
+    font-weight:600;
+    margin-bottom:3px;
+  }
+  .sniper-enemy .letters{
+    font-family:var(--mono);
+    font-size:15px;
+    font-weight:800;
+    letter-spacing:3px;
+    color:#fff;
+  }
+  .sniper-enemy .letters .filled{ color:#4ade80; }
+  .sniper-enemy.hit{ filter:brightness(1.8); }
+  .sniper-enemy.exploding{
+    animation: sniper-explode .3s ease-out forwards;
+  }
+  @keyframes sniper-explode{
+    0%{ transform:translateX(-50%) scale(1); opacity:1; }
+    100%{ transform:translateX(-50%) scale(1.6); opacity:0; }
+  }
+
+  .sniper-gun{
+    position:absolute;
+    bottom:10px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:26px;
+    filter: drop-shadow(0 0 8px #5b8def88);
+    transition: transform .08s ease;
+  }
+  .sniper-gun.firing{ transform:translateX(-50%) translateY(-4px); }
+
+  .sniper-bullet{
+    position:absolute;
+    bottom:44px;
+    width:3px;
+    transform-origin:bottom center;
+    background: linear-gradient(180deg, var(--accent), #fff);
+    border-radius:2px;
+    box-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent);
+    animation: sniper-bullet-fade .13s ease-out forwards;
+  }
+  @keyframes sniper-bullet-fade{
+    0%{ opacity:1; }
+    70%{ opacity:1; }
+    100%{ opacity:0; }
+  }
+
+  .sniper-particle{
+    position:absolute;
+    width:4px; height:4px;
+    background:#facc15;
+    border-radius:50%;
+    pointer-events:none;
+    animation: sniper-particle-burst .35s ease-out forwards;
+  }
+  @keyframes sniper-particle-burst{
+    to{ transform: translate(var(--px), var(--py)); opacity:0; }
+  }
+
+  /* Invisible text input used purely to summon the mobile keyboard and capture
+     keystrokes — it has no visible size so it never covers the play field, and
+     it never shows the typed text (the letters render inside the enemy card). */
+  #sniperKeyCatcher{
+    position:absolute;
+    opacity:0;
+    height:0; width:0;
+    padding:0; margin:0; border:none;
+    pointer-events:none;
+  }
+  .sniper-tap-hint{
+    text-align:center;
+    font-size:12px;
+    color:var(--ink-faint);
+    margin-bottom:10px;
+  }
 
   /* ---------- Game 6: Fill in the blank ---------- */
   .blank-sentence{
@@ -1576,20 +1668,21 @@
     <div class="quiz-options" id="speedOptions"></div>
   </div>
 
-  <!-- ============ GAME 5: TỪ RƠI (FALLING WORDS) ============ -->
+  <!-- ============ GAME 5: BẮN CHỮ PHẢN XẠ (WORD SNIPER) ============ -->
   <div class="view" id="view-game-falling">
     <div class="game-header">
       <div class="back-btn" id="btnExitFalling">‹ Thoát</div>
       <div class="pos-indicator" style="margin-bottom:0;" id="fallingScoreText">0 điểm</div>
     </div>
-    <div class="falling-lives" id="fallingLives">❤️❤️❤️</div>
-    <div class="falling-stage" id="fallingStage"></div>
-    <p class="falling-hint-text" id="fallingHintText"></p>
-    <div id="fallingInputWrap">
-      <input type="text" class="quiz-input" id="fallingInput" placeholder="Gõ nghĩa tiếng Việt rồi Enter...">
-      <button class="btn ghost" id="btnFallingHint">💡</button>
-      <button class="btn primary" id="btnFallingSubmit">Gửi</button>
+    <div class="sniper-hud">
+      <div class="sniper-lives" id="fallingLives">❤️❤️❤️</div>
+      <div class="sniper-combo" id="sniperComboText"></div>
     </div>
+    <div class="sniper-stage" id="fallingStage">
+      <div class="sniper-gun" id="sniperGun">🔫</div>
+    </div>
+    <p class="sniper-tap-hint" id="sniperTapHint">👆 Chạm vào khu vực trên để bật bàn phím, rồi gõ để bắn</p>
+    <input id="sniperKeyCatcher" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
   </div>
 
   <!-- ============ GAME 6: ĐIỀN VÀO CHỖ TRỐNG (FILL THE BLANK) ============ -->
@@ -2938,7 +3031,7 @@ procrastinate	trì hoãn</div>
     { id: 'hangman', emoji: '🎯', name: 'Đoán từ', desc: 'Đoán từng chữ cái để ghép ra đúng từ tiếng Anh.', minWords: 1 },
     { id: 'scramble', emoji: '🔤', name: 'Sắp xếp chữ', desc: 'Xếp lại các chữ cái bị xáo trộn cho đúng từ.', minWords: 1 },
     { id: 'speed', emoji: '⚡', name: 'Đua thời gian', desc: 'Chọn nhanh nghĩa đúng trước khi hết giờ.', minWords: 4 },
-    { id: 'falling', emoji: '🌧️', name: 'Từ rơi', desc: 'Gõ nghĩa trước khi từ rơi chạm đáy màn hình.', minWords: 1 },
+    { id: 'falling', emoji: '🎯', name: 'Bắn chữ phản xạ', desc: 'Gõ đúng từng ký tự để bắn hạ quái vật trước khi chạm đáy.', minWords: 1 },
     { id: 'blank', emoji: '📝', name: 'Điền chỗ trống', desc: 'Chọn từ đúng để hoàn thành câu ví dụ.', minWords: 4 },
     { id: 'wheel', emoji: '🎡', name: 'Vòng quay', desc: 'Quay ngẫu nhiên 1 từ, trả lời đúng để ghi điểm.', minWords: 4 }
   ];
@@ -3388,104 +3481,245 @@ procrastinate	trì hoãn</div>
 
   wireGameExit('btnExitSpeed', () => cancelAnimationFrame(speedState?.timerRAF));
 
-  // ---- Game 5: Từ rơi (Falling words) ----
-  const FALLING_MAX_LIVES = 3;
-  let fallingState = null; // { pool, idx, score, lives, active: [{entry, el, y, speed}], rafId, spawnTimer }
+  // ---- Game 5: Bắn chữ phản xạ (Word Sniper) ----
+  // Enemies fall from the top, each showing the Vietnamese meaning and the English
+  // word with a few letters pre-revealed as a hint. The player types the *English
+  // word*'s letters directly (no Enter, no input field submit) — every keystroke is
+  // checked instantly against whichever falling enemy needs that letter next.
+  const SNIPER_MAX_LIVES = 3;
+  const SNIPER_MAX_ON_SCREEN = 2;   // cap simultaneous enemies so it never feels overwhelming
+  const SNIPER_SPAWN_GAP_MS = 2600; // minimum time between spawns, on top of the on-screen cap
+  const SNIPER_FALL_SPEED = 22;     // px/sec, constant (per the user's choice — no ramp-up)
+  let sniperState = null;
+
+  function buildSniperEnemy(entry) {
+    const word = entry.tu.toLowerCase();
+    // Reveal ~30% of letters at random (not necessarily the first one) as a head start,
+    // per the user's request that the hint isn't locked to the first character.
+    const letterIdxs = [...word].map((ch, i) => ({ ch, i })).filter(x => x.ch !== ' ' && x.ch !== '-');
+    const revealCount = Math.max(1, Math.round(letterIdxs.length * 0.3));
+    const shuffled = shuffleArray(letterIdxs);
+    const revealed = new Set(shuffled.slice(0, revealCount).map(x => x.i));
+    // Spaces/hyphens are always "typed" already — the player never types those.
+    word.split('').forEach((ch, i) => { if (ch === ' ' || ch === '-') revealed.add(i); });
+    return { entry, word, revealed, typed: new Set(revealed), el: null, x: 0, y: -40, speed: SNIPER_FALL_SPEED };
+  }
+
+  function renderSniperLetters(enemy) {
+    return enemy.word.split('').map((ch, i) => {
+      if (enemy.typed.has(i)) return `<span class="filled">${ch === ' ' ? '&nbsp;' : ch}</span>`;
+      return enemy.revealed.has(i) ? ch : '_';
+    }).join(' ');
+  }
+
   function startFallingGame(words) {
-    fallingState = { pool: words, idx: 0, score: 0, lives: FALLING_MAX_LIVES, active: [], rafId: null, spawnTimer: null, lastTick: null };
-    DOM.fallingScoreText.textContent = '0 điểm';
-    DOM.fallingLives.textContent = '❤️'.repeat(FALLING_MAX_LIVES);
-    DOM.fallingStage.replaceChildren();
-    DOM.fallingHintText.textContent = '';
-    DOM.fallingInput.value = '';
-    goTo('game-falling');
-    fallingState.stageHeight = DOM.fallingStage.clientHeight || 360;
-    spawnFallingWord();
-    fallingState.spawnTimer = setInterval(spawnFallingWord, 3200);
-    fallingState.lastTick = performance.now();
-    fallingState.rafId = requestAnimationFrame(fallingTick);
-    stopActiveGameTimers = () => {
-      if (fallingState) { clearInterval(fallingState.spawnTimer); cancelAnimationFrame(fallingState.rafId); }
+    sniperState = {
+      pool: shuffleArray(words), idx: 0, score: 0, lives: SNIPER_MAX_LIVES, combo: 0, maxCombo: 0,
+      active: [], rafId: null, spawnTimer: null, lastTick: null, lastSpawnAt: 0
     };
-    setTimeout(() => DOM.fallingInput.focus(), 100);
+    DOM.fallingScoreText.textContent = '0 điểm';
+    DOM.fallingLives.textContent = '❤️'.repeat(SNIPER_MAX_LIVES);
+    DOM.sniperComboText.textContent = '';
+    DOM.fallingStage.querySelectorAll('.sniper-enemy, .sniper-bullet, .sniper-particle').forEach(el => el.remove());
+    goTo('game-falling');
+    sniperState.stageHeight = DOM.fallingStage.clientHeight || 380;
+    sniperState.stageWidth = DOM.fallingStage.clientWidth || 320;
+    spawnSniperEnemy();
+    sniperState.lastTick = performance.now();
+    sniperState.rafId = requestAnimationFrame(sniperTick);
+    stopActiveGameTimers = () => { if (sniperState) cancelAnimationFrame(sniperState.rafId); };
+    // Focus the invisible key-catcher so mobile brings up the keyboard immediately;
+    // if the browser blocks auto-focus, the on-screen tap hint covers that case.
+    setTimeout(() => DOM.sniperKeyCatcher.focus(), 150);
   }
 
-  function spawnFallingWord() {
-    if (fallingState.idx >= fallingState.pool.length) return; // let currently-falling words finish
-    const entry = fallingState.pool[fallingState.idx++];
-    const el = createElement('div', 'falling-word', entry.tu);
-    const stageWidth = DOM.fallingStage.clientWidth || 300;
-    el.style.left = Math.random() * Math.max(0, stageWidth - 100) + 'px';
-    el.style.top = '-30px';
+  function spawnSniperEnemy() {
+    if (sniperState.idx >= sniperState.pool.length) return; // let remaining enemies finish, no more new ones
+    if (sniperState.active.length >= SNIPER_MAX_ON_SCREEN) return;
+    const now = performance.now();
+    if (now - sniperState.lastSpawnAt < SNIPER_SPAWN_GAP_MS) return;
+    sniperState.lastSpawnAt = now;
+
+    const entry = sniperState.pool[sniperState.idx++];
+    const enemy = buildSniperEnemy(entry);
+    const el = createElement('div', 'sniper-enemy');
+    el.innerHTML = `<div class="meaning"></div><div class="letters"></div>`;
+    el.querySelector('.meaning').textContent = entry.nghia;
+    el.querySelector('.letters').innerHTML = renderSniperLetters(enemy);
+    enemy.x = 40 + Math.random() * Math.max(0, sniperState.stageWidth - 80);
+    el.style.left = enemy.x + 'px';
+    el.style.top = '-40px';
     DOM.fallingStage.appendChild(el);
-    fallingState.active.push({ entry, el, y: -30, speed: 26 + Math.random() * 14 });
+    enemy.el = el;
+    sniperState.active.push(enemy);
   }
 
-  function fallingTick(now) {
-    if (!fallingState) return;
-    const dt = (now - fallingState.lastTick) / 1000;
-    fallingState.lastTick = now;
-    const stageHeight = fallingState.stageHeight;
+  function sniperTick(now) {
+    if (!sniperState) return;
+    const dt = (now - sniperState.lastTick) / 1000;
+    sniperState.lastTick = now;
 
-    for (let i = fallingState.active.length - 1; i >= 0; i--) {
-      const item = fallingState.active[i];
-      item.y += item.speed * dt;
-      item.el.style.top = item.y + 'px';
-      if (item.y > stageHeight) {
-        item.el.remove();
-        fallingState.active.splice(i, 1);
-        updateWordStatus(null, item.entry, 'bad');
-        fallingState.lives--;
-        DOM.fallingLives.textContent = '❤️'.repeat(Math.max(0, fallingState.lives)) + '🖤'.repeat(FALLING_MAX_LIVES - fallingState.lives);
-        if (fallingState.lives <= 0) { endFallingGame(); return; }
+    for (let i = sniperState.active.length - 1; i >= 0; i--) {
+      const enemy = sniperState.active[i];
+      enemy.y += enemy.speed * dt;
+      enemy.el.style.top = enemy.y + 'px';
+      if (enemy.y > sniperState.stageHeight) {
+        enemy.el.remove();
+        sniperState.active.splice(i, 1);
+        updateWordStatus(null, enemy.entry, 'bad');
+        sniperState.combo = 0;
+        DOM.sniperComboText.textContent = '';
+        sniperState.lives--;
+        DOM.fallingLives.textContent = '❤️'.repeat(Math.max(0, sniperState.lives)) + '🖤'.repeat(SNIPER_MAX_LIVES - sniperState.lives);
+        if (sniperState.lives <= 0) { endSniperGame(false); return; }
       }
     }
 
-    if (fallingState.idx >= fallingState.pool.length && fallingState.active.length === 0) {
-      endFallingGame();
+    spawnSniperEnemy();
+
+    if (sniperState.idx >= sniperState.pool.length && sniperState.active.length === 0) {
+      endSniperGame(true);
       return;
     }
-    fallingState.rafId = requestAnimationFrame(fallingTick);
+    sniperState.rafId = requestAnimationFrame(sniperTick);
   }
 
-  function endFallingGame() {
-    clearInterval(fallingState.spawnTimer);
-    cancelAnimationFrame(fallingState.rafId);
-    const score = fallingState.score;
-    const gameover = fallingState.lives <= 0;
-    fallingState = null;
-    showGameResult('falling', score, gameover ? `Hết mạng! Ghi được ${score} điểm.` : `Hoàn thành! Ghi được ${score} điểm.`);
+  function endSniperGame(cleared) {
+    clearAnimationFrameSafely();
+    const score = sniperState.score;
+    sniperState = null;
+    DOM.sniperKeyCatcher.blur();
+    showGameResult('falling', score, cleared ? `Hạ gục toàn bộ mục tiêu! ${score} điểm.` : `Hết mạng! Ghi được ${score} điểm.`);
+  }
+  function clearAnimationFrameSafely() { if (sniperState) cancelAnimationFrame(sniperState.rafId); }
+
+  // ---- Visual feedback: bullet, muzzle flash, hit spark, explosion ----
+  function fireSniperBullet(targetX, targetY) {
+    DOM.sniperGun.classList.add('firing');
+    setTimeout(() => DOM.sniperGun.classList.remove('firing'), 90);
+
+    const bullet = createElement('div', 'sniper-bullet');
+    // Bullet starts at the gun (bottom:44px in CSS) and stretches up to the enemy's
+    // current position — targetY is measured from the top of the stage, so the
+    // travel distance is stageHeight minus the gun offset minus targetY.
+    const travelDist = Math.max(8, sniperState.stageHeight - 44 - targetY);
+    bullet.style.left = (targetX - 1.5) + 'px';
+    bullet.style.height = travelDist + 'px';
+    DOM.fallingStage.appendChild(bullet);
+    setTimeout(() => bullet.remove(), 140);
   }
 
-  function submitFallingAnswer() {
-    if (!fallingState) return;
-    const guess = normalizeAnswer(DOM.fallingInput.value);
-    if (!guess) return;
-    const matchIdx = fallingState.active.findIndex(item => normalizeAnswer(item.entry.nghia) === guess);
-    if (matchIdx !== -1) {
-      const item = fallingState.active[matchIdx];
-      item.el.remove();
-      fallingState.active.splice(matchIdx, 1);
-      updateWordStatus(null, item.entry, 'good');
-      fallingState.score += 10;
-      DOM.fallingScoreText.textContent = `${fallingState.score} điểm`;
-      DOM.fallingHintText.textContent = '';
+  function sniperHitSpark(enemy) {
+    enemy.el.classList.add('hit');
+    setTimeout(() => enemy.el?.classList.remove('hit'), 100);
+    spawnSniperParticles(enemy.x, enemy.y + 20, 5, '#4ade80');
+  }
+
+  function spawnSniperParticles(x, y, count, color) {
+    for (let i = 0; i < count; i++) {
+      const p = createElement('div', 'sniper-particle');
+      const angle = Math.random() * Math.PI * 2;
+      const dist = 14 + Math.random() * 20;
+      p.style.left = x + 'px';
+      p.style.top = y + 'px';
+      p.style.background = color;
+      p.style.setProperty('--px', Math.cos(angle) * dist + 'px');
+      p.style.setProperty('--py', Math.sin(angle) * dist + 'px');
+      DOM.fallingStage.appendChild(p);
+      setTimeout(() => p.remove(), 350);
     }
-    DOM.fallingInput.value = '';
   }
-  document.getElementById('btnFallingSubmit').addEventListener('click', submitFallingAnswer);
-  DOM.fallingInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); submitFallingAnswer(); } });
 
-  document.getElementById('btnFallingHint').addEventListener('click', () => {
-    if (!fallingState || fallingState.active.length === 0) return;
-    // Hint the word closest to the ground — it's the most urgent one to clear.
-    const lowest = fallingState.active.reduce((a, b) => (a.y > b.y ? a : b));
-    const firstLetter = lowest.entry.nghia.trim().charAt(0).toUpperCase();
-    DOM.fallingHintText.textContent = `💡 "${lowest.entry.tu}" bắt đầu bằng chữ "${firstLetter}"`;
+  function sniperWrongFeedback() {
+    if (navigator.vibrate) navigator.vibrate(30);
+    DOM.fallingStage.style.transform = 'translateX(-3px)';
+    setTimeout(() => { DOM.fallingStage.style.transform = ''; }, 60);
+  }
+
+  // ---- Core input handling: every keystroke is checked immediately ----
+  function handleSniperKey(rawChar) {
+    if (!sniperState) return;
+    const ch = (rawChar || '').toLowerCase();
+    if (!/^[a-z]$/.test(ch)) return;
+
+    // Find the lowest (most urgent) enemy that currently needs exactly this letter next.
+    let bestEnemy = null, bestY = -Infinity;
+    for (const enemy of sniperState.active) {
+      const nextIdx = enemy.word.split('').findIndex((c, i) => !enemy.typed.has(i));
+      if (nextIdx !== -1 && enemy.word[nextIdx] === ch && enemy.y > bestY) {
+        bestEnemy = enemy; bestY = enemy.y;
+      }
+    }
+
+    if (!bestEnemy) {
+      // Wrong key: no falling enemy needs this letter right now.
+      sniperState.combo = 0;
+      DOM.sniperComboText.textContent = '';
+      sniperWrongFeedback();
+      // Punish the enemy that's furthest along (closest to being finished) with a small
+      // forced drop, per spec: "quái vật bị giật rơi xuống một đoạn ngắn ngay lập tức".
+      if (sniperState.active.length > 0) {
+        const punished = sniperState.active.reduce((a, b) => (a.y > b.y ? a : b));
+        punished.y += 18;
+      }
+      return;
+    }
+
+    const nextIdx = bestEnemy.word.split('').findIndex((c, i) => !bestEnemy.typed.has(i));
+    bestEnemy.typed.add(nextIdx);
+    bestEnemy.el.querySelector('.letters').innerHTML = renderSniperLetters(bestEnemy);
+    fireSniperBullet(bestEnemy.x, bestEnemy.y);
+    sniperHitSpark(bestEnemy);
+
+    const isComplete = bestEnemy.word.split('').every((c, i) => bestEnemy.typed.has(i));
+    if (isComplete) {
+      sniperState.combo++;
+      sniperState.maxCombo = Math.max(sniperState.maxCombo, sniperState.combo);
+      const comboMult = Math.min(5, 1 + Math.floor(sniperState.combo / 2));
+      sniperState.score += 10 * comboMult;
+      DOM.fallingScoreText.textContent = `${sniperState.score} điểm`;
+      DOM.sniperComboText.textContent = sniperState.combo >= 2 ? `🔥 Combo x${comboMult}` : '';
+      updateWordStatus(null, bestEnemy.entry, 'good');
+
+      bestEnemy.el.classList.add('exploding');
+      spawnSniperParticles(bestEnemy.x, bestEnemy.y + 20, 12, '#facc15');
+      const idx = sniperState.active.indexOf(bestEnemy);
+      if (idx !== -1) sniperState.active.splice(idx, 1);
+      setTimeout(() => bestEnemy.el?.remove(), 300);
+    }
+  }
+
+  // The invisible input is the mobile-keyboard trigger; `input` (not `keydown`) fires
+  // reliably across mobile keyboards/IMEs, so we read the last character typed and
+  // immediately clear the field back to empty for the next keystroke.
+  DOM.sniperKeyCatcher.addEventListener('input', () => {
+    const val = DOM.sniperKeyCatcher.value;
+    if (val) handleSniperKey(val.slice(-1));
+    DOM.sniperKeyCatcher.value = '';
   });
+  // Desktop: also listen for physical keydown directly on the stage/document while this
+  // game is open, so players don't have to click the invisible input first.
+  document.addEventListener('keydown', (e) => {
+    if (!DOM.views['game-falling']?.classList.contains('active')) return;
+    if (document.activeElement === DOM.sniperKeyCatcher) return; // input handler already covers this
+    if (/^[a-zA-Z]$/.test(e.key)) handleSniperKey(e.key);
+  });
+  DOM.fallingStage.addEventListener('click', () => DOM.sniperKeyCatcher.focus());
+  DOM.sniperKeyCatcher.addEventListener('focus', () => {
+    DOM.sniperTapHint.style.display = 'none';
+    // When the mobile keyboard opens it shrinks the visual viewport; scroll the play
+    // field back into view within whatever room is left so it never ends up hidden
+    // behind the keyboard. visualViewport is the standard API for this — Safari/Chrome
+    // on mobile both support it; browsers without it just skip this (no harm done).
+    if (window.visualViewport) {
+      setTimeout(() => DOM.fallingStage.scrollIntoView({ block: 'start', behavior: 'smooth' }), 250);
+    }
+  });
+  DOM.sniperKeyCatcher.addEventListener('blur', () => { DOM.sniperTapHint.style.display = ''; });
 
   wireGameExit('btnExitFalling', () => {
-    if (fallingState) { clearInterval(fallingState.spawnTimer); cancelAnimationFrame(fallingState.rafId); fallingState = null; }
+    if (sniperState) { cancelAnimationFrame(sniperState.rafId); sniperState = null; }
+    DOM.sniperKeyCatcher.blur();
   });
 
   // ---- Game 6: Điền vào chỗ trống (Fill the blank) ----
