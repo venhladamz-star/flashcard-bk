@@ -92,6 +92,27 @@
   .hangman-key, .scramble-chip{
     transition: background 0.3s, border-color 0.3s, color 0.3s;
   }
+  /* Shared glassmorphism surface fill: every card/panel/input in the app layers
+     --glass-fill over a solid --bg-elev(-2) and applies the same blur+saturate
+     backdrop-filter. Grouped here once (same pattern as the transition rule above)
+     instead of repeating these 3 identical declarations in ~29 separate rules —
+     each of those rules below now only carries what makes it different
+     (border-radius, padding, etc). Two variants: -elev for primary surfaces,
+     -elev-2 for slightly recessed/secondary ones. */
+  .stat-card, .empty-state, .folder-card, .panel, .face, .nav-btn, .shuffle-btn,
+  .done-stats > div, .quiz-card, .quiz-option, .game-card, .game-stat-row > div,
+  .match-tile, .lesson-card, .word-item, .edit-word-row, .md-preview-box{
+    background: var(--glass-fill), var(--bg-elev);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  }
+  .icon-btn, .btn.ghost, input.name-input, textarea.paste-box, .sample-text-block,
+  .speak-btn, .mode-option, input.quiz-input, .source-option, .admin-panel-box,
+  .edit-word-row input, .md-editor-tab{
+    background: var(--glass-fill), var(--bg-elev-2);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  }
   #app{
     max-width:520px;
     margin:0 auto;
@@ -225,9 +246,6 @@
   .icon-btn{
     width:38px;height:38px;
     border-radius:50%;
-    background: var(--glass-fill), var(--bg-elev-2);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     display:flex;align-items:center;justify-content:center;
     color:var(--ink-dim);
@@ -250,9 +268,6 @@
     margin-bottom:22px;
   }
   .stat-card{
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:var(--radius);
     padding:16px 12px;
@@ -333,9 +348,6 @@
     text-align:center;
     padding:40px 20px;
     color:var(--ink-dim);
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px dashed var(--glass-border-strong);
     border-radius:var(--radius);
   }
@@ -360,9 +372,6 @@
   .btn:active{ transform:scale(.96) }
   .btn.primary{ background:var(--accent); color:#fff; }
   .btn.ghost{
-    background: var(--glass-fill), var(--bg-elev-2);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     color:var(--ink);
     border:1px solid var(--glass-border);
   }
@@ -379,9 +388,6 @@
   }
   .folder-list{ display:flex; flex-direction:column; gap:10px; }
   .folder-card{
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:var(--radius);
     padding:16px 18px;
@@ -432,9 +438,6 @@
 
   /* ---------- Create panel ---------- */
   .panel{
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:var(--radius);
     padding:18px;
@@ -452,9 +455,6 @@
     padding:12px 14px;
     border-radius:10px;
     border:1px solid var(--glass-border);
-    background: var(--glass-fill), var(--bg-elev-2);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     color:var(--ink);
     font-size:15px;
     font-family:var(--sans);
@@ -468,9 +468,6 @@
     min-height:200px;
     border-radius:10px;
     border:1px solid var(--glass-border);
-    background: var(--glass-fill), var(--bg-elev-2);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     padding:14px;
     font-family:var(--mono);
     font-size:12.5px;
@@ -508,9 +505,6 @@
     color:var(--ink-faint);
   }
   .sample-text-block{
-    background: var(--glass-fill), var(--bg-elev-2);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:12px;
     padding:12px 14px;
@@ -594,9 +588,6 @@
     backface-visibility:hidden;
     border-radius:18px;
     border:1px solid var(--glass-border);
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     box-shadow: var(--glass-shadow);
     display:flex;
     flex-direction:column;
@@ -623,9 +614,6 @@
     top:14px; right:14px;
     width:38px;height:38px;
     border-radius:50%;
-    background: var(--glass-fill), var(--bg-elev-2);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     display:flex;align-items:center;justify-content:center;
     font-size:16px;
@@ -671,9 +659,6 @@
   .nav-btn{
     width:52px;height:52px;
     border-radius:14px;
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     color:var(--ink);
     font-size:20px;
@@ -700,9 +685,6 @@
   .shuffle-btn{
     width:38px;height:38px;
     border-radius:10px;
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     display:flex;align-items:center;justify-content:center;
     font-size:16px;
@@ -730,9 +712,6 @@
   }
   .done-stats > div{
     flex:1;
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:12px;
     padding:14px;
@@ -825,9 +804,6 @@
     align-items:center;
     gap:14px;
     padding:16px;
-    background: var(--glass-fill), var(--bg-elev-2);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:14px;
     cursor:pointer;
@@ -850,9 +826,6 @@
     margin-bottom:16px;
   }
   .quiz-card{
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:18px;
     padding:28px 22px;
@@ -887,9 +860,6 @@
     padding:15px 16px;
     border-radius:12px;
     border:1px solid var(--glass-border);
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     color:var(--ink);
     font-size:14.5px;
     font-weight:600;
@@ -910,9 +880,6 @@
     padding:15px 16px;
     border-radius:12px;
     border:2px solid var(--glass-border);
-    background: var(--glass-fill), var(--bg-elev-2);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     color:var(--ink);
     font-size:16px;
     font-family:var(--sans);
@@ -941,9 +908,6 @@
     gap:12px;
   }
   .game-card{
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:var(--radius);
     padding:16px 14px;
@@ -968,9 +932,6 @@
   .source-option{
     display:flex; align-items:center; justify-content:space-between; gap:10px;
     padding:13px 14px;
-    background: var(--glass-fill), var(--bg-elev-2);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:12px;
     cursor:pointer;
@@ -990,9 +951,6 @@
   }
   .game-stat-row > div{
     flex:1; text-align:center;
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:12px; padding:10px;
     box-shadow: var(--glass-shadow);
@@ -1008,9 +966,6 @@
     margin-bottom:16px;
   }
   .match-tile{
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:10px;
     padding:14px 8px;
@@ -1269,18 +1224,12 @@
   }
   .admin-panel-box {
     border: 1px dashed var(--accent);
-    background: var(--glass-fill), var(--bg-elev-2);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     padding: 14px; border-radius: var(--radius); margin-bottom: 20px;
     transition: background 0.3s;
   }
 
   /* ---------- Grammar tab ---------- */
   .lesson-card{
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:12px;
     padding:14px 16px;
@@ -1302,9 +1251,6 @@
   .lesson-card .del:hover{ color:var(--bad); }
 
   .word-item{
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:12px;
     padding:12px 16px;
@@ -1320,9 +1266,6 @@
 
   /* ---------- Edit-folder view: per-word inline editor rows ---------- */
   .edit-word-row{
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:12px;
     padding:12px;
@@ -1344,9 +1287,6 @@
     padding:9px 10px;
     border-radius:8px;
     border:1px solid var(--glass-border);
-    background: var(--glass-fill), var(--bg-elev-2);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     color:var(--ink);
     font-size:13px;
     font-family:var(--sans);
@@ -1409,17 +1349,11 @@
   .md-editor-tabs{ display:flex; gap:8px; margin-bottom:12px; }
   .md-editor-tab{
     padding:8px 14px; border-radius:8px; font-size:13px; font-weight:600;
-    background: var(--glass-fill), var(--bg-elev-2);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     color:var(--ink-dim); cursor:pointer;
     border:1px solid var(--glass-border);
   }
   .md-editor-tab.active{ background:var(--accent-soft); color:var(--accent); border-color:var(--accent); backdrop-filter:none; -webkit-backdrop-filter:none; }
   .md-preview-box{
-    background: var(--glass-fill), var(--bg-elev);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
     border:1px solid var(--glass-border);
     border-radius:12px; padding:16px; min-height:200px;
   }
@@ -2040,7 +1974,7 @@ procrastinate	trì hoãn</div>
   let DATA = loadLocalData();
   let currentUser = null;
   let cloudUnsub = null;
-  let suppressNextSnapshot = false;
+  let lastPushedPayload = null; // JSON string of the last DATA we pushed to Firestore — see pushToCloud()
   let saveDebounceTimer = null;
 
   let activeFolder = null;
@@ -2133,16 +2067,23 @@ procrastinate	trì hoãn</div>
 
   async function pushToCloud() {
     if (!currentUser) return;
-    suppressNextSnapshot = true;
+    // Snapshot the exact JSON being written, not just a boolean flag — the write is
+    // async, so another device could push its own change to Firestore while this
+    // `await` is in flight. If we blindly suppressed "the next snapshot" we could
+    // swallow that other device's update instead of our own echo. Comparing the
+    // incoming snapshot's content against what we just sent lets us skip only our
+    // own echo and still apply any genuinely different update that arrives meanwhile.
+    const payload = JSON.stringify(DATA);
     try {
       await setDoc(doc(db, 'users', currentUser.uid), DATA);
+      lastPushedPayload = payload;
     } catch (e) { console.error('Cloud save error:', e); }
   }
 
   function attachCloudListener(uid) {
     if (cloudUnsub) cloudUnsub(); 
     cloudUnsub = onSnapshot(doc(db, 'users', uid), (snap) => {
-      if (suppressNextSnapshot) { suppressNextSnapshot = false; return; }
+      if (snap.exists() && JSON.stringify(snap.data()) === lastPushedPayload) return; // our own echo
       if (snap.exists()) {
         DATA = snap.data();
         if (!DATA.folders) DATA.folders = [];
@@ -2283,7 +2224,7 @@ procrastinate	trì hoãn</div>
 
   // ---- Lightweight Markdown -> HTML renderer (no external deps) ----
   function escapeHtml(s) {
-    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
   function renderInlineMd(s) {
     let out = escapeHtml(s);
@@ -3324,15 +3265,6 @@ procrastinate	trì hoãn</div>
 
   wireGameExit('btnExitHangman');
 
-  document.addEventListener('keydown', (e) => {
-    if (!DOM.views['game-hangman'].classList.contains('active')) return;
-    const ch = e.key.toLowerCase();
-    if (/^[a-z]$/.test(ch) && hangmanState?.current && !hangmanState.current.done) {
-      const keyEl = [...DOM.hangmanKeyboard.children].find(k => k.textContent === ch);
-      if (keyEl && !keyEl.disabled) onHangmanGuess(ch, keyEl);
-    }
-  });
-
   // ---- Game 3: Sắp xếp chữ cái (Word Scramble) ----
   let scrambleState = null; // { words, idx, score, answerLetters, filledIdx, chips }
   function startScrambleGame(words) {
@@ -3747,13 +3679,6 @@ procrastinate	trì hoãn</div>
     if (val) handleSniperKey(val.slice(-1));
     DOM.sniperKeyCatcher.value = '';
   });
-  // Desktop: also listen for physical keydown directly on the stage/document while this
-  // game is open, so players don't have to click the invisible input first.
-  document.addEventListener('keydown', (e) => {
-    if (!DOM.views['game-falling']?.classList.contains('active')) return;
-    if (document.activeElement === DOM.sniperKeyCatcher) return; // input handler already covers this
-    if (/^[a-zA-Z]$/.test(e.key)) handleSniperKey(e.key);
-  });
   DOM.fallingStage.addEventListener('click', () => DOM.sniperKeyCatcher.focus());
   DOM.sniperKeyCatcher.addEventListener('focus', () => {
     DOM.sniperTapHint.style.display = 'none';
@@ -3795,7 +3720,7 @@ procrastinate	trì hoãn</div>
     }
     const entry = blankState.words[blankState.idx];
     const template = BLANK_TEMPLATES[blankState.idx % BLANK_TEMPLATES.length];
-    const sentence = template(escapeHtml(entry.nghia)).replace('___', '<span class="blank-slot">?</span>');
+    const sentence = template(escapeHtml(entry.nghia || '')).replace('___', '<span class="blank-slot">?</span>');
 
     DOM.blankPosText.textContent = `${blankState.idx + 1} / ${blankState.words.length}`;
     DOM.blankScore.textContent = blankState.score;
@@ -4114,13 +4039,6 @@ procrastinate	trì hoãn</div>
     queue = seen.concat(shuffleOn ? shuffleArray(remaining) : baseQueue.filter(w => remaining.includes(w)));
   });
 
-  document.addEventListener('keydown', (e) => {
-    if (!DOM.views.study.classList.contains('active')) return;
-    if (e.code === 'Space') { e.preventDefault(); DOM.flipCard.click(); }
-    if (e.key === 'ArrowRight') DOM.btnNext.click();
-    if (e.key === 'ArrowLeft') DOM.btnPrev.click();
-  });
-
   // 9. REBUILT AUTH & CLOUD CORE
   function openAccountModal() {
     openModal(DOM.accountModal);
@@ -4204,6 +4122,7 @@ procrastinate	trì hoãn</div>
                 if (!cloudData.folders) cloudData.folders = [];
                 if (!cloudData.gameHighScores) cloudData.gameHighScores = {};
                 DATA = cloudData; 
+                lastPushedPayload = JSON.stringify(DATA);
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
                 localStorage.setItem(SOURCE_KEY, 'cloud');
 
@@ -4270,6 +4189,36 @@ procrastinate	trì hoãn</div>
     [document.querySelector('#topTitle .txt'), document.querySelector('#sidebarTitle .txt')],
     ['Flashcard', 'Study with Khuê']
   );
+
+  // ---- Centralized keydown dispatcher ----
+  // Previously each view (Study, Hangman, Word Sniper) registered its own
+  // `document.addEventListener('keydown', ...)` in its own section of the file — same
+  // pattern repeated 3 times with only the "which view is active" check differing.
+  // Placed here (end of file) so every function/variable it calls (onHangmanGuess,
+  // handleSniperKey, DOM.flipCard, etc.) is already defined above; kept as one switch so
+  // the full set of app-wide keyboard shortcuts is visible in a single place.
+  document.addEventListener('keydown', (e) => {
+    if (DOM.views.study.classList.contains('active')) {
+      if (e.code === 'Space') { e.preventDefault(); DOM.flipCard.click(); }
+      else if (e.key === 'ArrowRight') DOM.btnNext.click();
+      else if (e.key === 'ArrowLeft') DOM.btnPrev.click();
+      return;
+    }
+    if (DOM.views['game-hangman'].classList.contains('active')) {
+      const ch = e.key.toLowerCase();
+      if (/^[a-z]$/.test(ch) && hangmanState?.current && !hangmanState.current.done) {
+        const keyEl = [...DOM.hangmanKeyboard.children].find(k => k.textContent === ch);
+        if (keyEl && !keyEl.disabled) onHangmanGuess(ch, keyEl);
+      }
+      return;
+    }
+    if (DOM.views['game-falling']?.classList.contains('active')) {
+      // Desktop: also accept physical keydown directly (not just the invisible input),
+      // so players don't have to click the key-catcher first.
+      if (document.activeElement === DOM.sniperKeyCatcher) return; // input handler already covers this
+      if (/^[a-zA-Z]$/.test(e.key)) handleSniperKey(e.key);
+    }
+  });
 
   // Init App
   renderHome();
