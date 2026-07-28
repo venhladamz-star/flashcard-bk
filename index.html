@@ -1050,12 +1050,16 @@
   /* ---------- Game 5: Word Sniper (Bắn chữ phản xạ) ---------- */
   .sniper-hud{
     display:flex; align-items:center; justify-content:space-between;
+    gap:8px; flex-wrap:wrap;
     margin-bottom:8px;
   }
   .sniper-lives{ font-size:18px; letter-spacing:4px; }
   .sniper-combo{
     font-size:12px; font-weight:800; color:var(--gold);
     min-height:16px;
+  }
+  .sniper-hint-btn{
+    padding:6px 10px; font-size:12px; min-height:0;
   }
   .sniper-stage{
     position:relative;
@@ -1615,6 +1619,7 @@
     <div class="sniper-hud">
       <div class="sniper-lives" id="fallingLives">❤️❤️❤️</div>
       <div class="sniper-combo" id="sniperComboText"></div>
+      <button class="btn ghost sniper-hint-btn" id="btnSniperHint">💡 Gợi ý</button>
     </div>
     <div class="sniper-stage" id="fallingStage">
       <div class="sniper-gun" id="sniperGun">🔫</div>
@@ -2460,7 +2465,8 @@ procrastinate	trì hoãn</div>
   // actionBtn is an optional pre-built <button> to append (e.g. a "create new" CTA).
   function emptyState(icon, message, actionBtn) {
     const el = createElement('div', 'empty-state');
-    el.innerHTML = `${icon ? `<div class="icon">${icon}</div>` : ''}<p>${message}</p>`;
+    el.innerHTML = `${icon ? `<div class="icon">${icon}</div>` : ''}<p></p>`;
+    el.querySelector('p').textContent = message;
     if (actionBtn) el.appendChild(actionBtn);
     return el;
   }
@@ -3449,6 +3455,7 @@ procrastinate	trì hoãn</div>
   const SNIPER_MAX_ON_SCREEN = 2;   // cap simultaneous enemies so it never feels overwhelming
   const SNIPER_SPAWN_GAP_MS = 2600; // minimum time between spawns, on top of the on-screen cap
   const SNIPER_FALL_SPEED = 22;     // px/sec, constant (per the user's choice — no ramp-up)
+  const SNIPER_HINT_COOLDOWN_MS = 4000; // cooldown between manual hint uses
   let sniperState = null;
 
   function buildSniperEnemy(entry) {
@@ -3474,11 +3481,12 @@ procrastinate	trì hoãn</div>
   function startFallingGame(words) {
     sniperState = {
       pool: shuffleArray(words), idx: 0, score: 0, lives: SNIPER_MAX_LIVES, combo: 0, maxCombo: 0,
-      active: [], rafId: null, spawnTimer: null, lastTick: null, lastSpawnAt: 0
+      active: [], rafId: null, spawnTimer: null, lastTick: null, lastSpawnAt: 0, lastHintAt: 0
     };
     DOM.fallingScoreText.textContent = '0 điểm';
     DOM.fallingLives.textContent = '❤️'.repeat(SNIPER_MAX_LIVES);
     DOM.sniperComboText.textContent = '';
+    DOM.btnSniperHint.disabled = false;
     DOM.fallingStage.querySelectorAll('.sniper-enemy, .sniper-bullet, .sniper-particle').forEach(el => el.remove());
     goTo('game-falling');
     sniperState.stageHeight = DOM.fallingStage.clientHeight || 380;
@@ -3558,6 +3566,10 @@ procrastinate	trì hoãn</div>
     }
 
     spawnSniperEnemy();
+
+    const hintReady = !sniperState.lastHintAt || now - sniperState.lastHintAt >= SNIPER_HINT_COOLDOWN_MS;
+    const shouldDisableHint = !hintReady || sniperState.active.length === 0;
+    if (DOM.btnSniperHint.disabled !== shouldDisableHint) DOM.btnSniperHint.disabled = shouldDisableHint;
 
     if (sniperState.idx >= sniperState.pool.length && sniperState.active.length === 0) {
       endSniperGame(true);
@@ -3691,6 +3703,26 @@ procrastinate	trì hoãn</div>
     }
   });
   DOM.sniperKeyCatcher.addEventListener('blur', () => { DOM.sniperTapHint.style.display = ''; });
+
+  // Manual hint: reveal one more (unrevealed) letter on whichever enemy is furthest
+  // along/closest to the bottom, mirroring the Hangman hint. Short cooldown so it
+  // can't be spammed into trivializing the game, but no score penalty.
+  document.getElementById('btnSniperHint').addEventListener('click', () => {
+    if (!sniperState || sniperState.active.length === 0) return;
+    const now = performance.now();
+    if (sniperState.lastHintAt && now - sniperState.lastHintAt < SNIPER_HINT_COOLDOWN_MS) return;
+
+    const target = sniperState.active.reduce((a, b) => (a.y > b.y ? a : b));
+    const hiddenIdxs = target.word.split('').map((c, i) => i).filter(i => !target.typed.has(i));
+    if (hiddenIdxs.length === 0) return;
+
+    const pick = hiddenIdxs[Math.floor(Math.random() * hiddenIdxs.length)];
+    target.revealed.add(pick);
+    target.el.querySelector('.letters').innerHTML = renderSniperLetters(target);
+
+    sniperState.lastHintAt = now;
+    DOM.sniperKeyCatcher.focus();
+  });
 
   wireGameExit('btnExitFalling', () => {
     if (sniperState) { cancelAnimationFrame(sniperState.rafId); sniperState = null; }
