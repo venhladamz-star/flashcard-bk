@@ -47,7 +47,7 @@
     --line:#dde1e6;
     --line-solid:#c9ced6;
     --ink:#2b2f36;
-    --ink-dim:#5a6270;
+    --ink-dim:#3d444f;
     --ink-faint:#8a92a0;
     --accent:#3b6dd1;
     --accent-soft:#3b76e11c;
@@ -355,6 +355,25 @@
   }
   .empty-state .icon{ font-size:30px; margin-bottom:10px; opacity:.6 }
   .empty-state p{ font-size:13px; margin:0 0 14px; }
+
+  .offline-notice{
+    position:fixed; left:50%; bottom:20px; z-index:200;
+    transform:translate(-50%, 20px);
+    max-width:min(92vw, 420px);
+    background: var(--glass-fill), var(--bg-elev-2);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    border:1px solid var(--bad);
+    color:var(--ink);
+    font-size:12.5px; line-height:1.5;
+    padding:12px 16px;
+    border-radius:12px;
+    box-shadow:var(--glass-shadow);
+    opacity:0;
+    transition: opacity .3s ease, transform .3s ease;
+    pointer-events:none;
+  }
+  .offline-notice.show{ opacity:1; transform:translate(-50%, 0); }
 
   /* ---------- Buttons ---------- */
   .btn{
@@ -1938,31 +1957,53 @@ procrastinate	trì hoãn</div>
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-  import {
-    getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, 
-    setPersistence, browserLocalPersistence
-  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-  import {
-    getFirestore, doc, getDoc, setDoc, onSnapshot
-  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+  // Firebase is loaded dynamically and guarded: this app is local-first (all data
+  // lives in localStorage via loadLocalData/DATA below), and cloud sync/sign-in are
+  // an enhancement on top of that. A static top-level `import` would throw and halt
+  // this entire module — including the purely local features — if the Firebase CDN
+  // is ever unreachable (outage, corporate firewall, ad-blocker false positive,
+  // offline use, etc). Loading it dynamically inside try/catch means a failure here
+  // only disables cloud sync (with a visible notice) instead of breaking everything.
+  let initializeApp, getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged,
+      setPersistence, browserLocalPersistence, getFirestore, doc, getDoc, setDoc, onSnapshot;
+  let fbApp = null, auth = null, db = null, provider = null;
+  let firebaseAvailable = false;
 
-  // 1. Firebase Config & Init
-  const firebaseConfig = {
-    apiKey: "AIzaSyCq8ou9D-tJQh8MZw5Fk8qzZ3zB50_KC78",
-    authDomain: "flashcard-vu.firebaseapp.com",
-    projectId: "flashcard-vu",
-    storageBucket: "flashcard-vu.firebasestorage.app",
-    messagingSenderId: "124097509936",
-    appId: "1:124097509936:web:c01b945658ef57041f4bf5"
-  };
+  async function initFirebase() {
+    try {
+      const [appMod, authMod, fsMod] = await Promise.all([
+        import("https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js"),
+        import("https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js"),
+        import("https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js")
+      ]);
+      ({ initializeApp } = appMod);
+      ({ getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } = authMod);
+      ({ getFirestore, doc, getDoc, setDoc, onSnapshot } = fsMod);
 
-  const fbApp = initializeApp(firebaseConfig);
-  const auth = getAuth(fbApp);
-  const db = getFirestore(fbApp);
-  const provider = new GoogleAuthProvider();
+      // 1. Firebase Config & Init
+      const firebaseConfig = {
+        apiKey: "AIzaSyCq8ou9D-tJQh8MZw5Fk8qzZ3zB50_KC78",
+        authDomain: "flashcard-vu.firebaseapp.com",
+        projectId: "flashcard-vu",
+        storageBucket: "flashcard-vu.firebasestorage.app",
+        messagingSenderId: "124097509936",
+        appId: "1:124097509936:web:c01b945658ef57041f4bf5"
+      };
 
-  setPersistence(auth, browserLocalPersistence).catch(console.error);
+      fbApp = initializeApp(firebaseConfig);
+      auth = getAuth(fbApp);
+      db = getFirestore(fbApp);
+      provider = new GoogleAuthProvider();
+      firebaseAvailable = true;
+
+      setPersistence(auth, browserLocalPersistence).catch(console.error);
+      return true;
+    } catch (e) {
+      console.error('Firebase failed to load — continuing in offline/local-only mode:', e);
+      firebaseAvailable = false;
+      return false;
+    }
+  }
 
   // 2. State App Variable
   const STORAGE_KEY = 'flashcard_data_v2';
@@ -2207,10 +2248,12 @@ procrastinate	trì hoãn</div>
   }
 
   async function pushRefFolders(updatedFolders) {
+    if (!firebaseAvailable) throw new Error('Không thể kết nối máy chủ. Hãy thử lại sau.');
     return setDoc(doc(db, 'shared', 'reference_pool'), { folders: updatedFolders });
   }
 
   async function pushGrammarLessons(updatedLessons) {
+    if (!firebaseAvailable) throw new Error('Không thể kết nối máy chủ. Hãy thử lại sau.');
     return setDoc(doc(db, 'shared', 'grammar_pool'), { lessons: updatedLessons });
   }
 
@@ -2471,6 +2514,17 @@ procrastinate	trì hoãn</div>
     el.querySelector('p').textContent = message;
     if (actionBtn) el.appendChild(actionBtn);
     return el;
+  }
+
+  // Shown once if Firebase fails to load (see initFirebase()). Non-blocking — the app
+  // is local-first, so this is just letting the person know sign-in/cloud sync are
+  // temporarily unavailable, not stopping them from using anything.
+  function showFirebaseUnavailableNotice() {
+    const el = createElement('div', 'offline-notice');
+    el.textContent = '⚠️ Không thể kết nối máy chủ đăng nhập/đồng bộ. Bạn vẫn dùng ứng dụng và lưu dữ liệu trên máy này bình thường.';
+    document.body.appendChild(el);
+    setTimeout(() => el.classList.add('show'), 10);
+    setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 8000);
   }
 
   function renderHome() {
@@ -4108,6 +4162,7 @@ procrastinate	trì hoãn</div>
   if (!savedDevice) openDeviceModal(false); // first run: ask which device this is
 
   document.getElementById('btnGoogleSignIn').addEventListener('click', async () => {
+    if (!firebaseAvailable) { alert('Không thể kết nối máy chủ đăng nhập lúc này. Bạn vẫn có thể dùng ứng dụng bình thường — dữ liệu được lưu trên máy này. Hãy thử tải lại trang sau.'); return; }
     try {
       await signInWithPopup(auth, provider);
       closeAccountModals();
@@ -4118,6 +4173,7 @@ procrastinate	trì hoãn</div>
   });
 
   document.getElementById('btnSignOut').addEventListener('click', async () => {
+    if (!firebaseAvailable) { closeAccountModals(); return; }
     await signOut(auth);
     closeAccountModals();
   });
@@ -4135,6 +4191,7 @@ procrastinate	trì hoãn</div>
     pendingLocalSnapshot = null; closeModal(DOM.mergeModal);
   });
 
+  function registerAuthListener() {
   onAuthStateChanged(auth, async (user) => {
     if (user) {
         currentUser = user;
@@ -4185,6 +4242,7 @@ procrastinate	trì hoãn</div>
     }
     refreshCurrentView();
   });
+  }
 
   // ---- Typewriter app title: types "Flashcard" / "Study with Khuê" one character at a
   // time, holds, deletes back to empty, then types the next word — repeating forever.
@@ -4256,7 +4314,7 @@ procrastinate	trì hoãn</div>
 
   // Init App
   renderHome();
-  attachGlobalReferenceListener(); 
+  initFirebase().then((ok) => { if (ok) { registerAuthListener(); attachGlobalReferenceListener(); } else { showFirebaseUnavailableNotice(); } });
 </script>
 </body>
 </html>
