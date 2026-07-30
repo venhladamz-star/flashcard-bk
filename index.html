@@ -15,6 +15,8 @@
     --ink-dim:#8b95a7;
     --ink-faint:#5a6478;
     --accent:#5b8def;
+    --accent-2:#8b5cf6;
+    --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
     --accent-soft:#5b8def22;
     --good:#3fb87f;
     --good-soft:#3fb87f22;
@@ -23,7 +25,7 @@
     --gold:#e8b544;
     --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
     --sans: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
-    --radius: 16px;
+    --radius: 18px;
     /* Glassmorphism surface tokens: a translucent gradient fill, a bright hairline
        border, and a blur strength — tuned per-theme below since dark glass needs a
        brighter border/stronger blur to read as "glass" while light glass needs the
@@ -41,30 +43,32 @@
   
   /* Light Mode Variables */
   body.light-mode {
-    --bg:#e9edf2;
-    --bg-elev:#fbfbfa;
-    --bg-elev-2:#f2f3f1;
-    --line:#dde1e6;
-    --line-solid:#c9ced6;
-    --ink:#2b2f36;
-    --ink-dim:#3d444f;
-    --ink-faint:#8a92a0;
-    --accent:#3b6dd1;
-    --accent-soft:#3b76e11c;
-    --good:#1f9752;
-    --good-soft:#dcfce7;
-    --bad:#cf4a37;
-    --bad-soft:#fee2e2;
-    --gold:#6b4f0c;
+    --bg:#EAE7D6;
+    --bg-elev:#fdfcf8;
+    --bg-elev-2:#e4f4ef;
+    --line:#dde3d5;
+    --line-solid:#c7d2c0;
+    --ink:#3d5249;
+    --ink-dim:#54695e;
+    --ink-faint:#8a9a8f;
+    --accent:#5D7B6F;
+    --accent-2:#4a8a6a;
+    --accent-gradient: linear-gradient(135deg, var(--accent), var(--accent-2));
+    --accent-soft:#5D7B6F1c;
+    --good:#2f8f5b;
+    --good-soft:#dcf3e4;
+    --bad:#c1543a;
+    --bad-soft:#fbe4dd;
+    --gold:#8a6a1a;
     --glass-fill: linear-gradient(155deg, #ffffffc0, #ffffff80);
-    --glass-border: #c3c9d1;
-    --glass-border-strong: #a8b0bc;
+    --glass-border: #a9c2ab;
+    --glass-border-strong: #8fae91;
     --glass-blur: 14px;
-    --glass-shadow: 0 8px 24px rgba(30,41,59,0.09), 0 1px 2px rgba(30,41,59,0.05), inset 0 1px 0 #ffffffb0;
+    --glass-shadow: 0 8px 24px rgba(61,82,73,0.10), 0 1px 2px rgba(61,82,73,0.06), inset 0 1px 0 #ffffffb0;
     --ambient-bg:
-      radial-gradient(circle at 15% 8%, #3b76e114 0%, transparent 45%),
-      radial-gradient(circle at 88% 12%, #16a34a10 0%, transparent 42%),
-      radial-gradient(circle at 50% 95%, #e8b54412 0%, transparent 45%);
+      radial-gradient(circle at 15% 8%, #B0D4B822 0%, transparent 45%),
+      radial-gradient(circle at 88% 12%, #D7F9FA33 0%, transparent 42%),
+      radial-gradient(circle at 50% 95%, #A4C3A222 0%, transparent 45%);
   }
 
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
@@ -177,12 +181,13 @@
   }
   .sidebar-brand .logo{
     width:34px;height:34px;
-    border-radius:10px;
-    background:var(--accent);
+    border-radius:11px;
+    background:var(--accent-gradient);
     color:#fff;
     display:flex;align-items:center;justify-content:center;
     font-size:16px;
     flex-shrink:0;
+    box-shadow: 0 3px 10px -3px color-mix(in srgb, var(--accent) 60%, transparent);
   }
   .sidebar-nav{ display:flex; flex-direction:column; gap:2px; flex:1; }
   .sidebar-item{
@@ -190,7 +195,7 @@
     align-items:center;
     gap:12px;
     padding:11px 12px;
-    border-radius:10px;
+    border-radius:12px;
     color:var(--ink-dim);
     cursor:pointer;
     font-size:14px;
@@ -275,7 +280,9 @@
     padding:16px 12px;
     text-align:center;
     box-shadow: var(--glass-shadow);
+    transition: transform .2s cubic-bezier(.34,1.4,.64,1), box-shadow .2s ease;
   }
+  .stat-card:hover{ transform:translateY(-2px); box-shadow: 0 10px 24px -8px color-mix(in srgb, var(--accent) 20%, transparent), var(--glass-shadow); }
   .stat-card .num{
     font-size:24px;
     font-weight:800;
@@ -323,9 +330,9 @@
     gap:14px;
     cursor:pointer;
     box-shadow: var(--glass-shadow);
-    transition: filter .2s ease, transform .15s cubic-bezier(.34,1.4,.64,1);
+    transition: filter .2s ease, transform .2s cubic-bezier(.34,1.4,.64,1), box-shadow .2s ease;
   }
-  .continue-card:hover { filter: brightness(1.1); }
+  .continue-card:hover { filter: brightness(1.1); transform:translateY(-2px); box-shadow: 0 14px 30px -10px color-mix(in srgb, var(--accent) 30%, transparent), var(--glass-shadow); }
   .continue-card:active { transform: scale(.985); }
   .continue-card .info h3{
     margin:0 0 6px;
@@ -340,7 +347,7 @@
   .continue-card .go{
     width:44px;height:44px;
     border-radius:50%;
-    background:var(--accent);
+    background:var(--accent-gradient);
     color:#fff;
     display:flex;align-items:center;justify-content:center;
     font-size:18px;
@@ -382,16 +389,21 @@
     justify-content:center;
     gap:6px;
     padding:12px 18px;
-    border-radius:10px;
+    border-radius:12px;
     border:none;
     font-family:var(--sans);
     font-size:14px;
     font-weight:600;
     cursor:pointer;
-    transition:transform .15s cubic-bezier(.34,1.4,.64,1), opacity .15s, background 0.3s, color 0.3s, border-color 0.3s;
+    transition:transform .15s cubic-bezier(.34,1.4,.64,1), opacity .15s, background 0.3s, color 0.3s, border-color 0.3s, box-shadow .2s ease;
   }
   .btn:active{ transform:scale(.96) }
-  .btn.primary{ background:var(--accent); color:#fff; }
+  .btn.primary{
+    background:var(--accent-gradient);
+    color:#fff;
+    box-shadow: 0 4px 14px -4px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  .btn.primary:hover{ transform:translateY(-1px); box-shadow: 0 6px 18px -4px color-mix(in srgb, var(--accent) 65%, transparent); }
   .btn.ghost{
     color:var(--ink);
     border:1px solid var(--glass-border);
@@ -417,9 +429,9 @@
     gap:14px;
     cursor:pointer;
     box-shadow: var(--glass-shadow);
-    transition: background .2s ease, transform .15s cubic-bezier(.34,1.4,.64,1);
+    transition: background .2s ease, transform .2s cubic-bezier(.34,1.4,.64,1), box-shadow .2s ease, border-color .2s ease;
   }
-  .folder-card:hover { background: var(--glass-fill), var(--bg-elev-2); }
+  .folder-card:hover { background: var(--glass-fill), var(--bg-elev-2); transform:translateY(-2px); box-shadow: 0 12px 28px -8px color-mix(in srgb, var(--accent) 25%, transparent), var(--glass-shadow); border-color:var(--glass-border-strong); }
   .folder-card:active { transform: scale(.985); }
   .folder-card .emoji{
     width:44px;height:44px;
@@ -474,7 +486,7 @@
   input.name-input{
     width:100%;
     padding:12px 14px;
-    border-radius:10px;
+    border-radius:12px;
     border:1px solid var(--glass-border);
     color:var(--ink);
     font-size:15px;
@@ -487,7 +499,7 @@
   textarea.paste-box{
     width:100%;
     min-height:200px;
-    border-radius:10px;
+    border-radius:12px;
     border:1px solid var(--glass-border);
     padding:14px;
     font-family:var(--mono);
@@ -933,11 +945,12 @@
     border-radius:var(--radius);
     padding:16px 14px;
     cursor:pointer;
-    transition: background 0.2s, border-color 0.2s;
+    transition: background 0.2s, border-color 0.2s, transform .2s cubic-bezier(.34,1.4,.64,1), box-shadow .2s ease;
     box-shadow: var(--glass-shadow);
   }
-  .game-card:hover{ background: var(--glass-fill), var(--bg-elev-2); border-color:var(--accent); }
-  .game-card .emoji{ font-size:26px; margin-bottom:10px; }
+  .game-card:hover{ background: var(--glass-fill), var(--bg-elev-2); border-color:var(--accent); transform:translateY(-2px); box-shadow: 0 12px 28px -8px color-mix(in srgb, var(--accent) 25%, transparent), var(--glass-shadow); }
+  .game-card:hover .emoji{ transform:scale(1.12) rotate(-4deg); }
+  .game-card .emoji{ font-size:26px; margin-bottom:10px; display:inline-block; transition:transform .25s cubic-bezier(.34,1.6,.64,1); }
   .game-card h4{ margin:0 0 4px; font-size:14px; font-weight:700; }
   .game-card p{ margin:0 0 10px; font-size:11.5px; color:var(--ink-dim); line-height:1.4; min-height:31px; }
   .game-card .score{
@@ -1208,40 +1221,6 @@
     border-bottom:3px solid var(--accent);
     color:var(--accent);
   }
-
-  /* ---------- Game 7: Word wheel ---------- */
-  .wheel-stage{
-    display:flex; flex-direction:column; align-items:center;
-    margin:10px 0 24px;
-  }
-  .wheel-outer{
-    width:220px; height:220px;
-    border-radius:50%;
-    border:6px solid var(--bg-elev);
-    background: conic-gradient(var(--accent-soft) 0% 25%, var(--good-soft) 25% 50%, var(--bad-soft) 50% 75%, var(--accent-soft) 75% 100%);
-    display:flex; align-items:center; justify-content:center;
-    position:relative;
-    transition: transform 3s cubic-bezier(.17,.89,.32,1.1);
-  }
-  .wheel-pointer{
-    position:absolute; top:-14px; left:50%; transform:translateX(-50%);
-    font-size:26px;
-  }
-  .wheel-center{
-    width:70%; height:70%;
-    border-radius:50%;
-    background:var(--bg-elev);
-    display:flex; align-items:center; justify-content:center;
-    font-size:13px; color:var(--ink-dim);
-    text-align:center;
-    padding:10px;
-  }
-  .wheel-result-card{
-    margin-top:20px;
-    text-align:center;
-    display:none;
-  }
-  .wheel-result-card.show{ display:block; }
 
   /* Custom Admin Section in Reference Tab */
   .admin-auth-row {
@@ -1662,28 +1641,6 @@
     <div class="quiz-options" id="blankOptions"></div>
   </div>
 
-  <!-- ============ GAME 7: VÒNG QUAY MAY MẮN (WORD WHEEL) ============ -->
-  <div class="view" id="view-game-wheel">
-    <div class="game-header">
-      <div class="back-btn" id="btnExitWheel">‹ Thoát</div>
-      <div class="pos-indicator" style="margin-bottom:0;" id="wheelScoreText">0 điểm</div>
-    </div>
-    <div class="wheel-stage">
-      <div class="wheel-outer" id="wheelOuter">
-        <div class="wheel-pointer">🔻</div>
-        <div class="wheel-center" id="wheelCenter">Bấm Quay để bắt đầu</div>
-      </div>
-    </div>
-    <button class="btn primary full" id="btnWheelSpin">🎡 Quay</button>
-    <div class="wheel-result-card" id="wheelResultCard">
-      <div class="quiz-card" style="margin-top:16px;">
-        <span class="tag" id="wheelResultTag">Đoán nghĩa</span>
-        <div class="prompt" id="wheelResultPrompt">word</div>
-      </div>
-      <div class="quiz-options" id="wheelOptions"></div>
-    </div>
-  </div>
-
   <!-- ============ TAB: THAM KHẢO ============ -->
   <div class="view" id="view-reference">
     <!-- Admin Trigger & Status Auth -->
@@ -2016,7 +1973,7 @@ procrastinate	trì hoãn</div>
   const VIEWS = [
     'home', 'created', 'create', 'edit-folder', 'study', 'quiz', 'done', 'grammar', 'grammar-lesson', 'grammar-edit',
     'reference', 'learned-words', 'due-words', 'games',
-    'game-match', 'game-hangman', 'game-scramble', 'game-speed', 'game-falling', 'game-blank', 'game-wheel'
+    'game-match', 'game-hangman', 'game-scramble', 'game-speed', 'game-falling', 'game-blank'
   ];
   
   let DATA = loadLocalData();
@@ -2764,7 +2721,7 @@ procrastinate	trì hoãn</div>
   }
 
   // ---- Shared multiple-choice UI helpers ----
-  // Used by the Quiz Engine and by the Speed/Blank/Wheel games — all of them show
+  // Used by the Quiz Engine and by the Speed/Blank games — all of them show
   // "N choices, pick one" screens that only differ in prompt/correct-answer text and
   // what happens after picking, so the rendering + reveal logic lives here once.
   function renderMultipleChoice(container, options, onPick) {
@@ -3039,8 +2996,7 @@ procrastinate	trì hoãn</div>
     { id: 'scramble', emoji: '🔤', name: 'Sắp xếp chữ', desc: 'Xếp lại các chữ cái bị xáo trộn cho đúng từ.', minWords: 1 },
     { id: 'speed', emoji: '⚡', name: 'Đua thời gian', desc: 'Chọn nhanh nghĩa đúng trước khi hết giờ.', minWords: 4 },
     { id: 'falling', emoji: '🎯', name: 'Bắn chữ phản xạ', desc: 'Gõ đúng từng ký tự để bắn hạ quái vật trước khi chạm đáy.', minWords: 1 },
-    { id: 'blank', emoji: '📝', name: 'Điền chỗ trống', desc: 'Chọn từ đúng để hoàn thành câu ví dụ.', minWords: 4 },
-    { id: 'wheel', emoji: '🎡', name: 'Vòng quay', desc: 'Quay ngẫu nhiên 1 từ, trả lời đúng để ghi điểm.', minWords: 4 }
+    { id: 'blank', emoji: '📝', name: 'Điền chỗ trống', desc: 'Chọn từ đúng để hoàn thành câu ví dụ.', minWords: 4 }
   ];
   const GAME_SCORES_KEY = 'gameHighScores';
   if (!DATA[GAME_SCORES_KEY]) DATA[GAME_SCORES_KEY] = {};
@@ -3115,7 +3071,7 @@ procrastinate	trì hoãn</div>
     lastPlayedGameId = gameId; lastPlayedWords = words;
     const starters = {
       match: startMatchGame, hangman: startHangmanGame, scramble: startScrambleGame,
-      speed: startSpeedGame, falling: startFallingGame, blank: startBlankGame, wheel: startWheelGame
+      speed: startSpeedGame, falling: startFallingGame, blank: startBlankGame
     };
     starters[gameId](shuffleArray(words));
   }
@@ -3831,79 +3787,6 @@ procrastinate	trì hoãn</div>
   }
 
   wireGameExit('btnExitBlank', () => clearTimeout(blankState?.nextQuestionTimeout));
-
-  // ---- Game 7: Vòng quay may mắn (Word Wheel) ----
-  let wheelState = null; // { pool, spinsLeft, score, currentEntry }
-  let wheelSpinTimeout = null;
-  const WHEEL_TOTAL_SPINS = 8;
-  function startWheelGame(words) {
-    wheelState = { pool: words, spinsLeft: WHEEL_TOTAL_SPINS, score: 0, spinning: false };
-    DOM.wheelScoreText.textContent = '0 điểm';
-    DOM.wheelCenter.textContent = `Còn ${WHEEL_TOTAL_SPINS} lượt quay`;
-    DOM.wheelResultCard.classList.remove('show');
-    DOM.wheelOuter.style.transform = 'rotate(0deg)';
-    DOM.btnWheelSpin.disabled = false;
-    goTo('game-wheel');
-    stopActiveGameTimers = () => clearTimeout(wheelSpinTimeout);
-  }
-
-  document.getElementById('btnWheelSpin').addEventListener('click', () => {
-    if (!wheelState || wheelState.spinning || wheelState.spinsLeft <= 0) return;
-    wheelState.spinning = true;
-    DOM.btnWheelSpin.disabled = true;
-    DOM.wheelResultCard.classList.remove('show');
-
-    const extraTurns = 4 + Math.floor(Math.random() * 3);
-    const randomOffset = Math.floor(Math.random() * 360);
-    const currentRotation = wheelState.currentRotation || 0;
-    const newRotation = currentRotation + extraTurns * 360 + randomOffset;
-    wheelState.currentRotation = newRotation;
-    DOM.wheelOuter.style.transform = `rotate(${newRotation}deg)`;
-
-    clearTimeout(wheelSpinTimeout);
-    wheelSpinTimeout = setTimeout(() => {
-      wheelState.spinning = false;
-      wheelState.spinsLeft--;
-      DOM.wheelCenter.textContent = wheelState.spinsLeft > 0 ? `Còn ${wheelState.spinsLeft} lượt quay` : 'Hết lượt quay';
-      const entry = wheelState.pool[Math.floor(Math.random() * wheelState.pool.length)];
-      showWheelQuestion(entry);
-    }, 3000);
-  });
-
-  function showWheelQuestion(entry) {
-    wheelState.currentEntry = entry;
-    wheelState.answered = false;
-    const askMeaning = Math.random() < 0.5;
-    const answerField = askMeaning ? 'nghia' : 'tu';
-    wheelState.answerField = answerField;
-
-    DOM.wheelResultTag.textContent = askMeaning ? 'Đoán nghĩa' : 'Đoán từ tiếng Anh';
-    DOM.wheelResultPrompt.textContent = entry[askMeaning ? 'tu' : 'nghia'];
-
-    const distractors = pickDistractors(wheelState.pool, entry, answerField, 3);
-    const options = shuffleArray([entry[answerField], ...distractors]);
-    renderMultipleChoice(DOM.wheelOptions, options, (opt, btn) => answerWheelQuestion(btn, opt));
-    DOM.wheelResultCard.classList.add('show');
-  }
-
-  function answerWheelQuestion(btnEl, opt) {
-    if (wheelState.answered) return;
-    wheelState.answered = true;
-    const entry = wheelState.currentEntry;
-    const correctAnswer = entry[wheelState.answerField];
-    const isCorrect = opt === correctAnswer;
-    updateWordStatus(null, entry, isCorrect ? 'good' : 'bad');
-    if (isCorrect) { wheelState.score += 10; DOM.wheelScoreText.textContent = `${wheelState.score} điểm`; }
-    revealMultipleChoiceAnswer(DOM.wheelOptions, correctAnswer, btnEl);
-
-    if (wheelState.spinsLeft <= 0) {
-      wheelSpinTimeout = setTimeout(() => showGameResult('wheel', wheelState.score, `Hoàn thành ${WHEEL_TOTAL_SPINS} lượt quay, ${wheelState.score} điểm!`), 900);
-    } else {
-      DOM.btnWheelSpin.disabled = false;
-    }
-  }
-
-  wireGameExit('btnExitWheel', () => clearTimeout(wheelSpinTimeout));
 
   // 8. Event Listeners 
   DOM.navDropdownItems.forEach(item => item.addEventListener('click', () => { goTo(item.dataset.tab); closeNavDropdown(); }));
