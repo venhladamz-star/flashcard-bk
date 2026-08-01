@@ -550,6 +550,7 @@
     overflow-x:auto;
     -webkit-overflow-scrolling:touch;
     user-select:all;
+    -webkit-user-select:all;
     cursor:text;
   }
   .sample-text-hint{
@@ -619,6 +620,7 @@
     position:absolute;
     inset:0;
     backface-visibility:hidden;
+    -webkit-backface-visibility:hidden;
     border-radius:18px;
     border:1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
@@ -1125,6 +1127,7 @@
     transition: filter .1s ease;
     white-space:nowrap;
     max-width:none;
+    overflow:hidden;
   }
   .sniper-enemy .meaning{
     font-size:12px;
@@ -1395,6 +1398,202 @@
     border:1px solid var(--glass-border);
     border-radius:12px; padding:16px; min-height:200px;
   }
+
+  /* Toast Notification System */
+  .toast-container{
+    position:fixed;
+    top:20px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:300;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    pointer-events:none;
+    max-width:min(92vw, 420px);
+    width:100%;
+  }
+  .toast{
+    background: var(--glass-fill), var(--bg-elev);
+    -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 4px)) saturate(150%);
+    backdrop-filter: blur(calc(var(--glass-blur) + 4px)) saturate(150%);
+    border:1px solid var(--glass-border);
+    border-radius:12px;
+    padding:12px 16px;
+    box-shadow:var(--glass-shadow);
+    font-size:13.5px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    opacity:0;
+    transform:translateY(-12px) scale(0.96);
+    transition: opacity .35s ease, transform .35s cubic-bezier(.34,1.4,.64,1);
+    pointer-events:auto;
+    cursor:default;
+  }
+  .toast.show{ opacity:1; transform:translateY(0) scale(1); }
+  .toast.success{ border-color:var(--good); color:var(--good); background: var(--good-soft), var(--bg-elev); }
+  .toast.error{ border-color:var(--bad); color:var(--bad); background: var(--bad-soft), var(--bg-elev); }
+  .toast.info{ border-color:var(--accent); color:var(--accent); background: var(--accent-soft), var(--bg-elev); }
+  .toast .icon{ font-size:16px; flex-shrink:0; }
+
+
+  /* Swipe gesture visuals */
+  .flip-stage{ touch-action:pan-y; }
+  .flip-card.swiping{ transition:none !important; }
+  .flip-card.swipe-left{ animation:swipeOutLeft .35s cubic-bezier(.4,0,.2,1) forwards; }
+  .flip-card.swipe-right{ animation:swipeOutRight .35s cubic-bezier(.4,0,.2,1) forwards; }
+  @keyframes swipeOutLeft{ to{ transform:translateX(-120%) rotate(-12deg); opacity:0; } }
+  @keyframes swipeOutRight{ to{ transform:translateX(120%) rotate(12deg); opacity:0; } }
+  .swipe-overlay{
+    position:absolute;
+    inset:0;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+    font-weight:800;
+    opacity:0;
+    pointer-events:none;
+    z-index:3;
+    transition:opacity .15s ease;
+  }
+  .swipe-overlay.left{ background:var(--bad-soft); color:var(--bad); }
+  .swipe-overlay.right{ background:var(--good-soft); color:var(--good); }
+  .swipe-overlay.show{ opacity:1; }
+
+
+  /* Virtual scrolling: browser-native content-visibility */
+  .folder-card, .word-item, .lesson-card, .edit-word-row, .game-card, .source-option, .mode-option{
+    content-visibility:auto;
+    contain-intrinsic-size:auto 72px;
+  }
+  .word-item{ contain-intrinsic-size:auto 56px; }
+  .edit-word-row{ contain-intrinsic-size:auto 90px; }
+  .lesson-card{ contain-intrinsic-size:auto 56px; }
+  .game-card{ contain-intrinsic-size:auto 120px; }
+
+
+  /* Skeleton loading shimmer */
+  .skeleton{ background:var(--bg-elev-2); border-radius:12px; position:relative; overflow:hidden; }
+  .skeleton::after{
+    content:''; position:absolute; inset:0;
+    background:linear-gradient(90deg, transparent, var(--glass-fill), transparent);
+    background-size:200% 100%;
+    animation:skeleton-shimmer 1.4s infinite;
+  }
+  @keyframes skeleton-shimmer{ 0%{ background-position:-200% 0; } 100%{ background-position:200% 0; } }
+  .skeleton-card{ height:64px; margin-bottom:10px; }
+  .skeleton-text{ height:14px; border-radius:6px; margin-bottom:8px; }
+  .skeleton-text.short{ width:40%; }
+  .skeleton-text.medium{ width:70%; }
+
+
+  .keyhint-grid{ display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; margin-top:12px; }
+  .keyhint-item{ display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; background:var(--bg-elev-2); font-size:13px; }
+  .keyhint-item kbd{ font-family:var(--mono); font-size:12px; font-weight:700; background:var(--bg-elev); border:1px solid var(--line-solid); border-radius:6px; padding:3px 8px; min-width:32px; text-align:center; color:var(--accent); }
+  .keyhint-item span{ color:var(--ink-dim); }
+
+
+  /* Toggle switch */
+  .toggle-row{ display:flex; align-items:center; justify-content:space-between; padding:10px 0; }
+  .toggle-row .label{ font-size:13.5px; font-weight:600; color:var(--ink); }
+  .toggle-row .sub{ font-size:11.5px; color:var(--ink-faint); margin-top:2px; }
+  .toggle-switch{ position:relative; width:44px; height:26px; border-radius:99px; background:var(--bg-elev-2); border:1px solid var(--line-solid); cursor:pointer; transition:background .2s, border-color .2s; flex-shrink:0; }
+  .toggle-switch.on{ background:var(--accent); border-color:var(--accent); }
+  .toggle-switch::after{ content:''; position:absolute; top:2px; left:2px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.2); transition:transform .2s cubic-bezier(.34,1.4,.64,1); }
+  .toggle-switch.on::after{ transform:translateX(18px); }
+
+
+  /* Auto-Image Fetcher */
+  .card-image-wrap{
+    position:relative;
+    width:100%;
+    max-width:220px;
+    aspect-ratio:4/3;
+    border-radius:14px;
+    overflow:hidden;
+    margin:14px auto 6px;
+    border:1px solid var(--glass-border);
+    box-shadow:var(--glass-shadow);
+    background:var(--bg-elev-2);
+    opacity:0;
+    max-height:0;
+    transition:opacity .35s ease, max-height .35s ease, margin .35s ease;
+  }
+  .card-image-wrap.show{
+    opacity:1;
+    max-height:180px;
+  }
+  .card-image-wrap img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+    transition:opacity .3s ease;
+  }
+  .card-image-wrap .img-placeholder{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--ink-faint);
+    font-size:11px;
+    font-family:var(--mono);
+  }
+  .card-image-wrap .img-fallback{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:48px;
+    opacity:0.15;
+  }
+  .card-image-wrap .img-loader{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .img-loader::after{
+    content:'';
+    width:24px;
+    height:24px;
+    border:2px solid var(--ink-faint);
+    border-top-color:var(--accent);
+    border-radius:50%;
+    animation:img-spin .8s linear infinite;
+  }
+  @keyframes img-spin{ to{ transform:rotate(360deg); } }
+  .card-image-toggle{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:10px;
+  }
+  .card-image-toggle .label{ font-size:12px; color:var(--ink-dim); }
+  .edit-image-input{
+    width:100%;
+    padding:9px 10px;
+    border-radius:8px;
+    border:1px solid var(--glass-border);
+    color:var(--ink);
+    font-size:12px;
+    font-family:var(--sans);
+    outline:none;
+    margin-top:6px;
+  }
+  .edit-image-input:focus{ border-color:var(--accent); }
+  .edit-image-input::placeholder{ color:var(--ink-faint); }
+
+  #cardImage{ opacity:0; transition:opacity .3s ease; width:100%; height:100%; object-fit:cover; display:block; }
+  #cardImage[src]{ opacity:1; }
+
 </style>
 </head>
 <body>
@@ -1525,7 +1724,7 @@
     </div>
     <div class="section-title">📐 Ngữ pháp (đăng bởi Admin)</div>
     <div id="lessonListWrap">
-      <div id="lessonList"><div class="empty-state"><p>Đang tải nội dung ngữ pháp...</p></div></div>
+      <div id="lessonList"><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div></div>
     </div>
     <p style="text-align:center; color:var(--ink-faint); font-size:11.5px; margin-top:18px;">Là Admin? Xác thực ở tab "Tham khảo" để đăng/sửa nội dung ngữ pháp tại đây.</p>
   </div>
@@ -1733,7 +1932,7 @@
     <!-- Natural List Slot -->
     <div class="section-title">✨ Bộ từ vựng từ Admin (Mọi người tham khảo)</div>
     <div class="folder-list" id="refFolderList">
-      <div class="empty-state"><p>Đang tải dữ liệu bộ từ vựng tham khảo...</p></div>
+      <div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div>
     </div>
   </div>
 
@@ -1751,14 +1950,15 @@
         <p>Bôi đen dòng mẫu dưới đây để copy, hoặc bấm nút chèn thẳng vào ô nhập:</p>
         <button type="button" class="btn-insert-sample" id="btnInsertSample">Chèn ví dụ mẫu</button>
       </div>
-      <div class="sample-text-block" id="sampleTextBlock">serendipity	tình cờ may mắn	/ˌserənˈdɪpɪti/	noun
+      <div class="sample-text-block" id="sampleTextBlock">serendipity	tình cờ may mắn	/ˌserənˈdɪpɪti/	noun	https://example.com/serendipity.jpg
 ambiguous	mơ hồ, không rõ	/æmˈbɪɡjuəs/	adjective
 procrastinate	trì hoãn</div>
-      <p class="sample-text-hint">Mỗi dòng 1 từ, theo thứ tự <b>Từ → Nghĩa → Phát âm (tuỳ chọn) → Loại từ (tuỳ chọn)</b>, cách nhau bằng phím Tab.</p>
+      <p class="sample-text-hint">Mỗi dòng 1 từ, theo thứ tự <b>Từ → Nghĩa → Phát âm (tuỳ chọn) → Loại từ (tuỳ chọn) → Link ảnh (tuỳ chọn)</b>, cách nhau bằng phím Tab.</p>
 
       <textarea class="paste-box" id="pasteArea" placeholder="Dán dữ liệu vào đây (từ Excel, Google Sheets, Word...) — mỗi dòng 1 từ, các cột cách nhau bằng phím Tab."></textarea>
       <div class="hint">
-        Cột <b>phát âm</b> để trống → app tự đọc bằng giọng máy. Dán link .mp3 vào đó → app phát file đó thay vì đọc máy.
+        Cột <b>phát âm</b> để trống → app tự đọc bằng giọng máy. Dán link .mp3 vào đó → app phát file đó thay vì đọc máy.<br>
+        Cột <b>link ảnh</b> để trống → app tự tìm ảnh từ Pexels. Dán link ảnh trực tiếp để dùng ảnh riêng.
       </div>
       <div class="err" id="createErr"></div>
     </div>
@@ -1787,7 +1987,10 @@ procrastinate	trì hoãn</div>
     <div class="study-header">
       <div class="back-btn" id="btnExitStudy">‹ Thoát</div>
       <div class="pos-indicator" id="posText">1 / 1</div>
-      <div class="shuffle-btn" id="btnShuffle" title="Trộn từ">🔀</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <div class="icon-btn" id="btnKeyHint" title="Phím tắt" style="width:32px;height:32px;font-size:14px;">⌨️</div>
+        <div class="shuffle-btn" id="btnShuffle" title="Trộn từ">🔀</div>
+      </div>
     </div>
     <div class="progress-track"><div class="progress-fill" id="progFill" style="width:0%"></div></div>
 
@@ -1796,15 +1999,23 @@ procrastinate	trì hoãn</div>
         <div class="face front">
           <span class="tag" id="cardTag">—</span>
           <button class="speak-btn" id="speakBtnFront" title="Phát âm">🔊</button>
+          <div class="card-image-wrap" id="cardImageWrap">
+            <div class="img-placeholder" id="cardImagePlaceholder">🖼️</div>
+            <div class="img-loader" id="cardImageLoader" style="display:none;"></div>
+            <img id="cardImage" src="" alt="">
+            <div class="img-fallback" id="cardImageFallback" style="display:none;">📷</div>
+          </div>
           <div class="term" id="termText">word</div>
           <div class="ipa" id="ipaText">/wɜːrd/</div>
-          <div class="flip-hint">chạm để xem nghĩa</div>
+          <div class="flip-hint">chạm để xem nghĩa · vuốt để đánh giá</div>
         </div>
         <div class="face back">
           <button class="speak-btn" id="speakBtnBack" title="Phát âm">🔊</button>
           <div class="meaning" id="meaningText">nghĩa</div>
-          <div class="flip-hint">chạm để quay lại</div>
+          <div class="flip-hint">chạm để quay lại · vuốt để đánh giá</div>
         </div>
+        <div class="swipe-overlay left" id="swipeOverlayLeft">❌ Chưa thuộc</div>
+        <div class="swipe-overlay right" id="swipeOverlayRight">✅ Đã thuộc</div>
       </div>
     </div>
 
@@ -1869,8 +2080,12 @@ procrastinate	trì hoãn</div>
 <!-- Device (phone/tablet/desktop) select modal -->
 <div class="modal-overlay" id="deviceModal">
   <div class="modal-sheet">
-    <h3>Bạn đang dùng thiết bị nào?</h3>
-    <p>Giao diện sẽ được tối ưu riêng cho lựa chọn của bạn. Có thể đổi lại sau trong mục Tài khoản.</p>
+    <h3>Chào mừng! 👋</h3>
+    <p>Hãy thiết lập ứng dụng cho lần đầu tiên sử dụng.</p>
+
+    <div class="settings-section" style="margin-top:0; padding-top:0; border-top:none;">
+      <div class="settings-label">Thiết bị của bạn</div>
+    </div>
     <div class="mode-option" data-device="phone">
       <div class="ic">📱</div>
       <div class="txt"><h4>Điện thoại</h4><p>Menu điều hướng ở phía dưới màn hình.</p></div>
@@ -1883,6 +2098,25 @@ procrastinate	trì hoãn</div>
       <div class="ic">💻</div>
       <div class="txt"><h4>Laptop / Máy tính</h4><p>Sidebar bên trái, tối ưu cho màn hình lớn.</p></div>
     </div>
+
+    <div class="settings-section">
+      <div class="settings-label">Tùy chọn</div>
+      <div class="toggle-row" id="deviceNotifToggleRow" style="display:none">
+        <div>
+          <div class="label">🔔 Nhắc ôn tập hàng ngày</div>
+          <div class="sub" id="deviceNotifSub">Nhận thông báo khi có từ cần ôn</div>
+        </div>
+        <div class="toggle-switch" id="deviceNotifToggle"></div>
+      </div>
+      <div class="toggle-row" id="deviceImgToggleRow" style="display:none">
+        <div>
+          <div class="label">🖼️ Ảnh minh họa từ vựng</div>
+          <div class="sub" id="deviceImgSub">Tự động tìm ảnh trên thẻ</div>
+        </div>
+        <div class="toggle-switch" id="deviceImgToggle"></div>
+      </div>
+    </div>
+
     <button class="btn ghost full" id="btnCancelDeviceModal" style="display:none;">Đóng</button>
   </div>
 </div>
@@ -1966,6 +2200,7 @@ procrastinate	trì hoãn</div>
       <div class="settings-label">Giao diện thiết bị</div>
       <button class="btn ghost full" id="btnOpenDeviceSettings">Đổi giao diện thiết bị</button>
     </div>
+
   </div>
 </div>
 
@@ -2080,10 +2315,9 @@ procrastinate	trì hoãn</div>
   let isAdminLogged = false;
   let editingRefId = null;
 
-  // Theme logic init — light mode is the default for first-time visitors (no saved
-  // preference yet); only an explicitly saved 'dark' choice switches away from it.
-  let isLightMode = localStorage.getItem('flashcard_theme') !== 'dark';
-  document.body.classList.toggle('light-mode', isLightMode);
+  // Theme logic init
+  let isLightMode = localStorage.getItem('flashcard_theme') === 'light';
+  if (isLightMode) document.body.classList.add('light-mode');
 
   function toggleTheme() {
     isLightMode = !isLightMode;
@@ -2114,6 +2348,8 @@ procrastinate	trì hoãn</div>
     get(cache, key) {
       if (key in cache) return cache[key];
       const el = document.getElementById(key);
+      if (!el && key !== 'views' && key !== 'navDropdownItems' && key !== 'sidebarNavItems')
+        console.warn('[Flashcard] Missing DOM element:', key);
       cache[key] = el;
       return el;
     }
@@ -2145,17 +2381,18 @@ procrastinate	trì hoãn</div>
   function saveData() {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
-      if (!currentUser) localStorage.setItem(SOURCE_KEY, 'local');
     } catch (e) {
       // Most common cause: localStorage quota exceeded (very large decks) or storage
       // blocked entirely (e.g. Safari private mode). Surface it once instead of letting
       // it throw silently out of whatever click handler triggered the save.
       console.error('Không thể lưu dữ liệu vào bộ nhớ máy:', e);
-      alert('Không thể lưu dữ liệu trên máy này (có thể bộ nhớ đã đầy hoặc trình duyệt đang chặn lưu trữ). Thay đổi vừa rồi có thể bị mất nếu bạn tải lại trang.');
+      showToast('Không thể lưu dữ liệu trên máy này. Thay đổi có thể bị mất khi tải lại.', 'error');
     }
     if (currentUser) {
       clearTimeout(saveDebounceTimer);
       saveDebounceTimer = setTimeout(() => pushToCloud(), 500);
+    } else {
+      localStorage.setItem(SOURCE_KEY, 'local');
     }
   }
 
@@ -2183,14 +2420,8 @@ procrastinate	trì hoãn</div>
         if (!DATA.folders) DATA.folders = [];
         if (!DATA.gameHighScores) DATA.gameHighScores = {};
         migrateWordIds(DATA); // in case this snapshot came from an older client/version without ids
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
-          localStorage.setItem(SOURCE_KEY, 'cloud');
-        } catch (e) {
-          // DATA is already updated in memory even if the local cache write fails, so
-          // don't let a quota error here skip the view refresh below — just log it.
-          console.error('Không thể lưu bản đồng bộ vào bộ nhớ máy:', e);
-        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(DATA));
+        localStorage.setItem(SOURCE_KEY, 'cloud');
         refreshCurrentView();
       }
     });
@@ -2224,7 +2455,12 @@ procrastinate	trì hoãn</div>
     else if (active === 'games') renderGameGrid();
   }
 
-  function generateUid(prefix) { return `${prefix || 'f'}_` + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function generateUid(prefix) {
+    const suffix = crypto.randomUUID
+      ? crypto.randomUUID().replace(/-/g, '').slice(0, 12)
+      : Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    return `${prefix || 'f'}_${suffix}`;
+  }
 
   // Generic modal open/close (all modals share .modal-overlay + 'active' class)
   function openModal(el) { el.classList.add('active'); }
@@ -2238,7 +2474,7 @@ procrastinate	trì hoãn</div>
     DOM.doneFolderName.textContent = sessionDisplayName;
     DOM.doneGood.textContent = good;
     DOM.doneBad.textContent = bad;
-    setDisplay(DOM.btnRedoBad, showRedoBad ? 'block' : 'none');
+    setDisplay(DOM.btnRedoBad, showRedoBad ? '' : 'none');
     goTo('done');
   }
 
@@ -2292,8 +2528,10 @@ procrastinate	trì hoãn</div>
   // If entry carries a _sourceFolder (set when mixing words from multiple decks, e.g. the
   // "learned words" review), that takes priority over the folder passed for the session.
   function updateWordStatus(folder, entry, status) {
-    const targetFolder = entry._sourceFolder || folder;
-    if (!targetFolder || !DATA.folders.some(f => f.id === targetFolder.id)) return;
+    const targetFolder = entry._sourceFolderId
+      ? DATA.folders.find(f => f.id === entry._sourceFolderId)
+      : folder;
+    if (!targetFolder) return;
     // Match by stable id when available (always true for words created/migrated after
     // the id field was introduced). Falls back to tu+nghia text-matching only for the
     // rare case of an entry that somehow still lacks an id, to avoid a hard failure.
@@ -2334,7 +2572,7 @@ procrastinate	trì hoãn</div>
 
   // ---- Lightweight Markdown -> HTML renderer (no external deps) ----
   function escapeHtml(s) {
-    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
   function renderInlineMd(s) {
     let out = escapeHtml(s);
@@ -2448,7 +2686,7 @@ procrastinate	trì hoãn</div>
             e.stopPropagation();
             if (confirm(`Xoá bài "${ls.title}" khỏi Ngữ pháp công khai?`)) {
               const updated = lessons.filter(l => l.id !== ls.id);
-              try { await pushGrammarLessons(updated); } catch (err) { alert('Lỗi xoá: ' + err.message); }
+              try { await pushGrammarLessons(updated); } catch (err) { showToast('Lỗi xoá: ' + err.message, 'error'); }
             }
           });
         }
@@ -2457,7 +2695,7 @@ procrastinate	trì hoãn</div>
       });
     }
 
-    DOM.btnOpenAddLesson.style.display = isAdminLogged ? 'block' : 'none';
+    DOM.btnOpenAddLesson.style.display = isAdminLogged ? 'inline-flex' : 'none';
   }
 
   function openLessonView(ls) {
@@ -2531,7 +2769,7 @@ procrastinate	trì hoãn</div>
     try {
       await pushGrammarLessons(updated);
       goTo('grammar');
-    } catch (err) { alert('Lỗi xoá: ' + err.message); }
+    } catch (err) { showToast('Lỗi xoá: ' + err.message, 'error'); }
   });
 
   DOM.btnBackToGrammar.addEventListener('click', () => goTo('grammar'));
@@ -2566,6 +2804,322 @@ procrastinate	trì hoãn</div>
     return el;
   }
 
+  /* Haptic Feedback */
+  function haptic(pattern) {
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (navigator.vibrate) navigator.vibrate(pattern);
+  }
+
+  /* Browser Notification */
+  const NOTIF_KEY = 'flashcard_notif_enabled';
+  const NOTIF_LAST_KEY = 'flashcard_notif_last_date';
+  // Notifications are always enabled (the old on/off toggle UI was removed) — this
+  // used to only be true if a leftover localStorage flag from that old UI happened to
+  // already be 'true', so a brand-new user would silently never get notified despite
+  // startNotifChecker() still polling every hour for nothing. Hardcoded to match intent.
+  let notifEnabled = true;
+  let notifCheckInterval = null;
+
+  async function requestNotifPermission() {
+    if (!('Notification' in window)) { showToast('Trình duyệt không hỗ trợ thông báo.', 'error'); return false; }
+    if (Notification.permission === 'granted') return true;
+    if (Notification.permission === 'denied') { showToast('Bạn đã chặn thông báo. Hãy bật lại trong cài đặt trình duyệt.', 'info'); return false; }
+    const perm = await Notification.requestPermission();
+    return perm === 'granted';
+  }
+
+  function sendDueNotification(dueCount) {
+    if (!notifEnabled || Notification.permission !== 'granted') return;
+    const today = todayStr();
+    if (localStorage.getItem(NOTIF_LAST_KEY) === today) return;
+    try {
+      new Notification('⏰ Flashcard — Ôn tập', {
+        body: `Bạn có ${dueCount} từ cần ôn tập hôm nay. Mở app để học ngay!`,
+        icon: 'https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f4da.png',
+        badge: 'https://cdn.jsdelivr.net/npm/emoji-datasource-apple/img/apple/64/1f4da.png',
+        tag: 'flashcard-due-' + today,
+        requireInteraction: false
+      });
+      localStorage.setItem(NOTIF_LAST_KEY, today);
+    } catch (e) { console.error('Notification error:', e); }
+  }
+
+  function checkAndNotify() {
+    if (!notifEnabled || document.visibilityState === 'visible') return;
+    const due = (DATA.folders || []).reduce((s, f) => s + f.words.filter(isWordDueForReview).length, 0);
+    if (due > 0) sendDueNotification(due);
+  }
+
+  function startNotifChecker() {
+    if (notifCheckInterval) clearInterval(notifCheckInterval);
+    notifCheckInterval = setInterval(checkAndNotify, 3600000); // 1 giờ
+  }
+
+  function stopNotifChecker() {
+    if (notifCheckInterval) { clearInterval(notifCheckInterval); notifCheckInterval = null; }
+  }
+
+
+
+
+
+  /* Auto-Image Fetcher — races Wikipedia (page lead-image thumbnail, generally the
+     highest-quality/most-relevant single source for real-world nouns) against Pexels
+     (stock photos, better coverage for abstract/non-encyclopedic words) at the same
+     time, per user's explicit choice — whichever source resolves first WITH an actual
+     image wins immediately; a source that resolves with "no image" does NOT short-
+     circuit the result, since the other source may still find one. Both try "word +
+     topic" first for relevance, falling back to word-only if that finds nothing. */
+  // Image fetcher always enabled — setting removed per user request
+  let imageEnabled = true;
+  const imageCache = new Map(); // Resolved-result cache for the session, keyed by "word|||topic"
+  const imageInFlight = new Map(); // In-progress-request cache, same key — lets a second
+                                    // caller for the same word await the first caller's
+                                    // already-running fetch instead of firing a duplicate
+                                    // API call (this happens for real: the currently-shown
+                                    // flashcard and the deck-wide prefetch both start from
+                                    // the same first word when a study session opens).
+  const PEXELS_API_KEY = 'qTQwe4SGR8j76j428kIm0fCnmwNBjV6msuIjSknSIa5PElMcDY4miI9Y';
+
+  async function pexelsSearch(query) {
+    const res = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`, {
+      headers: { Authorization: PEXELS_API_KEY }
+    });
+    if (!res.ok) { console.error('[Image] Pexels HTTP error:', res.status); return null; }
+    const data = await res.json();
+    const photo = data.photos?.[0];
+    return photo?.src?.medium || photo?.src?.original || null;
+  }
+
+  async function wikipediaSearch(query) {
+    // Two-step: find the best-matching page title (opensearch), then ask that page
+    // for its lead thumbnail. A direct title lookup on `query` itself would miss
+    // e.g. "apple fruit" not being a real page title even though "Apple" is.
+    const searchUrl = `https://en.wikipedia.org/w/api.php?action=opensearch&search=${encodeURIComponent(query)}&limit=1&namespace=0&format=json&origin=*`;
+    const searchRes = await fetch(searchUrl);
+    if (!searchRes.ok) { console.error('[Image] Wikipedia search HTTP error:', searchRes.status); return null; }
+    const searchData = await searchRes.json();
+    const title = searchData?.[1]?.[0];
+    if (!title) return null;
+
+    const thumbUrl = `https://en.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(title)}&prop=pageimages&format=json&origin=*&pithumbsize=400`;
+    const thumbRes = await fetch(thumbUrl);
+    if (!thumbRes.ok) { console.error('[Image] Wikipedia thumbnail HTTP error:', thumbRes.status); return null; }
+    const thumbData = await thumbRes.json();
+    const pages = thumbData.query?.pages;
+    if (!pages) return null;
+    const page = Object.values(pages)[0];
+    return page?.thumbnail?.source || null;
+  }
+
+  // Runs `searchFn(query)` against both "word topic" and "word" (in that order,
+  // stopping at the first non-null) — this is the per-source fallback chain each of
+  // Wikipedia/Pexels runs on its own before the two are raced against each other.
+  async function searchWithTopicFallback(searchFn, word, topic, label) {
+    try {
+      if (topic) {
+        const hit = await searchFn(`${word} ${topic}`);
+        if (hit) { console.log(`[Image] ${label} hit (word+topic):`, word, topic); return hit; }
+      }
+      const hit = await searchFn(word);
+      if (hit) console.log(`[Image] ${label} hit (word only):`, word);
+      return hit;
+    } catch (e) {
+      console.error(`[Image] ${label} error:`, e.message);
+      return null;
+    }
+  }
+
+  // Races two null-or-url promises: the first one to resolve WITH a real url wins
+  // immediately. If a promise resolves with null while the other is still pending,
+  // that null is not returned yet — we keep waiting on the other. Only returns null
+  // once BOTH have resolved and neither found anything.
+  function raceForFirstImage(promiseA, promiseB) {
+    return new Promise((resolve) => {
+      let settledCount = 0;
+      const onSettle = (result) => {
+        settledCount++;
+        if (result) { resolve(result); return; }
+        if (settledCount === 2) resolve(null);
+      };
+      promiseA.then(onSettle).catch(() => onSettle(null));
+      promiseB.then(onSettle).catch(() => onSettle(null));
+    });
+  }
+
+  async function fetchWordImage(word, topic) {
+    if (!word) return null;
+    const cacheKey = `${word}|||${topic || ''}`;
+    if (imageCache.has(cacheKey)) {
+      const cached = imageCache.get(cacheKey);
+      console.log('[Image] Cached:', cacheKey, '→', cached ? 'YES' : 'NO');
+      return cached;
+    }
+    if (imageInFlight.has(cacheKey)) {
+      console.log('[Image] Joining in-flight request:', cacheKey);
+      return imageInFlight.get(cacheKey);
+    }
+
+    console.log('[Image] Fetching:', cacheKey);
+    const promise = (async () => {
+      const imgUrl = await raceForFirstImage(
+        searchWithTopicFallback(wikipediaSearch, word, topic, 'Wikipedia'),
+        searchWithTopicFallback(pexelsSearch, word, topic, 'Pexels')
+      );
+      console.log('[Image] Result for', cacheKey, ':', imgUrl ? 'FOUND' : 'NOT FOUND');
+      imageCache.set(cacheKey, imgUrl);
+      imageInFlight.delete(cacheKey);
+      return imgUrl;
+    })();
+    imageInFlight.set(cacheKey, promise);
+    return promise;
+  }
+
+  // Incremented every time a new deck is opened; a running prefetch loop checks this
+  // before each write and bails out if it's gone stale (a newer deck was opened),
+  // so switching decks quickly never lets two prefetch runs interleave their results
+  // or double up on API calls for the same words.
+  let imagePrefetchGeneration = 0;
+  const IMAGE_PREFETCH_DELAY_MS = 350; // ≈170 words/hour processed — Wikipedia is
+  // effectively unlimited for this use case, but Pexels (200 req/hour free tier) is
+  // still fired for every word since the race can't cancel it mid-flight even when
+  // Wikipedia wins, so this delay is what keeps Pexels usage under its cap.
+
+  async function prefetchDeckImages(folder) {
+    if (!folder || !folder.words || !imageEnabled) return;
+    const myGeneration = ++imagePrefetchGeneration;
+    const pending = folder.words.filter(w => w.tu && !w.imageUrl);
+    if (pending.length === 0) return;
+    console.log(`[Image] Prefetching ${pending.length} images for deck "${folder.name}"`);
+
+    let fetchedSinceSave = 0;
+    for (const word of pending) {
+      if (imagePrefetchGeneration !== myGeneration) {
+        console.log('[Image] Prefetch abandoned — a different deck was opened');
+        return;
+      }
+      // Re-check imageUrl at fetch time, not just at filter time — the word being
+      // currently shown on the flashcard may have already fetched its own image via
+      // renderCardImage while this loop was still working through earlier words.
+      if (word.imageUrl) continue;
+      try {
+        const url = await fetchWordImage(word.tu, folder.name);
+        if (imagePrefetchGeneration !== myGeneration) return; // deck changed mid-fetch
+        if (url) {
+          word.imageUrl = url;
+          fetchedSinceSave++;
+          if (fetchedSinceSave >= 5) { saveData(); fetchedSinceSave = 0; }
+        }
+      } catch (e) {
+        console.error('[Image] Prefetch error for', word.tu, e.message);
+      }
+      await new Promise(r => setTimeout(r, IMAGE_PREFETCH_DELAY_MS));
+    }
+    if (imagePrefetchGeneration === myGeneration && fetchedSinceSave > 0) saveData();
+    console.log(`[Image] Prefetch finished for deck "${folder.name}"`);
+  }
+
+  async function renderCardImage(entry) {
+    const wrap = document.getElementById('cardImageWrap');
+    const img = document.getElementById('cardImage');
+    const placeholder = document.getElementById('cardImagePlaceholder');
+    const loader = document.getElementById('cardImageLoader');
+    const fallback = document.getElementById('cardImageFallback');
+    if (!wrap || !img) { console.warn('[Image] Missing wrap or img element'); return; }
+
+    // Reset all children visibility
+    img.style.opacity = '0';
+    img.src = '';
+    fallback.style.display = 'none';
+    loader.style.display = 'none';
+    placeholder.style.display = 'flex';
+    wrap.classList.remove('show');
+
+    console.log('[Image] renderCardImage called for:', entry.tu, 'enabled:', imageEnabled);
+    if (!imageEnabled) { console.log('[Image] Disabled, skipping'); return; }
+
+    // Show loader
+    placeholder.style.display = 'none';
+    loader.style.display = 'flex';
+    wrap.classList.add('show');
+
+    try {
+      let url = entry.imageUrl || null;
+      console.log('[Image] Cached URL:', url || 'none');
+      const targetFolder = entry._sourceFolderId
+        ? DATA.folders.find(f => f.id === entry._sourceFolderId)
+        : activeFolder;
+      if (!url && entry.tu) {
+        url = await fetchWordImage(entry.tu, targetFolder?.name);
+        if (url) {
+          entry.imageUrl = url;
+          if (targetFolder && entry.id) {
+            const target = targetFolder.words.find(w => w.id === entry.id);
+            if (target) { target.imageUrl = url; saveData(); }
+          }
+        }
+      }
+
+      loader.style.display = 'none';
+      if (url) {
+        console.log('[Image] Setting src:', url.substring(0, 60) + '...');
+        img.onload = () => { img.style.opacity = '1'; console.log('[Image] Loaded OK'); };
+        img.onerror = () => {
+          console.warn('[Image] img.onerror fired');
+          img.style.opacity = '0';
+          fallback.style.display = 'flex';
+        };
+        img.src = url;
+        wrap.classList.add('show');
+      } else {
+        console.log('[Image] No URL found, showing fallback');
+        fallback.style.display = 'flex';
+        wrap.classList.add('show');
+      }
+    } catch (e) {
+      console.error('[Image] renderCardImage error:', e);
+      loader.style.display = 'none';
+      fallback.style.display = 'flex';
+      wrap.classList.add('show');
+    }
+
+    // Prefetch next word — same deck, so it shares the current word's topic
+    if (queue && idx + 1 < queue.length) {
+      const next = queue[idx + 1];
+      const nextFolder = next?._sourceFolderId
+        ? DATA.folders.find(f => f.id === next._sourceFolderId)
+        : activeFolder;
+      const nextCacheKey = `${next?.tu}|||${nextFolder?.name || ''}`;
+      if (next && next.tu && !next.imageUrl && !imageCache.has(nextCacheKey)) {
+        fetchWordImage(next.tu, nextFolder?.name).then(url => { if (url) next.imageUrl = url; }).catch(() => {});
+      }
+    }
+  }
+
+
+
+
+
+  /* Toast Notification */
+  function showToast(message, type) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const icons = { success: '✅', error: '❌', info: 'ℹ️' };
+    const toast = createElement('div', 'toast ' + (type || 'info'));
+    toast.innerHTML = `<span class="icon">${icons[type] || icons.info}</span><span></span>`;
+    toast.querySelector('span:last-child').textContent = message;
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 350);
+    }, 2500);
+  }
+
+  function renderSkeletonList(container, count) {
+    container.replaceChildren();
+    for (let i = 0; i < count; i++) container.appendChild(createElement('div', 'skeleton skeleton-card'));
+  }
   // Builds the standard "nothing here yet" placeholder block used across every list view.
   // actionBtn is an optional pre-built <button> to append (e.g. a "create new" CTA).
   function emptyState(icon, message, actionBtn) {
@@ -2580,10 +3134,11 @@ procrastinate	trì hoãn</div>
   // is local-first, so this is just letting the person know sign-in/cloud sync are
   // temporarily unavailable, not stopping them from using anything.
   function showFirebaseUnavailableNotice() {
+    if (document.querySelector('.offline-notice')) return;
     const el = createElement('div', 'offline-notice');
     el.textContent = '⚠️ Không thể kết nối máy chủ đăng nhập/đồng bộ. Bạn vẫn dùng ứng dụng và lưu dữ liệu trên máy này bình thường.';
     document.body.appendChild(el);
-    setTimeout(() => el.classList.add('show'), 10);
+    requestAnimationFrame(() => el.classList.add('show'));
     setTimeout(() => { el.classList.remove('show'); setTimeout(() => el.remove(), 400); }, 8000);
   }
 
@@ -2632,6 +3187,9 @@ procrastinate	trì hoãn</div>
       listEl.appendChild(frag);
       DOM.homeRecentList.appendChild(listEl);
     }
+
+    // Browser notification: nhắc khi có từ đến hạn
+    if (dueWords > 0) sendDueNotification(dueWords);
   }
 
   // ---- Learned Words (gộp từ 'đã thuộc' của mọi bộ thẻ) ----
@@ -2642,7 +3200,7 @@ procrastinate	trì hoãn</div>
       f.words.filter(isWordLearned).forEach(w => {
         // Tag each entry with its source folder so study/quiz sessions can
         // update the right deck even when words come from several decks at once.
-        result.push({ ...w, _sourceFolder: f, _sourceFolderName: f.name });
+        result.push({ ...w, _sourceFolderId: f.id, _sourceFolderName: f.name });
       });
     });
     return result;
@@ -2655,7 +3213,7 @@ procrastinate	trì hoãn</div>
     const result = [];
     folders.forEach(f => {
       f.words.filter(isWordDueForReview).forEach(w => {
-        result.push({ ...w, _sourceFolder: f, _sourceFolderName: f.name });
+        result.push({ ...w, _sourceFolderId: f.id, _sourceFolderName: f.name });
       });
     });
     return result;
@@ -2666,7 +3224,7 @@ procrastinate	trì hoãn</div>
   // in their word source, subtitle text, and empty-state content.
   function renderWordListView({ words, subEl, actionsEl, listEl, subtitle, emptyIcon, emptyMessage }) {
     subEl.textContent = subtitle(words.length);
-    actionsEl.style.display = words.length ? 'block' : 'none';
+    actionsEl.style.display = words.length ? '' : 'none';
     listEl.replaceChildren();
 
     if (words.length === 0) {
@@ -2801,7 +3359,7 @@ procrastinate	trì hoãn</div>
             const updatedFolders = globalRefData.folders.filter(x => x.id !== f.id);
             try {
               await pushRefFolders(updatedFolders);
-            } catch(err) { alert('Lỗi xóa: ' + err.message); }
+            } catch(err) { showToast('Lỗi xóa: ' + err.message, 'error'); }
           }
         });
 
@@ -2867,15 +3425,20 @@ procrastinate	trì hoãn</div>
           id: generateUid('w'),
           tu: (cols[0] || '').trim(), nghia: (cols[1] || '').trim(),
           phat_am: (cols[2] || '').trim(), loai_tu: (cols[3] || '').trim(),
+          imageUrl: (cols[4] || '').trim(),
           status: 'new', srsLevel: 0
         };
       }).filter(w => w.tu);
   }
 
+  let currentAudio = null;
   function speak(entry) {
+    if (currentAudio) { currentAudio.pause(); currentAudio.currentTime = 0; currentAudio = null; }
+    window.speechSynthesis?.cancel();
     const p = entry.phat_am;
     if (p && /^https?:\/\/.+\.(mp3|wav|ogg|m4a)(\?.*)?$/i.test(p)) {
-      new Audio(p).play().catch(() => fallbackTTS(entry.tu));
+      currentAudio = new Audio(p);
+      currentAudio.play().catch(() => fallbackTTS(entry.tu));
     } else fallbackTTS(entry.tu);
   }
 
@@ -2908,9 +3471,10 @@ procrastinate	trì hoãn</div>
     lastSessionMode = 'study';
     DOM.btnShuffle.classList.toggle('on', shuffleOn);
     goTo('study'); renderCardAtIndex();
+    prefetchDeckImages(folder); // fire-and-forget batch fetch for the rest of the deck
   }
 
-  function renderCardAtIndex() {
+  async function renderCardAtIndex() {
     if (idx >= queue.length) {
       showDoneScreen(sessionStats.good, sessionStats.bad, badPile.length > 0);
       return;
@@ -2926,6 +3490,7 @@ procrastinate	trì hoãn</div>
     DOM.posText.textContent = `${idx + 1} / ${queue.length}`;
     DOM.progFill.style.width = `${(idx / queue.length) * 100}%`;
     DOM.btnPrev.disabled = idx === 0;
+    renderCardImage(entry); // fire-and-forget, card renders immediately
   }
 
   function markStatus(status) {
@@ -3045,7 +3610,7 @@ procrastinate	trì hoãn</div>
   }
 
   function normalizeAnswer(s) {
-    return (s || '').trim().replace(/\s+/g, ' ').toLowerCase();
+    return (s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\w\s]/g, '').trim().replace(/\s+/g, ' ').toLowerCase();
   }
 
   function recordQuizResult(isCorrect) {
@@ -3058,6 +3623,7 @@ procrastinate	trì hoãn</div>
     currentQ.answered = true;
     const isCorrect = btnEl.dataset.isCorrect === 'true';
     recordQuizResult(isCorrect);
+    haptic(isCorrect ? 10 : [20, 30, 20]);
     revealMultipleChoiceAnswer(DOM.quizOptions, btnEl);
     DOM.btnQuizNext.style.display = 'inline-flex';
   }
@@ -3068,6 +3634,7 @@ procrastinate	trì hoãn</div>
     const correctAnswer = currentQ.entry[currentQ.answerField];
     const isCorrect = normalizeAnswer(DOM.quizInput.value) === normalizeAnswer(correctAnswer);
     recordQuizResult(isCorrect);
+    haptic(isCorrect ? 10 : [20, 30, 20]);
 
     DOM.quizInput.disabled = true;
     DOM.quizInput.classList.add(isCorrect ? 'correct' : 'incorrect');
@@ -3110,6 +3677,7 @@ procrastinate	trì hoãn</div>
 
   function getHighScore(gameId) { return DATA[GAME_SCORES_KEY][gameId] || 0; }
   function saveHighScoreIfBetter(gameId, score) {
+    if (!DATA[GAME_SCORES_KEY]) DATA[GAME_SCORES_KEY] = {};
     const prevBest = getHighScore(gameId);
     if (score > prevBest) {
       DATA[GAME_SCORES_KEY][gameId] = score;
@@ -3144,7 +3712,7 @@ procrastinate	trì hoãn</div>
     (DATA.folders || []).forEach(f => {
       // Tag each word with its source folder (same pattern as getAllLearnedWords) so
       // updateWordStatus can find and update the right deck during gameplay.
-      const taggedWords = f.words.map(w => ({ ...w, _sourceFolder: f }));
+      const taggedWords = f.words.map(w => ({ ...w, _sourceFolderId: f.id }));
       sources.push({ label: f.name, words: taggedWords, tag: 'Bộ của bạn' });
     });
     (globalRefData.folders || []).forEach(f => sources.push({ label: f.name, words: f.words, tag: 'Tham khảo' }));
@@ -3198,7 +3766,8 @@ procrastinate	trì hoãn</div>
   });
 
   // ---- Game 1: Nối từ (Matching pairs) ----
-  let matchState = null; // { tiles, selected, movesCount, matchedCount, totalPairs, timerInterval, startTime }
+  let matchState = null;
+  let matchWrongTimeoutId = null;
   function startMatchGame(words) {
     const pairCount = Math.min(8, words.length);
     const chosen = words.slice(0, pairCount);
@@ -3221,7 +3790,7 @@ procrastinate	trì hoãn</div>
     goTo('game-match');
     stopActiveGameTimers = () => {
       clearInterval(matchState.timerInterval);
-      clearTimeout(matchState.wrongTileTimeout);
+      clearTimeout(matchWrongTimeoutId);
     };
   }
 
@@ -3258,6 +3827,7 @@ procrastinate	trì hoãn</div>
       const [a, b] = matchState.selected;
       const tileA = matchState.tiles[a], tileB = matchState.tiles[b];
       if (tileA.key === tileB.key && tileA.side !== tileB.side) {
+        haptic(10);
         tileA.matched = true; tileB.matched = true;
         matchState.matchedCount++;
         matchState.selected = [];
@@ -3269,13 +3839,11 @@ procrastinate	trì hoãn</div>
           showGameResult('match', score, `Hoàn thành trong ${matchState.moves} lượt lật, ${seconds} giây!`);
         }
       } else {
+        haptic([12, 20, 12]);
         matchState.tileEls[a].classList.add('wrong');
         matchState.tileEls[b].classList.add('wrong');
-        // Stored on matchState (not a bare local timeout) so exiting/restarting the game
-        // can cancel it — otherwise a stale callback from a previous round could fire after
-        // a brand-new matchState already exists and wrongly clear its `.selected`.
-        clearTimeout(matchState.wrongTileTimeout);
-        matchState.wrongTileTimeout = setTimeout(() => {
+        clearTimeout(matchWrongTimeoutId);
+        matchWrongTimeoutId = setTimeout(() => {
           matchState.tileEls[a].classList.remove('wrong');
           matchState.tileEls[b].classList.remove('wrong');
           matchState.selected = [];
@@ -3286,7 +3854,8 @@ procrastinate	trì hoãn</div>
   }
   wireGameExit('btnExitMatch', () => {
     clearInterval(matchState?.timerInterval);
-    clearTimeout(matchState?.wrongTileTimeout);
+    clearTimeout(matchWrongTimeoutId);
+    matchWrongTimeoutId = null;
   });
 
   // ---- Game 2: Đoán từ (Hangman) ----
@@ -3346,11 +3915,13 @@ procrastinate	trì hoãn</div>
 
     if (st.letters.includes(ch)) {
       keyEl.classList.add('correct');
+      haptic(8);
       renderHangmanBoard();
       const solved = st.letters.every(l => l === ' ' || l === '-' || st.guessed.has(l));
-      if (solved) finishHangmanWord(true);
+      if (solved) { haptic([8, 40, 8]); finishHangmanWord(true); }
     } else {
       keyEl.classList.add('wrong');
+      haptic([15, 25, 15]);
       st.lives--;
       renderHangmanBoard();
       if (st.lives <= 0) finishHangmanWord(false);
@@ -3369,7 +3940,7 @@ procrastinate	trì hoãn</div>
       DOM.hangmanWord.replaceChildren();
       st.letters.forEach(ch => DOM.hangmanWord.appendChild(createElement('div', 'hangman-letter-box', ch)));
     }
-    DOM.btnHangmanNext.style.display = 'block';
+    DOM.btnHangmanNext.style.display = 'inline-flex';
     DOM.btnHangmanNext.textContent = hangmanState.idx + 1 >= hangmanState.words.length ? 'Xem kết quả' : 'Từ tiếp theo';
   }
 
@@ -3473,10 +4044,16 @@ procrastinate	trì hoãn</div>
 
   document.getElementById('btnScrambleCheck').addEventListener('click', () => {
     const st = scrambleState.current;
-    if (st.slots.includes(null)) return; // not fully filled yet
+    if (st.slots.includes(null)) {
+      const btn = document.getElementById('btnScrambleCheck');
+      btn.style.transform = 'translateX(-4px)';
+      setTimeout(() => { btn.style.transform = 'translateX(4px)'; setTimeout(() => btn.style.transform = '', 80); }, 80);
+      return;
+    }
     const attempt = st.slots.map(chipId => st.chips.find(c => c.id === chipId).ch).join('');
     const isCorrect = attempt === st.answer;
     updateWordStatus(null, st.entry, isCorrect ? 'good' : 'bad');
+    haptic(isCorrect ? 10 : [20, 30, 20]);
     if (isCorrect) {
       scrambleState.score += 10;
       DOM.scrambleScore.textContent = scrambleState.score;
@@ -3548,6 +4125,7 @@ procrastinate	trì hoãn</div>
     speedState.answered = true;
     cancelAnimationFrame(speedState.timerRAF);
     updateWordStatus(null, entry, isCorrect ? 'good' : 'bad');
+    haptic(isCorrect ? 8 : [15, 25, 15]);
     if (isCorrect) {
       speedState.combo++;
       speedState.maxCombo = Math.max(speedState.maxCombo || 0, speedState.combo);
@@ -3574,8 +4152,7 @@ procrastinate	trì hoãn</div>
   const SNIPER_MAX_ON_SCREEN = 2;   // cap simultaneous enemies so it never feels overwhelming
   const SNIPER_SPAWN_GAP_MS = 2600; // minimum time between spawns, on top of the on-screen cap
   const SNIPER_FALL_SPEED = 22;     // px/sec, constant (per the user's choice — no ramp-up)
-  const SNIPER_HINT_COOLDOWN_MS = 4000; // cooldown between manual hint uses
-  let sniperState = null;
+    let sniperState = null;
 
   function buildSniperEnemy(entry) {
     const word = entry.tu.toLowerCase();
@@ -3600,7 +4177,7 @@ procrastinate	trì hoãn</div>
   function startFallingGame(words) {
     sniperState = {
       pool: shuffleArray(words), idx: 0, score: 0, lives: SNIPER_MAX_LIVES, combo: 0, maxCombo: 0,
-      active: [], rafId: null, spawnTimer: null, lastTick: null, lastSpawnAt: 0, lastHintAt: 0
+      active: [], rafId: null, spawnTimer: null, lastTick: null, lastSpawnAt: 0
     };
     DOM.fallingScoreText.textContent = '0 điểm';
     DOM.fallingLives.textContent = '❤️'.repeat(SNIPER_MAX_LIVES);
@@ -3645,8 +4222,8 @@ procrastinate	trì hoãn</div>
     // an oversized spawn margin. Floor of 0.5x keeps it legible even for very long words.
     const maxCardWidth = sniperState.stageWidth * 0.7;
     let fontScale = 1;
-    while (el.offsetWidth > maxCardWidth && fontScale > 0.5) {
-      fontScale -= 0.05;
+    while (el.offsetWidth > maxCardWidth && fontScale > 0.35) {
+      fontScale -= 0.03;
       el.querySelector('.letters').style.fontSize = (15 * fontScale).toFixed(1) + 'px';
       el.querySelector('.letters').style.letterSpacing = (3 * fontScale).toFixed(1) + 'px';
       el.querySelector('.meaning').style.fontSize = (12 * fontScale).toFixed(1) + 'px';
@@ -3689,10 +4266,6 @@ procrastinate	trì hoãn</div>
 
     spawnSniperEnemy();
 
-    const hintReady = !sniperState.lastHintAt || now - sniperState.lastHintAt >= SNIPER_HINT_COOLDOWN_MS;
-    const shouldDisableHint = !hintReady || sniperState.active.length === 0;
-    if (DOM.btnSniperHint.disabled !== shouldDisableHint) DOM.btnSniperHint.disabled = shouldDisableHint;
-
     if (sniperState.idx >= sniperState.pool.length && sniperState.active.length === 0) {
       endSniperGame(true);
       return;
@@ -3701,13 +4274,13 @@ procrastinate	trì hoãn</div>
   }
 
   function endSniperGame(cleared) {
-    clearAnimationFrameSafely();
+    if (!sniperState) return;
+    cancelAnimationFrame(sniperState.rafId);
     const score = sniperState.score;
     sniperState = null;
     DOM.sniperKeyCatcher.blur();
     showGameResult('falling', score, cleared ? `Hạ gục toàn bộ mục tiêu! ${score} điểm.` : `Hết mạng! Ghi được ${score} điểm.`);
   }
-  function clearAnimationFrameSafely() { if (sniperState) cancelAnimationFrame(sniperState.rafId); }
 
   // ---- Visual feedback: bullet, muzzle flash, hit spark, explosion ----
   function fireSniperBullet(targetX, targetY) {
@@ -3755,8 +4328,8 @@ procrastinate	trì hoãn</div>
   // ---- Core input handling: every keystroke is checked immediately ----
   function handleSniperKey(rawChar) {
     if (!sniperState) return;
-    const ch = (rawChar || '').toLowerCase();
-    if (!/^[a-z]$/.test(ch)) return;
+    const ch = latinize((rawChar || '').toLowerCase()).replace(/[^a-z]/g, '');
+    if (!ch) return;
 
     // Find the lowest (most urgent) enemy that currently needs exactly this letter next.
     let bestEnemy = null, bestY = -Infinity;
@@ -3769,6 +4342,7 @@ procrastinate	trì hoãn</div>
 
     if (!bestEnemy) {
       // Wrong key: no falling enemy needs this letter right now.
+      haptic([15, 25, 15]);
       sniperState.combo = 0;
       DOM.sniperComboText.textContent = '';
       sniperWrongFeedback();
@@ -3789,6 +4363,7 @@ procrastinate	trì hoãn</div>
 
     const isComplete = bestEnemy.word.split('').every((c, i) => bestEnemy.typed.has(i));
     if (isComplete) {
+      haptic([8, 30, 8]);
       sniperState.combo++;
       sniperState.maxCombo = Math.max(sniperState.maxCombo, sniperState.combo);
       const comboMult = Math.min(5, 1 + Math.floor(sniperState.combo / 2));
@@ -3808,9 +4383,15 @@ procrastinate	trì hoãn</div>
   // The invisible input is the mobile-keyboard trigger; `input` (not `keydown`) fires
   // reliably across mobile keyboards/IMEs, so we read the last character typed and
   // immediately clear the field back to empty for the next keystroke.
+  function latinize(str) {
+    return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
   DOM.sniperKeyCatcher.addEventListener('input', () => {
     const val = DOM.sniperKeyCatcher.value;
-    if (val) handleSniperKey(val.slice(-1));
+    if (val) {
+      const ch = latinize(val.slice(-1)).toLowerCase().replace(/[^a-z]/g, '');
+      if (ch) handleSniperKey(ch);
+    }
     DOM.sniperKeyCatcher.value = '';
   });
   DOM.fallingStage.addEventListener('click', () => {
@@ -3851,8 +4432,6 @@ procrastinate	trì hoãn</div>
   // can't be spammed into trivializing the game, but no score penalty.
   document.getElementById('btnSniperHint').addEventListener('click', () => {
     if (!sniperState || sniperState.active.length === 0) return;
-    const now = performance.now();
-    if (sniperState.lastHintAt && now - sniperState.lastHintAt < SNIPER_HINT_COOLDOWN_MS) return;
 
     const target = sniperState.active.reduce((a, b) => (a.y > b.y ? a : b));
     const hiddenIdxs = target.word.split('').map((c, i) => i).filter(i => !target.typed.has(i));
@@ -3862,7 +4441,6 @@ procrastinate	trì hoãn</div>
     target.revealed.add(pick);
     target.el.querySelector('.letters').innerHTML = renderSniperLetters(target);
 
-    sniperState.lastHintAt = now;
     DOM.sniperKeyCatcher.focus();
   });
 
@@ -3910,6 +4488,7 @@ procrastinate	trì hoãn</div>
     blankState.answered = true;
     const isCorrect = btnEl.dataset.isCorrect === 'true';
     updateWordStatus(null, entry, isCorrect ? 'good' : 'bad');
+    haptic(isCorrect ? 10 : [20, 30, 20]);
     if (isCorrect) { blankState.score += 10; blankState.correctCount++; DOM.blankScore.textContent = blankState.score; }
     revealMultipleChoiceAnswer(DOM.blankOptions, btnEl);
     clearTimeout(blankState.nextQuestionTimeout);
@@ -3987,16 +4566,17 @@ procrastinate	trì hoãn</div>
         <input class="edit-nghia" placeholder="Nghĩa (bắt buộc)">
         <input class="edit-phat-am" placeholder="Phát âm (tuỳ chọn)">
         <input class="edit-loai-tu" placeholder="Loại từ (tuỳ chọn)">
-      </div>`;
+      </div>
+      <input class="edit-image-input" placeholder="Link ảnh minh họa (tuỳ chọn) — để trống để tự động tìm">`;
     row.querySelector('.edit-tu').value = word?.tu || '';
     row.querySelector('.edit-nghia').value = word?.nghia || '';
     row.querySelector('.edit-phat-am').value = word?.phat_am || '';
     row.querySelector('.edit-loai-tu').value = word?.loai_tu || '';
+    row.querySelector('.edit-image-input').value = word?.imageUrl || '';
     // Preserve the word's stable id plus its SRS progress (srsLevel, nextReviewDate,
-    // status) on the row so saving doesn't silently reset review history back to "Mới"
-    // or generate a fresh id for a word that already had one (a fresh id would break
-    // any code matching this word by id — see updateWordStatus).
-    row._srsData = word ? { id: word.id, srsLevel: word.srsLevel, nextReviewDate: word.nextReviewDate, status: word.status } : {};
+    // status) and imageUrl on the row so saving doesn't silently reset review history
+    // back to "Mới" or generate a fresh id for a word that already had one.
+    row._srsData = word ? { id: word.id, srsLevel: word.srsLevel, nextReviewDate: word.nextReviewDate, status: word.status, imageUrl: word.imageUrl } : {};
     row.querySelector('.btn-remove-word').addEventListener('click', () => row.remove());
     return row;
   }
@@ -4030,6 +4610,7 @@ procrastinate	trì hoãn</div>
         tu, nghia,
         phat_am: row.querySelector('.edit-phat-am').value.trim(),
         loai_tu: row.querySelector('.edit-loai-tu').value.trim(),
+        imageUrl: row.querySelector('.edit-image-input').value.trim() || row._srsData.imageUrl || '',
         status: row._srsData.status ?? 'new',
         srsLevel: row._srsData.srsLevel ?? 0,
         ...(row._srsData.nextReviewDate ? { nextReviewDate: row._srsData.nextReviewDate } : {})
@@ -4047,15 +4628,23 @@ procrastinate	trì hoãn</div>
   });
 
   // Admin Panel Action Listeners
-  DOM.btnCheckAdmin.addEventListener('click', () => {
-    if (DOM.adminCodeInput.value.trim() === '220105') { 
+  async function sha256(message) {
+    const msgBuffer = new TextEncoder().encode(message);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  }
+  const ADMIN_HASH = '80205fdbb7c93bbf9d695e81c1d264dd811d6d9a7dde82c0253be96a2b96834d';
+  DOM.btnCheckAdmin.addEventListener('click', async () => {
+    const inputHash = await sha256(DOM.adminCodeInput.value.trim());
+    if (inputHash === ADMIN_HASH) { 
       isAdminLogged = true;
       DOM.adminPanelBox.style.display = 'block'; 
       DOM.adminAuthRow.style.display = 'none';
-      renderRefFolderList(); // Tải lại danh sách để hiện nút Sửa/Xóa
-      renderLessonList(); // Hiện nút quản lý Ngữ pháp
+      renderRefFolderList(); 
+      renderLessonList(); 
     } else { 
-      alert('Mã Admin không đúng.'); 
+      showToast('Mã Admin không đúng.', 'error'); 
     }
   });
 
@@ -4108,7 +4697,7 @@ procrastinate	trì hoãn</div>
 
     try {
       await pushRefFolders(updatedFolders);
-      alert(editingRefId ? 'Cập nhật thành công!' : 'Đăng thành công!');
+      showToast(editingRefId ? 'Cập nhật thành công!' : 'Đăng thành công!', 'success');
       resetAdminForm();
     } catch(e) { 
       DOM.refCreateErr.textContent = 'Lỗi Cloud: ' + e.message; 
@@ -4120,11 +4709,87 @@ procrastinate	trì hoãn</div>
     flipped = !flipped; DOM.flipCard.classList.toggle('is-flipped', flipped);
   });
 
+  /* Swipe gesture on flashcard */
+  (function initSwipe() {
+    const card = DOM.flipCard;
+    const stage = document.querySelector('.flip-stage');
+    const overlayLeft = document.getElementById('swipeOverlayLeft');
+    const overlayRight = document.getElementById('swipeOverlayRight');
+    let startX = 0, startY = 0, startTime = 0, isDragging = false, hasSwiped = false;
+    const THRESHOLD = 80;
+
+    function resetCard() {
+      card.classList.remove('swiping');
+      card.style.transform = '';
+      overlayLeft.classList.remove('show');
+      overlayRight.classList.remove('show');
+    }
+
+    function onPointerDown(e) {
+      if (e.target.closest('.speak-btn')) return;
+      startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      startTime = Date.now();
+      isDragging = true; hasSwiped = false;
+      card.classList.add('swiping');
+    }
+
+    function onPointerMove(e) {
+      if (!isDragging) return;
+      const x = e.clientX || (e.touches && e.touches[0].clientX) || 0;
+      const y = e.clientY || (e.touches && e.touches[0].clientY) || 0;
+      const dx = x - startX;
+      const dy = y - startY;
+      // If vertical scroll dominates, cancel swipe
+      if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 20) { isDragging = false; resetCard(); return; }
+      if (Math.abs(dx) > 5) hasSwiped = true;
+      const rotate = dx * 0.04;
+      card.style.transform = `translateX(${dx}px) rotate(${rotate}deg)`;
+      const opacity = Math.min(1, Math.abs(dx) / THRESHOLD);
+      if (dx > 0) { overlayRight.classList.add('show'); overlayRight.style.opacity = opacity; overlayLeft.classList.remove('show'); }
+      else if (dx < 0) { overlayLeft.classList.add('show'); overlayLeft.style.opacity = opacity; overlayRight.classList.remove('show'); }
+      else { overlayLeft.classList.remove('show'); overlayRight.classList.remove('show'); }
+    }
+
+    function onPointerUp(e) {
+      if (!isDragging) return;
+      isDragging = false;
+      const x = e.clientX || (e.changedTouches && e.changedTouches[0].clientX) || startX;
+      const dx = x - startX;
+      const dt = Date.now() - startTime;
+
+      // Tap (not swipe) — allow flip
+      if (!hasSwiped && Math.abs(dx) < 10 && dt < 250) {
+        resetCard();
+        return;
+      }
+
+      if (dx > THRESHOLD) {
+        card.classList.add('swipe-right');
+        haptic(10);
+        setTimeout(() => { card.classList.remove('swipe-right'); resetCard(); markStatus('good'); }, 320);
+      } else if (dx < -THRESHOLD) {
+        card.classList.add('swipe-left');
+        haptic([20, 30, 20]);
+        setTimeout(() => { card.classList.remove('swipe-left'); resetCard(); markStatus('bad'); }, 320);
+      } else {
+        resetCard();
+      }
+    }
+
+    stage.addEventListener('touchstart', onPointerDown, { passive: true });
+    stage.addEventListener('touchmove', onPointerMove, { passive: true });
+    stage.addEventListener('touchend', onPointerUp);
+    stage.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+  })();
+
   const handleSpeakEvent = (e) => { e.stopPropagation(); if (queue[idx]) speak(queue[idx]); };
   document.getElementById('speakBtnFront').addEventListener('click', handleSpeakEvent);
   document.getElementById('speakBtnBack').addEventListener('click', handleSpeakEvent);
-  document.getElementById('btnGood').addEventListener('click', () => markStatus('good'));
-  document.getElementById('btnAgain').addEventListener('click', () => markStatus('bad'));
+  document.getElementById('btnGood').addEventListener('click', () => { haptic(10); markStatus('good'); });
+  document.getElementById('btnAgain').addEventListener('click', () => { haptic([20, 30, 20]); markStatus('bad'); });
   DOM.btnPrev.addEventListener('click', () => { if (idx > 0) { idx--; renderCardAtIndex(); } });
   DOM.btnNext.addEventListener('click', () => { if (idx < queue.length) { idx++; renderCardAtIndex(); } });
   document.getElementById('btnRestartFolder').addEventListener('click', () => {
@@ -4147,9 +4812,10 @@ procrastinate	trì hoãn</div>
   function openAccountModal() {
     openModal(DOM.accountModal);
     const signedIn = !!currentUser;
-    DOM.accountModalSignedIn.style.display = signedIn ? 'block' : 'none';
-    DOM.accountModalSignedOut.style.display = signedIn ? 'none' : 'block';
+    DOM.accountModalSignedIn.style.display = signedIn ? '' : 'none';
+    DOM.accountModalSignedOut.style.display = signedIn ? 'none' : '';
     if (signedIn) DOM.accountEmail.textContent = currentUser.email || currentUser.displayName || 'Đã đăng nhập';
+    // updateNotifToggleUI(); updateImageToggleUI(); // removed — always enabled
   }
   DOM.avatarBtn.addEventListener('click', openAccountModal);
   DOM.sidebarAvatarBtn.addEventListener('click', openAccountModal);
@@ -4160,7 +4826,7 @@ procrastinate	trì hoãn</div>
 
   // Device layout modal: shown automatically on first run, or re-opened from Account > Settings
   function openDeviceModal(isSettingsReopen) {
-    document.getElementById('btnCancelDeviceModal').style.display = isSettingsReopen ? 'block' : 'none';
+    document.getElementById('btnCancelDeviceModal').style.display = isSettingsReopen ? 'inline-flex' : 'none';
     openModal(DOM.deviceModal);
   }
   document.getElementById('btnCancelDeviceModal').addEventListener('click', () => closeModal(DOM.deviceModal));
@@ -4168,23 +4834,75 @@ procrastinate	trì hoãn</div>
     closeAccountModals();
     openDeviceModal(true);
   });
+  // Device modal toggles
+  let deviceNotifPending = false;
+  let deviceImgPending = false;
+  document.getElementById('deviceNotifToggle').addEventListener('click', async () => {
+    const toggle = document.getElementById('deviceNotifToggle');
+    const sub = document.getElementById('deviceNotifSub');
+    deviceNotifPending = !deviceNotifPending;
+    toggle.classList.toggle('on', deviceNotifPending);
+    sub.textContent = deviceNotifPending ? 'Sẽ nhắc khi có từ cần ôn' : 'Nhận thông báo khi có từ cần ôn';
+  });
+  document.getElementById('deviceImgToggle').addEventListener('click', () => {
+    const toggle = document.getElementById('deviceImgToggle');
+    const sub = document.getElementById('deviceImgSub');
+    deviceImgPending = !deviceImgPending;
+    toggle.classList.toggle('on', deviceImgPending);
+    sub.textContent = deviceImgPending ? 'Sẽ tự động tìm ảnh trên thẻ' : 'Tự động tìm ảnh trên thẻ';
+  });
+
   document.querySelectorAll('#deviceModal .mode-option').forEach(option => {
-    option.addEventListener('click', () => {
+    option.addEventListener('click', async () => {
       localStorage.setItem(DEVICE_KEY, option.dataset.device);
       applyLayout(option.dataset.device);
+
+      // Notifications & images are always enabled (settings removed)
+      if ('Notification' in window && Notification.permission === 'default') {
+        requestNotifPermission();
+      }
+      startNotifChecker();
+
       closeModal(DOM.deviceModal);
+      showToast('🎉 Thiết lập hoàn tất! Chúc bạn học tốt!', 'success');
     });
   });
-  if (!savedDevice) openDeviceModal(false); // first run: ask which device this is
+  if (!savedDevice) {
+    openDeviceModal(false);
+    // Reset pending states
+    deviceNotifPending = false;
+    deviceImgPending = false;
+  }
+
+  // Account modal toggles (same settings, different UI location)
+  // notifToggle removed — notifications always enabled
+  // imgToggle removed — image fetcher always enabled
+
+  function updateNotifToggleUI() {
+    const toggle = document.getElementById('notifToggle');
+    const sub = document.getElementById('notifToggleSub');
+    if (!toggle || !sub) return;
+    toggle.classList.toggle('on', notifEnabled);
+    sub.textContent = notifEnabled
+      ? (Notification.permission === 'granted' ? 'Đang bật — sẽ nhắc khi có từ cần ôn' : 'Đang chờ cấp quyền...')
+      : 'Đang tắt — bật để nhận nhắc khi có từ cần ôn';
+  }
+  function updateImageToggleUI() {
+    const toggle = document.getElementById('imgToggle');
+    const sub = document.getElementById('imgToggleSub');
+    if (!toggle || !sub) return;
+    toggle.classList.toggle('on', imageEnabled);
+    sub.textContent = imageEnabled ? 'Đang bật — tự động tìm ảnh từ Pexels' : 'Đang tắt — bật để hiện ảnh trên thẻ';
+  }
 
   document.getElementById('btnGoogleSignIn').addEventListener('click', async () => {
-    if (!firebaseAvailable) { alert('Không thể kết nối máy chủ đăng nhập lúc này. Bạn vẫn có thể dùng ứng dụng bình thường — dữ liệu được lưu trên máy này. Hãy thử tải lại trang sau.'); return; }
+    if (!firebaseAvailable) { showToast('Không thể kết nối máy chủ đăng nhập lúc này. Dữ liệu vẫn được lưu trên máy.', 'info'); return; }
     try {
       await signInWithPopup(auth, provider);
       closeAccountModals();
     } catch (e) {
       console.error(e);
-      alert("Lỗi đăng nhập: " + (e.message || e.code));
+      showToast("Lỗi đăng nhập: " + (e.message || e.code), "error");
     }
   });
 
@@ -4299,6 +5017,10 @@ procrastinate	trì hoãn</div>
     ['Flashcard', 'Study with Khuê']
   );
 
+  // Keyboard shortcut hint modal
+  document.getElementById('btnKeyHint').addEventListener('click', () => openModal(document.getElementById('keyhintModal')));
+  document.getElementById('btnCloseKeyhint').addEventListener('click', () => closeModal(document.getElementById('keyhintModal')));
+
   // ---- Centralized keydown dispatcher ----
   // Previously each view (Study, Hangman, Word Sniper) registered its own
   // `document.addEventListener('keydown', ...)` in its own section of the file — same
@@ -4331,7 +5053,31 @@ procrastinate	trì hoãn</div>
 
   // Init App
   renderHome();
+  // Notifications always enabled — auto start checker
+  startNotifChecker();
+  // Auto request notification permission on first load if not decided yet
+  if ('Notification' in window && Notification.permission === 'default') {
+    requestNotifPermission();
+  }
   initFirebase().then((ok) => { if (ok) { registerAuthListener(); attachGlobalReferenceListener(); } else { showFirebaseUnavailableNotice(); } });
 </script>
+  <div class="toast-container" id="toastContainer"></div>
+<!-- Keyboard shortcut modal -->
+<div class="modal-overlay" id="keyhintModal">
+  <div class="modal-sheet">
+    <h3>⌨️ Phím tắt</h3>
+    <p>Danh sách phím tắt khi đang học thẻ và chơi game.</p>
+    <div class="keyhint-grid">
+      <div class="keyhint-item"><kbd>Space</kbd><span>Lật thẻ</span></div>
+      <div class="keyhint-item"><kbd>← / →</kbd><span>Từ trước / tiếp</span></div>
+      <div class="keyhint-item"><kbd>A – Z</kbd><span>Đoán chữ (Hangman / Sniper)</span></div>
+      <div class="keyhint-item"><kbd>Enter</kbd><span>Kiểm tra đáp án</span></div>
+      <div class="keyhint-item"><kbd>Vuốt →</kbd><span>Đã thuộc</span></div>
+      <div class="keyhint-item"><kbd>Vuốt ←</kbd><span>Chưa thuộc</span></div>
+    </div>
+    <button class="btn ghost full" id="btnCloseKeyhint" style="margin-top:16px;">Đóng</button>
+  </div>
+</div>
+
 </body>
 </html>
