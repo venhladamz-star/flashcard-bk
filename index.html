@@ -2099,24 +2099,6 @@ procrastinate	trì hoãn</div>
       <div class="txt"><h4>Laptop / Máy tính</h4><p>Sidebar bên trái, tối ưu cho màn hình lớn.</p></div>
     </div>
 
-    <div class="settings-section">
-      <div class="settings-label">Tùy chọn</div>
-      <div class="toggle-row" id="deviceNotifToggleRow" style="display:none">
-        <div>
-          <div class="label">🔔 Nhắc ôn tập hàng ngày</div>
-          <div class="sub" id="deviceNotifSub">Nhận thông báo khi có từ cần ôn</div>
-        </div>
-        <div class="toggle-switch" id="deviceNotifToggle"></div>
-      </div>
-      <div class="toggle-row" id="deviceImgToggleRow" style="display:none">
-        <div>
-          <div class="label">🖼️ Ảnh minh họa từ vựng</div>
-          <div class="sub" id="deviceImgSub">Tự động tìm ảnh trên thẻ</div>
-        </div>
-        <div class="toggle-switch" id="deviceImgToggle"></div>
-      </div>
-    </div>
-
     <button class="btn ghost full" id="btnCancelDeviceModal" style="display:none;">Đóng</button>
   </div>
 </div>
@@ -4815,7 +4797,6 @@ procrastinate	trì hoãn</div>
     DOM.accountModalSignedIn.style.display = signedIn ? '' : 'none';
     DOM.accountModalSignedOut.style.display = signedIn ? 'none' : '';
     if (signedIn) DOM.accountEmail.textContent = currentUser.email || currentUser.displayName || 'Đã đăng nhập';
-    // updateNotifToggleUI(); updateImageToggleUI(); // removed — always enabled
   }
   DOM.avatarBtn.addEventListener('click', openAccountModal);
   DOM.sidebarAvatarBtn.addEventListener('click', openAccountModal);
@@ -4833,23 +4814,6 @@ procrastinate	trì hoãn</div>
   document.getElementById('btnOpenDeviceSettings').addEventListener('click', () => {
     closeAccountModals();
     openDeviceModal(true);
-  });
-  // Device modal toggles
-  let deviceNotifPending = false;
-  let deviceImgPending = false;
-  document.getElementById('deviceNotifToggle').addEventListener('click', async () => {
-    const toggle = document.getElementById('deviceNotifToggle');
-    const sub = document.getElementById('deviceNotifSub');
-    deviceNotifPending = !deviceNotifPending;
-    toggle.classList.toggle('on', deviceNotifPending);
-    sub.textContent = deviceNotifPending ? 'Sẽ nhắc khi có từ cần ôn' : 'Nhận thông báo khi có từ cần ôn';
-  });
-  document.getElementById('deviceImgToggle').addEventListener('click', () => {
-    const toggle = document.getElementById('deviceImgToggle');
-    const sub = document.getElementById('deviceImgSub');
-    deviceImgPending = !deviceImgPending;
-    toggle.classList.toggle('on', deviceImgPending);
-    sub.textContent = deviceImgPending ? 'Sẽ tự động tìm ảnh trên thẻ' : 'Tự động tìm ảnh trên thẻ';
   });
 
   document.querySelectorAll('#deviceModal .mode-option').forEach(option => {
@@ -4869,30 +4833,6 @@ procrastinate	trì hoãn</div>
   });
   if (!savedDevice) {
     openDeviceModal(false);
-    // Reset pending states
-    deviceNotifPending = false;
-    deviceImgPending = false;
-  }
-
-  // Account modal toggles (same settings, different UI location)
-  // notifToggle removed — notifications always enabled
-  // imgToggle removed — image fetcher always enabled
-
-  function updateNotifToggleUI() {
-    const toggle = document.getElementById('notifToggle');
-    const sub = document.getElementById('notifToggleSub');
-    if (!toggle || !sub) return;
-    toggle.classList.toggle('on', notifEnabled);
-    sub.textContent = notifEnabled
-      ? (Notification.permission === 'granted' ? 'Đang bật — sẽ nhắc khi có từ cần ôn' : 'Đang chờ cấp quyền...')
-      : 'Đang tắt — bật để nhận nhắc khi có từ cần ôn';
-  }
-  function updateImageToggleUI() {
-    const toggle = document.getElementById('imgToggle');
-    const sub = document.getElementById('imgToggleSub');
-    if (!toggle || !sub) return;
-    toggle.classList.toggle('on', imageEnabled);
-    sub.textContent = imageEnabled ? 'Đang bật — tự động tìm ảnh từ Pexels' : 'Đang tắt — bật để hiện ảnh trên thẻ';
   }
 
   document.getElementById('btnGoogleSignIn').addEventListener('click', async () => {
