@@ -23,6 +23,7 @@
     --bad:#e2603a;
     --bad-soft:#e2603a22;
     --gold:#e8b544;
+    --warn:#9c6b0c;
     --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
     --sans: "Inter", -apple-system, "Segoe UI", Roboto, sans-serif;
     --radius: 18px;
@@ -60,6 +61,7 @@
     --bad:#c1543a;
     --bad-soft:#fbe4dd;
     --gold:#8a6a1a;
+    --warn:#8a6a1a;
     --glass-fill: linear-gradient(155deg, #ffffffc0, #ffffff80);
     --glass-border: #a9c2ab;
     --glass-border-strong: #8fae91;
@@ -298,6 +300,12 @@
     display:grid;
     grid-template-columns:repeat(2,1fr);
     gap:10px;
+    margin-bottom:10px;
+  }
+  .due-soon-hint{
+    font-size:12px;
+    color:var(--ink-faint);
+    text-align:center;
     margin-bottom:22px;
   }
   .stat-row-2 .stat-card{ display:flex; align-items:center; gap:12px; text-align:left; padding:14px 16px; }
@@ -410,6 +418,7 @@
   }
   .btn.good{ background:var(--good); color:#fff; }
   .btn.bad{ background:var(--bad); color:#fff; }
+  .btn.warn{ background:var(--warn); color:#fff; }
   .btn.full{ width:100%; }
   .btn:disabled{ opacity:.4; cursor:default; pointer-events: none; }
 
@@ -709,7 +718,7 @@
     gap:10px;
     flex:1;
   }
-  .grade-row .btn{ flex:1; padding:15px; }
+  .grade-row .btn{ flex:1; padding:15px 8px; font-size:13px; }
   .pos-indicator{
     text-align:center;
     font-family:var(--mono);
@@ -1534,6 +1543,24 @@
     display:block;
     transition:opacity .3s ease;
   }
+  .card-image-wrap .img-change-btn{
+    position:absolute;
+    top:6px; right:6px;
+    width:28px; height:28px;
+    border-radius:50%;
+    border:none;
+    background:rgba(0,0,0,0.45);
+    color:#fff;
+    font-size:14px;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .card-image-wrap .img-change-btn:hover{ background:rgba(0,0,0,0.6); }
+  .card-image-wrap .img-change-btn:active{ transform:scale(.88); }
+  .card-image-wrap .img-change-btn.spinning{ animation:img-change-spin .6s linear; }
+  @keyframes img-change-spin{ to{ transform:rotate(360deg); } }
   .card-image-wrap .img-placeholder{
     position:absolute;
     inset:0;
@@ -1548,10 +1575,19 @@
     position:absolute;
     inset:0;
     display:flex;
+    flex-direction:column;
     align-items:center;
     justify-content:center;
-    font-size:48px;
-    opacity:0.15;
+    gap:6px;
+  }
+  .card-image-wrap .img-fallback .icon{
+    font-size:40px;
+    opacity:0.25;
+  }
+  .card-image-wrap .img-fallback .txt{
+    font-size:11px;
+    color:var(--ink-faint);
+    opacity:0.7;
   }
   .card-image-wrap .img-loader{
     position:absolute;
@@ -1669,6 +1705,7 @@
         <div><div class="num" id="statStreak">0</div><div class="label">Ngày liên tiếp</div></div>
       </div>
     </div>
+    <div class="due-soon-hint" id="dueSoonHint" style="display:none;"></div>
 
     <div class="section-title">Tiếp tục học</div>
     <div id="continueSlot"></div>
@@ -2003,7 +2040,11 @@ procrastinate	trì hoãn</div>
             <div class="img-placeholder" id="cardImagePlaceholder">🖼️</div>
             <div class="img-loader" id="cardImageLoader" style="display:none;"></div>
             <img id="cardImage" src="" alt="">
-            <div class="img-fallback" id="cardImageFallback" style="display:none;">📷</div>
+            <div class="img-fallback" id="cardImageFallback" style="display:none;">
+              <span class="icon">📷</span>
+              <span class="txt">Không tìm thấy ảnh phù hợp</span>
+            </div>
+            <button type="button" class="img-change-btn" id="btnChangeImage" title="Đổi ảnh khác" style="display:none;">🔄</button>
           </div>
           <div class="term" id="termText">word</div>
           <div class="ipa" id="ipaText">/wɜːrd/</div>
@@ -2023,6 +2064,7 @@ procrastinate	trì hoãn</div>
       <button class="nav-btn" id="btnPrev" title="Từ trước">‹</button>
       <div class="grade-row">
         <button class="btn bad" id="btnAgain">Chưa thuộc</button>
+        <button class="btn warn" id="btnHard">Khó</button>
         <button class="btn good" id="btnGood">Đã thuộc</button>
       </div>
       <button class="nav-btn" id="btnNext" title="Từ tiếp theo">›</button>
@@ -2080,8 +2122,8 @@ procrastinate	trì hoãn</div>
 <!-- Device (phone/tablet/desktop) select modal -->
 <div class="modal-overlay" id="deviceModal">
   <div class="modal-sheet">
-    <h3>Chào mừng! 👋</h3>
-    <p>Hãy thiết lập ứng dụng cho lần đầu tiên sử dụng.</p>
+    <h3 id="deviceModalTitle">Chào mừng! 👋</h3>
+    <p id="deviceModalSubtitle">Hãy thiết lập ứng dụng cho lần đầu tiên sử dụng.</p>
 
     <div class="settings-section" style="margin-top:0; padding-top:0; border-top:none;">
       <div class="settings-label">Thiết bị của bạn</div>
@@ -2479,8 +2521,21 @@ procrastinate	trì hoãn</div>
     return d.toISOString().slice(0, 10);
   }
 
-  function applySrsAnswer(word, isCorrect) {
+  // mode: 'correct' advances the level and schedules the next interval normally;
+  // 'wrong' resets to level 0 (full restart); 'hard' is a middle ground — keeps the
+  // current level's progress intact (not a full reset) but schedules a short review
+  // instead of that level's normal interval, since the word was answered right but
+  // felt shaky enough to want a sooner nudge rather than the usual longer gap.
+  const SRS_HARD_INTERVAL_DAYS = 1;
+  function applySrsAnswer(word, mode) {
     const currentLevel = word.srsLevel ?? (word.status === 'good' ? SRS_LEARNED_LEVEL : 0);
+    if (mode === 'hard') {
+      word.srsLevel = currentLevel;
+      word.nextReviewDate = daysFromNow(SRS_HARD_INTERVAL_DAYS);
+      word.status = currentLevel >= SRS_LEARNED_LEVEL ? 'good' : (currentLevel === 0 ? 'new' : 'bad');
+      return;
+    }
+    const isCorrect = mode === 'correct';
     const newLevel = isCorrect ? Math.min(4, currentLevel + 1) : 0;
     word.srsLevel = newLevel;
     word.nextReviewDate = daysFromNow(SRS_INTERVAL_DAYS[newLevel]);
@@ -2495,6 +2550,14 @@ procrastinate	trì hoãn</div>
     // A word with no review history yet (freshly added) is always due.
     if (!word.nextReviewDate) return true;
     return word.nextReviewDate <= todayStr();
+  }
+
+  // Distinct from isWordDueForReview (today-or-overdue) — this is strictly "coming up
+  // within the next N days", so the two counts never overlap when shown together.
+  function isWordDueSoon(word, days) {
+    if (!word.nextReviewDate) return false; // never reviewed yet — not "coming up", it's already due
+    if (word.nextReviewDate <= todayStr()) return false; // already due/overdue, not "soon"
+    return word.nextReviewDate <= daysFromNow(days);
   }
 
   function bumpStreak() {
@@ -2521,7 +2584,7 @@ procrastinate	trì hoãn</div>
       ? targetFolder.words.find(w => w.id === entry.id)
       : targetFolder.words.find(w => w.tu === entry.tu && w.nghia === entry.nghia);
     if (target) {
-      applySrsAnswer(target, status === 'good');
+      applySrsAnswer(target, status === 'good' ? 'correct' : status === 'hard' ? 'hard' : 'wrong');
       bumpStreak();
       saveData();
     }
@@ -2863,16 +2926,6 @@ procrastinate	trì hoãn</div>
                                     // the same first word when a study session opens).
   const PEXELS_API_KEY = 'qTQwe4SGR8j76j428kIm0fCnmwNBjV6msuIjSknSIa5PElMcDY4miI9Y';
 
-  async function pexelsSearch(query) {
-    const res = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&orientation=landscape`, {
-      headers: { Authorization: PEXELS_API_KEY }
-    });
-    if (!res.ok) { console.error('[Image] Pexels HTTP error:', res.status); return null; }
-    const data = await res.json();
-    const photo = data.photos?.[0];
-    return photo?.src?.medium || photo?.src?.original || null;
-  }
-
   async function wikipediaSearch(query) {
     // Two-step: find the best-matching page title (opensearch), then ask that page
     // for its lead thumbnail. A direct title lookup on `query` itself would miss
@@ -2927,6 +2980,38 @@ procrastinate	trì hoãn</div>
       promiseA.then(onSettle).catch(() => onSettle(null));
       promiseB.then(onSettle).catch(() => onSettle(null));
     });
+  }
+
+  async function pexelsSearch(query, page) {
+    const res = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=1&page=${page || 1}&orientation=landscape`, {
+      headers: { Authorization: PEXELS_API_KEY }
+    });
+    if (!res.ok) { console.error('[Image] Pexels HTTP error:', res.status); return null; }
+    const data = await res.json();
+    const photo = data.photos?.[0];
+    return photo?.src?.medium || photo?.src?.original || null;
+  }
+
+  // Used by the manual "🔄 change image" button on the flashcard — deliberately
+  // bypasses both caches (imageCache/imageInFlight) since the whole point is to get
+  // something DIFFERENT from what's already showing. Only queries Pexels: Wikipedia
+  // has no "alternate photo" concept (re-querying the same page just returns the same
+  // single thumbnail every time), so re-racing it here would be pointless. Pulls page
+  // 2 of Pexels' results instead of page 1 to get a genuinely different photo for the
+  // same search terms rather than the identical top hit.
+  async function fetchAlternateImage(word, topic) {
+    if (!word) return null;
+    let imgUrl = null;
+    try {
+      if (topic) imgUrl = await pexelsSearch(`${word} ${topic}`, 2);
+      if (!imgUrl) imgUrl = await pexelsSearch(word, 2);
+      // Last resort: page 2 of a specific query can legitimately have no results even
+      // when page 1 did, so fall back to page 1 rather than leaving the person with
+      // no image at all just because they wanted a different one.
+      if (!imgUrl && topic) imgUrl = await pexelsSearch(`${word} ${topic}`, 1);
+      if (!imgUrl) imgUrl = await pexelsSearch(word, 1);
+    } catch (e) { console.error('[Image] Alternate-image error:', e.message); }
+    return imgUrl;
   }
 
   async function fetchWordImage(word, topic) {
@@ -3001,13 +3086,23 @@ procrastinate	trì hoãn</div>
     console.log(`[Image] Prefetch finished for deck "${folder.name}"`);
   }
 
+  // Tracks which word/deck the currently-displayed card image belongs to, so the
+  // manual "change image" button (wired once, not per-render) knows what to re-fetch.
+  let currentCardImageContext = null;
+
   async function renderCardImage(entry) {
     const wrap = document.getElementById('cardImageWrap');
     const img = document.getElementById('cardImage');
     const placeholder = document.getElementById('cardImagePlaceholder');
     const loader = document.getElementById('cardImageLoader');
     const fallback = document.getElementById('cardImageFallback');
+    const changeBtn = document.getElementById('btnChangeImage');
     if (!wrap || !img) { console.warn('[Image] Missing wrap or img element'); return; }
+
+    const targetFolder = entry._sourceFolderId
+      ? DATA.folders.find(f => f.id === entry._sourceFolderId)
+      : activeFolder;
+    currentCardImageContext = { entry, targetFolder };
 
     // Reset all children visibility
     img.style.opacity = '0';
@@ -3015,6 +3110,7 @@ procrastinate	trì hoãn</div>
     fallback.style.display = 'none';
     loader.style.display = 'none';
     placeholder.style.display = 'flex';
+    changeBtn.style.display = 'none';
     wrap.classList.remove('show');
 
     console.log('[Image] renderCardImage called for:', entry.tu, 'enabled:', imageEnabled);
@@ -3028,9 +3124,6 @@ procrastinate	trì hoãn</div>
     try {
       let url = entry.imageUrl || null;
       console.log('[Image] Cached URL:', url || 'none');
-      const targetFolder = entry._sourceFolderId
-        ? DATA.folders.find(f => f.id === entry._sourceFolderId)
-        : activeFolder;
       if (!url && entry.tu) {
         url = await fetchWordImage(entry.tu, targetFolder?.name);
         if (url) {
@@ -3045,7 +3138,7 @@ procrastinate	trì hoãn</div>
       loader.style.display = 'none';
       if (url) {
         console.log('[Image] Setting src:', url.substring(0, 60) + '...');
-        img.onload = () => { img.style.opacity = '1'; console.log('[Image] Loaded OK'); };
+        img.onload = () => { img.style.opacity = '1'; changeBtn.style.display = 'flex'; console.log('[Image] Loaded OK'); };
         img.onerror = () => {
           console.warn('[Image] img.onerror fired');
           img.style.opacity = '0';
@@ -3129,12 +3222,16 @@ procrastinate	trì hoãn</div>
     const totalWords = folders.reduce((s, f) => s + f.words.length, 0);
     const learnedWords = folders.reduce((s, f) => s + f.words.filter(isWordLearned).length, 0);
     const dueWords = folders.reduce((s, f) => s + f.words.filter(isWordDueForReview).length, 0);
+    const dueSoonDays = 3;
+    const dueSoonWords = folders.reduce((s, f) => s + f.words.filter(w => isWordDueSoon(w, dueSoonDays)).length, 0);
 
     DOM.statFolders.textContent = folders.length;
     DOM.statWords.textContent = totalWords;
     DOM.statLearned.textContent = learnedWords;
     DOM.statDue.textContent = dueWords;
     DOM.statStreak.textContent = DATA.streak?.count || 0;
+    DOM.dueSoonHint.style.display = dueSoonWords > 0 ? '' : 'none';
+    if (dueSoonWords > 0) DOM.dueSoonHint.textContent = `Còn ${dueSoonWords} từ sẽ đến hạn ôn trong ${dueSoonDays} ngày tới`;
 
     DOM.continueSlot.replaceChildren();
     DOM.homeRecentList.replaceChildren();
@@ -3453,7 +3550,14 @@ procrastinate	trì hoãn</div>
     lastSessionMode = 'study';
     DOM.btnShuffle.classList.toggle('on', shuffleOn);
     goTo('study'); renderCardAtIndex();
-    prefetchDeckImages(folder); // fire-and-forget batch fetch for the rest of the deck
+    // Only batch-fetch the rest of the deck's images if the person actually stays on
+    // this study session for a few seconds — someone who taps in, glances at a word
+    // or two, and leaves shouldn't trigger a burst of image requests for a deck they
+    // weren't really settling in to study. stopActiveGameTimers already runs on every
+    // view change (see goTo()), so registering the cancellation there for free covers
+    // leaving via the back button, switching tabs, exiting to home, etc.
+    const prefetchTimer = setTimeout(() => prefetchDeckImages(folder), 3500);
+    stopActiveGameTimers = () => clearTimeout(prefetchTimer);
   }
 
   async function renderCardAtIndex() {
@@ -3478,8 +3582,8 @@ procrastinate	trì hoãn</div>
   function markStatus(status) {
     const entry = queue[idx];
     updateWordStatus(activeFolder, entry, status);
-    if (status === 'good') sessionStats.good++;
-    else { sessionStats.bad++; badPile.push(entry); }
+    if (status === 'bad') { sessionStats.bad++; badPile.push(entry); }
+    else sessionStats.good++; // 'good' and 'hard' both count as a correct answer for session stats
     idx++; renderCardAtIndex();
   }
 
@@ -4771,6 +4875,41 @@ procrastinate	trì hoãn</div>
   document.getElementById('speakBtnFront').addEventListener('click', handleSpeakEvent);
   document.getElementById('speakBtnBack').addEventListener('click', handleSpeakEvent);
   document.getElementById('btnGood').addEventListener('click', () => { haptic(10); markStatus('good'); });
+  document.getElementById('btnHard').addEventListener('click', () => { haptic(15); markStatus('hard'); });
+  document.getElementById('btnChangeImage').addEventListener('click', async (e) => {
+    e.stopPropagation(); // don't let the click bubble into the flip-card's flip handler
+    const ctx = currentCardImageContext;
+    if (!ctx || !ctx.entry?.tu) return;
+    haptic(8);
+    const btn = e.currentTarget;
+    const img = document.getElementById('cardImage');
+    btn.disabled = true;
+    btn.classList.add('spinning');
+    try {
+      const newUrl = await fetchAlternateImage(ctx.entry.tu, ctx.targetFolder?.name);
+      // The card may have already moved on to a different word while this was in
+      // flight — only apply the result if we're still looking at the same one.
+      if (currentCardImageContext !== ctx) return;
+      if (newUrl) {
+        ctx.entry.imageUrl = newUrl;
+        if (ctx.targetFolder && ctx.entry.id) {
+          const target = ctx.targetFolder.words.find(w => w.id === ctx.entry.id);
+          if (target) { target.imageUrl = newUrl; saveData(); }
+        }
+        img.onload = () => { img.style.opacity = '1'; };
+        img.style.opacity = '0';
+        img.src = newUrl;
+      } else {
+        showToast('Không tìm được ảnh khác cho từ này', 'info');
+      }
+    } catch (err) {
+      console.error('[Image] Change-image error:', err.message);
+      showToast('Không thể đổi ảnh lúc này', 'error');
+    } finally {
+      btn.disabled = false;
+      btn.classList.remove('spinning');
+    }
+  });
   document.getElementById('btnAgain').addEventListener('click', () => { haptic([20, 30, 20]); markStatus('bad'); });
   DOM.btnPrev.addEventListener('click', () => { if (idx > 0) { idx--; renderCardAtIndex(); } });
   DOM.btnNext.addEventListener('click', () => { if (idx < queue.length) { idx++; renderCardAtIndex(); } });
@@ -4808,6 +4947,10 @@ procrastinate	trì hoãn</div>
   // Device layout modal: shown automatically on first run, or re-opened from Account > Settings
   function openDeviceModal(isSettingsReopen) {
     document.getElementById('btnCancelDeviceModal').style.display = isSettingsReopen ? 'inline-flex' : 'none';
+    document.getElementById('deviceModalTitle').textContent = isSettingsReopen ? 'Đổi giao diện thiết bị' : 'Chào mừng! 👋';
+    document.getElementById('deviceModalSubtitle').textContent = isSettingsReopen
+      ? 'Chọn kiểu giao diện phù hợp với thiết bị bạn đang dùng.'
+      : 'Hãy thiết lập ứng dụng cho lần đầu tiên sử dụng.';
     openModal(DOM.deviceModal);
   }
   document.getElementById('btnCancelDeviceModal').addEventListener('click', () => closeModal(DOM.deviceModal));
