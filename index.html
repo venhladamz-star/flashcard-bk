@@ -2011,10 +2011,24 @@ procrastinate	trì hoãn</div>
       <div class="field-label">Tên bộ thẻ</div>
       <input type="text" class="name-input" id="editFolderNameInput" placeholder="Tên bộ thẻ">
     </div>
-    <div class="row-actions">
-      <button class="btn ghost full" id="btnAddEditWord">＋ Thêm từ</button>
-    </div>
     <div id="editWordList"></div>
+
+    <div class="panel">
+      <div class="field-label">Thêm từ mới vào bộ này</div>
+      <div class="sample-text-caption">
+        <p>Bôi đen dòng mẫu dưới đây để copy, hoặc bấm nút chèn thẳng vào ô nhập:</p>
+        <button type="button" class="btn-insert-sample" id="btnInsertSampleEdit">Chèn ví dụ mẫu</button>
+      </div>
+      <div class="sample-text-block" id="sampleTextBlockEdit">serendipity	tình cờ may mắn	/ˌserənˈdɪpɪti/	noun	https://example.com/serendipity.jpg
+ambiguous	mơ hồ, không rõ	/æmˈbɪɡjuəs/	adjective
+procrastinate	trì hoãn</div>
+      <p class="sample-text-hint">Mỗi dòng 1 từ, theo thứ tự <b>Từ → Nghĩa → Phát âm (tuỳ chọn) → Loại từ (tuỳ chọn) → Link ảnh (tuỳ chọn)</b>, cách nhau bằng phím Tab.</p>
+
+      <textarea class="paste-box" id="editPasteArea" placeholder="Dán dữ liệu vào đây (từ Excel, Google Sheets, Word...) — mỗi dòng 1 từ, các cột cách nhau bằng phím Tab."></textarea>
+      <button type="button" class="btn ghost full" id="btnAddEditWord" style="margin-top:10px;">＋ Thêm từ vào bộ</button>
+      <div class="err" id="editAddWordErr"></div>
+    </div>
+
     <div class="err" id="editFolderErr"></div>
     <button class="btn primary full" id="btnSaveEditFolder">Lưu thay đổi</button>
   </div>
@@ -4674,8 +4688,24 @@ procrastinate	trì hoãn</div>
     DOM.editWordList.appendChild(frag);
   }
 
+  DOM.btnInsertSampleEdit.addEventListener('click', () => {
+    const sample = DOM.sampleTextBlockEdit.textContent;
+    DOM.editPasteArea.value = DOM.editPasteArea.value.trim()
+      ? DOM.editPasteArea.value.replace(/\n?$/, '\n') + sample
+      : sample;
+    DOM.editPasteArea.focus();
+  });
+
   DOM.btnAddEditWord.addEventListener('click', () => {
-    DOM.editWordList.appendChild(makeEditWordRow(null));
+    DOM.editAddWordErr.textContent = '';
+    const text = DOM.editPasteArea.value;
+    if (!text.trim()) return DOM.editAddWordErr.textContent = 'Chưa dán dữ liệu từ vựng nào.';
+    const words = parseTabbed(text);
+    if (!words.length) return DOM.editAddWordErr.textContent = 'Sai định dạng (cách nhau bằng Tab).';
+    const frag = document.createDocumentFragment();
+    words.forEach(w => frag.appendChild(makeEditWordRow(w)));
+    DOM.editWordList.appendChild(frag);
+    DOM.editPasteArea.value = '';
   });
 
   DOM.btnCancelEditFolder.addEventListener('click', () => { editingFolderId = null; goTo('created'); });
