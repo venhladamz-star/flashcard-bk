@@ -2402,8 +2402,14 @@ procrastinate	trì hoãn</div>
   // this field existed gets ids assigned once here; a word that already has one keeps
   // it, so existing SRS progress (once saved with an id) is never disturbed.
   function migrateWordIds(data) {
-    (data.folders || []).forEach(f => {
-      (f.words || []).forEach(w => { if (!w.id) w.id = generateUid('w'); });
+    if (!Array.isArray(data.folders)) data.folders = [];
+    data.folders.forEach(f => {
+      // Guarantee every deck has a words array. Nearly every renderer does f.words.length
+      // / f.words.filter(...) unguarded, so a single malformed deck (e.g. hand-edited or
+      // partially-synced cloud data missing `words`) would otherwise crash the whole view
+      // with "Cannot read properties of undefined". Normalising once here covers all of them.
+      if (!Array.isArray(f.words)) f.words = [];
+      f.words.forEach(w => { if (!w.id) w.id = generateUid('w'); });
     });
     return data;
   }
@@ -2469,6 +2475,10 @@ procrastinate	trì hoãn</div>
   function attachGlobalReferenceListener() {
     onSnapshot(doc(db, 'shared', 'reference_pool'), (snap) => {
       globalRefData = snap.exists() ? snap.data() : { folders: [] };
+      // Same defensive normalisation as migrateWordIds(), for the shared reference pool:
+      // renderRefFolderList / openGameSourcePicker both read f.words unguarded.
+      if (!Array.isArray(globalRefData.folders)) globalRefData.folders = [];
+      globalRefData.folders.forEach(f => { if (!Array.isArray(f.words)) f.words = []; });
       if (DOM.views.reference.classList.contains('active')) renderRefFolderList();
     });
     onSnapshot(doc(db, 'shared', 'grammar_pool'), (snap) => {
@@ -2529,11 +2539,18 @@ procrastinate	trì hoãn</div>
   const SRS_INTERVAL_DAYS = [1, 3, 7, 16, 35]; // days until next review, indexed by srsLevel after answering
   const SRS_LEARNED_LEVEL = 1; // level at which a word counts as "đã thuộc" (1 = correct once)
 
-  function todayStr() { return new Date().toISOString().slice(0, 10); }
+  // Local-date helper. toISOString() returns the UTC date, which for a user east of
+  // UTC (e.g. Vietnam, UTC+7) is still *yesterday* between 00:00 and 07:00 local — so
+  // words due today looked not-due, and a study session before 7 AM was credited to the
+  // previous day's streak. Format from the local date parts instead.
+  function localDateStr(d) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  }
+  function todayStr() { return localDateStr(new Date()); }
   function daysFromNow(n) {
     const d = new Date();
     d.setDate(d.getDate() + n);
-    return d.toISOString().slice(0, 10);
+    return localDateStr(d);
   }
 
   // mode: 'correct' advances the level and schedules the next interval normally;
@@ -2575,13 +2592,16 @@ procrastinate	trì hoãn</div>
     return word.nextReviewDate <= daysFromNow(days);
   }
 
+  // Returns true when it actually changed DATA.streak (so callers that only need the
+  // streak persisted can skip a redundant saveData()).
   function bumpStreak() {
     const today = todayStr();
     if (!DATA.streak) DATA.streak = { count: 0, lastStudyDate: null };
-    if (DATA.streak.lastStudyDate === today) return; // already counted today
+    if (DATA.streak.lastStudyDate === today) return false; // already counted today
     const yesterday = daysFromNow(-1);
     DATA.streak.count = (DATA.streak.lastStudyDate === yesterday) ? DATA.streak.count + 1 : 1;
     DATA.streak.lastStudyDate = today;
+    return true;
   }
 
   // Update a word's status inside DATA (only if the folder is a saved, non-reference folder).
@@ -2591,7 +2611,17 @@ procrastinate	trì hoãn</div>
     const targetFolder = entry._sourceFolderId
       ? DATA.folders.find(f => f.id === entry._sourceFolderId)
       : folder;
-    if (!targetFolder) return;
+    // Only decks the user actually owns (present in DATA.folders) can have word status
+    // updated. Reference decks (the shared Admin pool) are read-only — mutating them here
+    // used to pollute the shared pool in memory and fire a save/cloud push per answer.
+    // Mixed "learned/due" sessions pass folder = null and rely on entry._sourceFolderId
+    // to resolve the owning deck. A reference-deck session still counts toward the streak.
+    const isOwned = !!targetFolder && DATA.folders.some(f => f.id === targetFolder.id);
+    if (!isOwned) {
+      if (targetFolder && bumpStreak()) saveData();
+      return;
+    }
+    if (!Array.isArray(targetFolder.words)) return;
     // Match by stable id when available (always true for words created/migrated after
     // the id field was introduced). Falls back to tu+nghia text-matching only for the
     // rare case of an entry that somehow still lacks an id, to avoid a hard failure.
@@ -4066,9 +4096,13 @@ procrastinate	trì hoãn</div>
   let scrambleState = null; // { words, idx, score, answerLetters, filledIdx, chips }
   function startScrambleGame(words) {
     scrambleState = { words: words.slice(0, 10), idx: 0, score: 0 };
-    stopActiveGameTimers = () => clearTimeout(scrambleState?.nextWordTimeout);
     renderScrambleWord();
+    // Assigned AFTER goTo() (like every other game's start function): goTo() resets
+    // stopActiveGameTimers to a no-op, so registering the cleanup before it would let
+    // goTo() silently erase it — a pending nextWordTimeout would then still fire after
+    // leaving via the sidebar and re-render/advance (or pop the result modal over Home).
     goTo('game-scramble');
+    stopActiveGameTimers = () => clearTimeout(scrambleState?.nextWordTimeout);
   }
 
   function scrambleLetters(word) {
@@ -4088,6 +4122,7 @@ procrastinate	trì hoãn</div>
     }
     const entry = scrambleState.words[scrambleState.idx];
     const answer = entry.tu.toLowerCase();
+    scrambleState.answered = false; // fresh word — allow the Check button again
     scrambleState.current = {
       entry, answer,
       slots: new Array(answer.length).fill(null), // holds chip index per slot, or null
@@ -4145,12 +4180,14 @@ procrastinate	trì hoãn</div>
 
   document.getElementById('btnScrambleCheck').addEventListener('click', () => {
     const st = scrambleState.current;
+    if (scrambleState.answered) return; // ignore extra clicks while the word is being scored/advanced
     if (st.slots.includes(null)) {
       const btn = document.getElementById('btnScrambleCheck');
       btn.style.transform = 'translateX(-4px)';
       setTimeout(() => { btn.style.transform = 'translateX(4px)'; setTimeout(() => btn.style.transform = '', 80); }, 80);
       return;
     }
+    scrambleState.answered = true;
     const attempt = st.slots.map(chipId => st.chips.find(c => c.id === chipId).ch).join('');
     const isCorrect = attempt === st.answer;
     updateWordStatus(null, st.entry, isCorrect ? 'good' : 'bad');
@@ -4269,9 +4306,12 @@ procrastinate	trì hoãn</div>
   }
 
   function renderSniperLetters(enemy) {
+    // This string is assigned with innerHTML, and `ch` comes from the user's own word —
+    // escape it so a word containing HTML (e.g. "<b>") can never inject markup here.
     return enemy.word.split('').map((ch, i) => {
-      if (enemy.typed.has(i)) return `<span class="filled">${ch === ' ' ? '&nbsp;' : ch}</span>`;
-      return enemy.revealed.has(i) ? ch : '_';
+      const safe = escapeHtml(ch);
+      if (enemy.typed.has(i)) return `<span class="filled">${ch === ' ' ? '&nbsp;' : safe}</span>`;
+      return enemy.revealed.has(i) ? safe : '_';
     }).join(' ');
   }
 
@@ -4821,8 +4861,16 @@ procrastinate	trì hoãn</div>
     }
   });
 
+  // Set by the swipe gesture when the last gesture was a drag (not a tap), and consumed
+  // by the click handler right below. A browser still fires a native `click` after a
+  // short drag, so without this a swipe (which grades the word) would ALSO flip the card.
+  // Reset at the start of each new gesture rather than on a timer, because the ordering
+  // of the trailing `click` relative to a setTimeout is not guaranteed across browsers.
+  let swipeGestureActive = false;
+
   DOM.flipCard.addEventListener('click', (e) => {
     if (e.target.closest('.speak-btn')) return;
+    if (swipeGestureActive) return; // this click is the tail of a swipe, not a tap
     flipped = !flipped; DOM.flipCard.classList.toggle('is-flipped', flipped);
   });
 
@@ -4844,6 +4892,7 @@ procrastinate	trì hoãn</div>
 
     function onPointerDown(e) {
       if (e.target.closest('.speak-btn')) return;
+      swipeGestureActive = false; // new gesture — a real tap may flip again
       startX = e.clientX || (e.touches && e.touches[0].clientX) || 0;
       startY = e.clientY || (e.touches && e.touches[0].clientY) || 0;
       startTime = Date.now();
@@ -4880,6 +4929,10 @@ procrastinate	trì hoãn</div>
         resetCard();
         return;
       }
+
+      // Anything past the tap check is a drag; suppress the trailing native click so it
+      // can't flip the card on top of the grade this swipe is about to apply.
+      swipeGestureActive = true;
 
       if (dx > THRESHOLD) {
         card.classList.add('swipe-right');
@@ -5082,12 +5135,17 @@ procrastinate	trì hoãn</div>
         DOM.avatarBtn.textContent = '👤';
         DOM.avatarBtn.title = 'Đăng nhập';
         if (cloudUnsub) { cloudUnsub(); cloudUnsub = null; }
-        // localStorage may still hold the just-logged-out account's cloud data
-        // (it gets overwritten with cloud data on every sign-in). Clear it so
-        // the next session starts empty instead of showing the old account's decks.
-        localStorage.removeItem(STORAGE_KEY);
-        localStorage.removeItem(SOURCE_KEY);
-        DATA = loadLocalData();
+        // localStorage may still hold the just-logged-out account's cloud data (it gets
+        // overwritten with cloud data on every sign-in) — clear that so the next session
+        // starts empty instead of showing the old account's decks.
+        // Only when source === 'cloud', though: onAuthStateChanged also fires with `null`
+        // for a visitor who never signed in, and clearing unconditionally there wiped a
+        // guest's own decks (source 'local') on every single page reload.
+        if (localStorage.getItem(SOURCE_KEY) === 'cloud') {
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(SOURCE_KEY);
+            DATA = loadLocalData();
+        }
     }
     refreshCurrentView();
   });
